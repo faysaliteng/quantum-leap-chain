@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { MerchantSidebar } from "@/components/MerchantSidebar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function DashboardLayout() {
   return (
@@ -10,7 +11,8 @@ export default function DashboardLayout() {
         <SidebarInset>
           <header className="flex h-12 items-center border-b px-4 gap-2">
             <SidebarTrigger />
-            <span className="text-sm font-medium text-muted-foreground">Merchant Dashboard</span>
+            <span className="text-sm font-medium text-muted-foreground flex-1">Merchant Dashboard</span>
+            <ThemeToggle />
           </header>
           <div className="flex-1 p-6">
             <Outlet />
