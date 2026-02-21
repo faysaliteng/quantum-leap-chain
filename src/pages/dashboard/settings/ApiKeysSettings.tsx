@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiKeys } from "@/lib/api-client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import type { ApiKeyScope, ApiKeyCreated } from "@/lib/types";
 const SCOPES: ApiKeyScope[] = ["read", "write", "admin"];
 
 export default function ApiKeysSettings() {
+  usePageTitle("API Keys");
   const qc = useQueryClient();
   const { data: keys } = useQuery({ queryKey: ["api-keys"], queryFn: apiKeys.list });
   const [showCreate, setShowCreate] = useState(false);

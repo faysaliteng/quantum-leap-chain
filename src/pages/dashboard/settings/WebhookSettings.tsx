@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { webhooks } from "@/lib/api-client";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ const ALL_EVENTS: WebhookEventType[] = [
 ];
 
 export default function WebhookSettings() {
+  usePageTitle("Webhooks");
   const qc = useQueryClient();
   const { data: endpoints } = useQuery({ queryKey: ["webhooks"], queryFn: webhooks.list });
   const [showCreate, setShowCreate] = useState(false);

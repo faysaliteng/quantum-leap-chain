@@ -5,10 +5,13 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, DollarSign, Clock, CheckCircle, TrendingUp } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function DashboardHome() {
-  const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: dashboard.stats });
-  const { data: recent } = useQuery({ queryKey: ["charges-recent"], queryFn: () => chargesApi.list({ per_page: 10 }) });
+  usePageTitle("Dashboard");
+  const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["dashboard-stats"], queryFn: dashboard.stats });
+  const { data: recent, isLoading: chargesLoading } = useQuery({ queryKey: ["charges-recent"], queryFn: () => chargesApi.list({ per_page: 10 }) });
 
   const cards = [
     { label: "Total Charges", value: stats?.total_charges ?? "—", icon: DollarSign },
@@ -16,6 +19,8 @@ export default function DashboardHome() {
     { label: "Confirmed Today", value: stats?.confirmed_today ?? "—", icon: CheckCircle },
     { label: "Volume (USD)", value: stats?.total_volume_usd ? `$${stats.total_volume_usd}` : "—", icon: TrendingUp },
   ];
+
+  if (statsLoading && chargesLoading) return <PageSkeleton />;
 
   return (
     <div className="space-y-6">
@@ -58,15 +63,15 @@ export default function DashboardHome() {
               </thead>
               <tbody>
                 {recent?.data?.length ? recent.data.map((c) => (
-                  <tr key={c.id} className="border-b last:border-0 hover:bg-muted/50 cursor-pointer" onClick={() => window.location.href = `/dashboard/charges/${c.id}`}>
-                    <td className="px-4 py-2 font-mono text-xs">{c.id.slice(0, 8)}</td>
+                  <tr key={c.id} className="border-b last:border-0 hover:bg-muted/50">
+                    <td className="px-4 py-2"><Link to={`/dashboard/charges/${c.id}`} className="font-mono text-xs text-primary hover:underline">{c.id.slice(0, 8)}</Link></td>
                     <td className="px-4 py-2">{c.name}</td>
                     <td className="px-4 py-2 font-mono">{c.local_price ? `${c.local_price.amount} ${c.local_price.currency}` : "—"}</td>
                     <td className="px-4 py-2"><StatusBadge status={c.status} /></td>
                     <td className="px-4 py-2 text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No charges yet</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No charges yet. <Link to="/dashboard/charges/new" className="text-primary hover:underline">Create your first charge</Link></td></tr>
                 )}
               </tbody>
             </table>
