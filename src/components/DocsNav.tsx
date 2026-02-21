@@ -10,6 +10,7 @@ const docsLinks = [
   { path: "/docs/security", label: "Security" },
   { path: "/docs/schema", label: "Schema" },
   { path: "/docs/api", label: "API" },
+  { path: "/docs/singularitycoin", label: "SingularityCoin" },
 ];
 
 export function DocsNav() {

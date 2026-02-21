@@ -56,6 +56,15 @@ Browser → Nginx (TLS) → React SPA + API → Worker → PostgreSQL + Redis
 - `/docs/security` — STRIDE threat model, key management, hardening checklist
 - `/docs/schema` — 18-table PostgreSQL schema with indexes and relationships
 - `/docs/api` — Full REST API reference, webhook events, authentication methods
+- `/docs/singularitycoin` — Full Layer-1 blockchain protocol specification
+
+### SingularityCoin (Layer-1 Blockchain)
+- Post-quantum secure (ML-DSA / Dilithium signatures, BLAKE3 hashing)
+- HotStuff-style BFT PoS consensus with 1-3s deterministic finality
+- Permissionless staking with epoch-based validator set rotation
+- Real fee market with adaptive base_fee_per_byte
+- Full protocol spec, CLI reference, deployment guides, and Prometheus metrics
+- Rust monorepo architecture (node, consensus, crypto, p2p, storage, state, rpc, cli)
 
 ---
 
