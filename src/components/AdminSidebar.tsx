@@ -3,6 +3,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
+import { CryptonpayLogo } from "@/components/CryptonpayLogo";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter,
@@ -23,10 +24,10 @@ export function AdminSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-destructive text-destructive-foreground text-sm font-bold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive text-destructive-foreground">
             <Shield className="h-4 w-4" />
           </div>
-          <span className="text-sm font-semibold group-data-[collapsible=icon]:hidden">Admin Panel</span>
+          <span className="text-sm font-display font-semibold group-data-[collapsible=icon]:hidden">Admin Panel</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

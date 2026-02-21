@@ -3,6 +3,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
+import { CryptonpayLogo } from "@/components/CryptonpayLogo";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter,
@@ -28,12 +29,7 @@ export function MerchantSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-            SP
-          </div>
-          <span className="text-sm font-semibold group-data-[collapsible=icon]:hidden">SingularityPay</span>
-        </div>
+        <CryptonpayLogo size="sm" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
