@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CryptonpayLogo } from "@/components/CryptonpayLogo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Shield, Zap, Globe, Key, Webhook, BarChart3, ArrowRight,
   Lock, Server, Eye, Layers, Bitcoin, Sparkles,
@@ -40,6 +41,7 @@ export default function LandingPage() {
             <Button variant="ghost" size="sm" asChild><Link to="/docs/architecture">Docs</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/security">Security</Link></Button>
+            <ThemeToggle />
             <Button size="sm" className="bg-gradient-gold text-primary-foreground font-semibold ml-2" asChild>
               <Link to="/login">Sign in <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
             </Button>
