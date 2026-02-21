@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DocsNav } from "@/components/DocsNav";
 
 const tables = [
   { name: "users", cols: "id, email, password_hash, role, merchant_id?, totp_secret?, created_at, updated_at", indexes: "UNIQUE(email)" },
@@ -24,32 +25,34 @@ const tables = [
 
 export default function SchemaDocs() {
   return (
-    <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
-      <h1 className="text-2xl font-bold">Database Schema</h1>
-      <p className="text-sm text-muted-foreground">PostgreSQL schema with {tables.length} tables. All timestamps are UTC. UUIDs for primary keys unless noted.</p>
+    <div className="min-h-screen bg-background">
+      <DocsNav />
+      <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
+        <h1 className="text-2xl font-display font-bold">Database Schema</h1>
+        <p className="text-sm text-muted-foreground">PostgreSQL schema with {tables.length} tables. All timestamps are UTC. UUIDs for primary keys unless noted.</p>
 
-      <div className="space-y-4">
-        {tables.map((t) => (
-          <Card key={t.name}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-mono">{t.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-xs text-muted-foreground font-mono leading-relaxed">{t.cols}</div>
-              <div className="flex flex-wrap gap-1">
-                {t.indexes.split(", ").map((idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs font-mono">{idx}</Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+        <div className="space-y-4">
+          {tables.map((t) => (
+            <Card key={t.name}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-mono">{t.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-xs text-muted-foreground font-mono leading-relaxed">{t.cols}</div>
+                <div className="flex flex-wrap gap-1">
+                  {t.indexes.split(", ").map((idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs font-mono">{idx}</Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Key Relationships</CardTitle></CardHeader>
-        <CardContent>
-          <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Key Relationships</CardTitle></CardHeader>
+          <CardContent>
+            <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
 merchants ──1:N──▶ projects
 merchants ──1:N──▶ api_keys
 merchants ──1:N──▶ webhook_endpoints
@@ -62,9 +65,10 @@ webhook_endpoints ──1:N──▶ webhook_deliveries
 chain_configs ──1:N──▶ rpc_endpoints
 chain_configs ──1:N──▶ asset_configs
 users ──N:1──▶ merchants
-          `}</pre>
-        </CardContent>
-      </Card>
+            `}</pre>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
