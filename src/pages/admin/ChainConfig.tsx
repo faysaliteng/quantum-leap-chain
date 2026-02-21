@@ -1,18 +1,20 @@
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function ChainConfig() {
+  usePageTitle("Chains & Assets");
   const qc = useQueryClient();
-  const { data: chains } = useQuery({ queryKey: ["admin-chains"], queryFn: admin.chains.list });
-  const { data: assets } = useQuery({ queryKey: ["admin-assets"], queryFn: admin.assets.list });
+  const { data: chains, isLoading: chainsLoading } = useQuery({ queryKey: ["admin-chains"], queryFn: admin.chains.list });
+  const { data: assets, isLoading: assetsLoading } = useQuery({ queryKey: ["admin-assets"], queryFn: admin.assets.list });
 
   const toggleAsset = useMutation({ mutationFn: ({ chain, symbol, enabled }: { chain: string; symbol: string; enabled: boolean }) => admin.assets.toggle(chain, symbol, enabled), onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-assets"] }) });
+
+  if (chainsLoading && assetsLoading) return <PageSkeleton />;
 
   return (
     <div className="space-y-6">
@@ -28,13 +30,13 @@ export default function ChainConfig() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="text-xs text-muted-foreground">Confirmations: {chain.confirmation_threshold} | RPCs: {chain.rpc_endpoints.length}</div>
+              <div className="text-xs text-muted-foreground">Confirmations: {chain.confirmation_threshold} · RPCs: {chain.rpc_endpoints.length}</div>
               <div className="space-y-2">
                 {chain.rpc_endpoints.map((rpc) => (
                   <div key={rpc.id} className="flex items-center gap-2 text-xs">
                     <Badge variant={rpc.status === "healthy" ? "outline" : "destructive"} className="text-xs w-16 justify-center">{rpc.status}</Badge>
-                    <span className="font-mono truncate">{rpc.url}</span>
-                    {rpc.latency_ms != null && <span className="text-muted-foreground">{rpc.latency_ms}ms</span>}
+                    <span className="font-mono truncate flex-1">{rpc.url}</span>
+                    {rpc.latency_ms != null && <span className="text-muted-foreground shrink-0">{rpc.latency_ms}ms</span>}
                   </div>
                 ))}
               </div>

@@ -3,12 +3,14 @@ import { settlement } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SettlementConfig, SweepMode } from "@/lib/types";
 import { useState, useEffect } from "react";
 
 export default function SettlementSettings() {
+  usePageTitle("Settlement Settings");
   const qc = useQueryClient();
   const { data: configs } = useQuery({ queryKey: ["settlement-config"], queryFn: settlement.getConfig });
   const [editing, setEditing] = useState<SettlementConfig | null>(null);

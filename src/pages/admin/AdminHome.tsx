@@ -1,12 +1,17 @@
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Receipt, Activity, AlertCircle } from "lucide-react";
+import { Users, Receipt, Activity } from "lucide-react";
+import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function AdminHome() {
-  const { data: stats } = useQuery({ queryKey: ["admin-stats"], queryFn: admin.stats });
-  const { data: health } = useQuery({ queryKey: ["admin-health"], queryFn: admin.health, refetchInterval: 15000 });
+  usePageTitle("Admin Overview");
+  const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: admin.stats });
+  const { data: health, isLoading: healthLoading } = useQuery({ queryKey: ["admin-health"], queryFn: admin.health, refetchInterval: 15000 });
+
+  if (statsLoading && healthLoading) return <PageSkeleton />;
 
   return (
     <div className="space-y-6">
@@ -31,7 +36,7 @@ export default function AdminHome() {
                       <td className="px-4 py-2 font-mono text-xs uppercase">{w.chain}</td>
                       <td className="px-4 py-2 font-mono">{w.current_block.toLocaleString()}</td>
                       <td className="px-4 py-2 font-mono">{w.latest_block.toLocaleString()}</td>
-                      <td className="px-4 py-2"><Badge variant={w.lag > 10 ? "destructive" : "outline"} className="text-xs">{w.lag}</Badge></td>
+                      <td className="px-4 py-2"><Badge variant={w.lag > 10 ? "destructive" : "outline"} className="text-xs">{w.lag} blocks</Badge></td>
                       <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(w.last_updated).toLocaleTimeString()}</td>
                     </tr>
                   ))}

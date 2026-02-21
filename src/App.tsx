@@ -2,10 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -45,41 +47,40 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/pay/:chargeId" element={<CheckoutPage />} />
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/pay/:chargeId" element={<CheckoutPage />} />
 
-            {/* Documentation (public) */}
-            <Route path="/docs/architecture" element={<ArchitectureDocs />} />
-            <Route path="/docs/security" element={<SecurityDocs />} />
-            <Route path="/docs/schema" element={<SchemaDocs />} />
-            <Route path="/docs/api" element={<ApiDocs />} />
+              <Route path="/docs/architecture" element={<ArchitectureDocs />} />
+              <Route path="/docs/security" element={<SecurityDocs />} />
+              <Route path="/docs/schema" element={<SchemaDocs />} />
+              <Route path="/docs/api" element={<ApiDocs />} />
 
-            {/* Merchant Dashboard */}
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route index element={<DashboardHome />} />
-              <Route path="charges" element={<ChargesList />} />
-              <Route path="charges/new" element={<CreateCharge />} />
-              <Route path="charges/:id" element={<ChargeDetail />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="settings/settlement" element={<SettlementSettings />} />
-              <Route path="settings/api-keys" element={<ApiKeysSettings />} />
-              <Route path="settings/webhooks" element={<WebhookSettings />} />
-              <Route path="settings/addresses" element={<AddressPool />} />
-            </Route>
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                <Route index element={<DashboardHome />} />
+                <Route path="charges" element={<ChargesList />} />
+                <Route path="charges/new" element={<CreateCharge />} />
+                <Route path="charges/:id" element={<ChargeDetail />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="settings/settlement" element={<SettlementSettings />} />
+                <Route path="settings/api-keys" element={<ApiKeysSettings />} />
+                <Route path="settings/webhooks" element={<WebhookSettings />} />
+                <Route path="settings/addresses" element={<AddressPool />} />
+              </Route>
 
-            {/* Admin Dashboard */}
-            <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
-              <Route index element={<AdminHome />} />
-              <Route path="merchants" element={<MerchantManagement />} />
-              <Route path="chains" element={<ChainConfig />} />
-              <Route path="monitoring" element={<SystemMonitoring />} />
-              <Route path="audit-log" element={<AuditLog />} />
-            </Route>
+              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
+                <Route index element={<AdminHome />} />
+                <Route path="merchants" element={<MerchantManagement />} />
+                <Route path="chains" element={<ChainConfig />} />
+                <Route path="monitoring" element={<SystemMonitoring />} />
+                <Route path="audit-log" element={<AuditLog />} />
+              </Route>
 
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ErrorBoundary>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

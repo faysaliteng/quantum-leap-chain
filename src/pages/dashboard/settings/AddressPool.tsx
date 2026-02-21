@@ -3,8 +3,10 @@ import { addressPool } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 export default function AddressPool() {
+  usePageTitle("Address Pool");
   const { data: stats } = useQuery({ queryKey: ["address-pool-stats"], queryFn: addressPool.stats });
 
   return (
