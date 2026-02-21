@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DocsNav } from "@/components/DocsNav";
 
 const threats = [
   { category: "Spoofing", threat: "Attacker impersonates merchant via stolen API key", severity: "High", mitigation: "Hashed API keys, scoped permissions, key rotation, rate limiting, IP allowlists" },
@@ -29,47 +30,50 @@ const checklist = [
 
 export default function SecurityDocs() {
   return (
-    <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
-      <h1 className="text-2xl font-bold">Security & Threat Model</h1>
+    <div className="min-h-screen bg-background">
+      <DocsNav />
+      <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
+        <h1 className="text-2xl font-display font-bold">Security & Threat Model</h1>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">STRIDE Threat Model</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b text-left text-xs text-muted-foreground uppercase"><th className="px-4 py-2">Category</th><th className="px-4 py-2">Threat</th><th className="px-4 py-2">Severity</th><th className="px-4 py-2">Mitigation</th></tr></thead>
-            <tbody>{threats.map((t, i) => (
-              <tr key={i} className="border-b last:border-0 align-top">
-                <td className="px-4 py-2 font-medium whitespace-nowrap">{t.category}</td>
-                <td className="px-4 py-2 text-muted-foreground">{t.threat}</td>
-                <td className="px-4 py-2"><Badge variant={t.severity === "Critical" ? "destructive" : "outline"} className="text-xs">{t.severity}</Badge></td>
-                <td className="px-4 py-2 text-xs">{t.mitigation}</td>
-              </tr>
-            ))}</tbody>
-          </table>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm">STRIDE Threat Model</CardTitle></CardHeader>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b text-left text-xs text-muted-foreground uppercase"><th className="px-4 py-2">Category</th><th className="px-4 py-2">Threat</th><th className="px-4 py-2">Severity</th><th className="px-4 py-2">Mitigation</th></tr></thead>
+              <tbody>{threats.map((t, i) => (
+                <tr key={i} className="border-b last:border-0 align-top">
+                  <td className="px-4 py-2 font-medium whitespace-nowrap">{t.category}</td>
+                  <td className="px-4 py-2 text-muted-foreground">{t.threat}</td>
+                  <td className="px-4 py-2"><Badge variant={t.severity === "Critical" ? "destructive" : "outline"} className="text-xs">{t.severity}</Badge></td>
+                  <td className="px-4 py-2 text-xs">{t.mitigation}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Key Management Model</CardTitle></CardHeader>
-        <CardContent className="text-sm space-y-3">
-          <p><strong>Server stores:</strong> XPUB (extended public key) only. Derives unique deposit addresses per charge via BIP-32/BIP-44 derivation paths.</p>
-          <p><strong>Signer service:</strong> Holds private keys (or interfaces with HSM/KMS). Runs in isolated Docker network. Only the worker process can communicate with it over an internal gRPC/REST API. No external network access.</p>
-          <p><strong>Cold wallet:</strong> For treasury/large sweeps: system generates unsigned transactions (PSBT for BTC, JSON for EVM). Admin exports, signs offline, imports signed tx. No private key ever touches the server.</p>
-          <p><strong>Hot wallet:</strong> Optional, strictly limited. Auto-sweeps to cold storage when balance exceeds configurable threshold. Used only for gas/fee payments and small automated sweeps.</p>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Key Management Model</CardTitle></CardHeader>
+          <CardContent className="text-sm space-y-3">
+            <p><strong>Server stores:</strong> XPUB (extended public key) only. Derives unique deposit addresses per charge via BIP-32/BIP-44 derivation paths.</p>
+            <p><strong>Signer service:</strong> Holds private keys (or interfaces with HSM/KMS). Runs in isolated Docker network. Only the worker process can communicate with it over an internal gRPC/REST API. No external network access.</p>
+            <p><strong>Cold wallet:</strong> For treasury/large sweeps: system generates unsigned transactions (PSBT for BTC, JSON for EVM). Admin exports, signs offline, imports signed tx. No private key ever touches the server.</p>
+            <p><strong>Hot wallet:</strong> Optional, strictly limited. Auto-sweeps to cold storage when balance exceeds configurable threshold. Used only for gas/fee payments and small automated sweeps.</p>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Hardening Checklist</CardTitle></CardHeader>
-        <CardContent>
-          <ul className="space-y-2">{checklist.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm">
-              <span className="text-success mt-0.5">✓</span>
-              <span>{item}</span>
-            </li>
-          ))}</ul>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Hardening Checklist</CardTitle></CardHeader>
+          <CardContent>
+            <ul className="space-y-2">{checklist.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm">
+                <span className="text-success mt-0.5">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}</ul>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

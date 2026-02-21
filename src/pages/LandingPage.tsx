@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { CryptoPriceTicker } from "@/components/CryptoPriceTicker";
 import {
   Shield, Zap, Globe, Key, Webhook, BarChart3, ArrowRight,
-  Lock, Server, Eye, Layers, Bitcoin, Sparkles,
+  Lock, Server, Eye, Layers, Bitcoin, Sparkles, Menu, X,
 } from "lucide-react";
 
 const features = [
@@ -32,13 +33,17 @@ const chains = [
 ];
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
       <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container flex h-16 items-center justify-between">
           <CryptonpayLogo size="md" />
-          <nav className="flex items-center gap-1">
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild><Link to="/docs/architecture">Docs</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/security">Security</Link></Button>
@@ -47,7 +52,40 @@ export default function LandingPage() {
               <Link to="/login">Sign in <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
             </Button>
           </nav>
+
+          {/* Mobile nav toggle */}
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-sm">
+            <nav className="container flex flex-col gap-1 py-4">
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/docs/architecture">Documentation</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/docs/api">API Reference</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/docs/security">Security</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/docs/schema">Database Schema</Link>
+              </Button>
+              <div className="border-t border-border/50 pt-2 mt-2">
+                <Button size="sm" className="w-full bg-gradient-gold text-primary-foreground font-semibold" asChild onClick={() => setMobileMenuOpen(false)}>
+                  <Link to="/login">Sign in <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+                </Button>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero */}
@@ -62,7 +100,7 @@ export default function LandingPage() {
               Self-hosted · Non-custodial · Multi-chain
             </Badge>
           </div>
-          <h1 className="text-5xl font-display font-bold tracking-tight sm:text-6xl lg:text-7xl leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl font-display font-bold tracking-tight lg:text-7xl leading-[1.1]">
             The Future of<br />
             <span className="text-gradient-gold">Crypto Payments</span>
           </h1>
@@ -70,7 +108,7 @@ export default function LandingPage() {
             Enterprise-grade payment infrastructure you deploy on your own servers.
             BTC, ETH, stablecoins — with automatic on-chain verification, webhooks, and instant settlement.
           </p>
-          <div className="mt-10 flex justify-center gap-4">
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" className="bg-gradient-gold text-primary-foreground font-semibold h-12 px-8 text-base glow-gold" asChild>
               <Link to="/login">Open Dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
@@ -133,7 +171,7 @@ export default function LandingPage() {
             {["NEW", "PENDING", "CONFIRMED", "PAID"].map((s, i) => (
               <div key={s} className="flex items-center gap-3">
                 <Badge variant="outline" className="font-mono px-4 py-1.5 border-primary/30 bg-primary/5">{s}</Badge>
-                {i < 3 && <ArrowRight className="h-4 w-4 text-primary/50" />}
+                {i < 3 && <ArrowRight className="h-4 w-4 text-primary/50 hidden sm:block" />}
               </div>
             ))}
           </div>
@@ -177,6 +215,12 @@ export default function LandingPage() {
           <p className="text-xs text-muted-foreground text-center">
             Deploy on your own infrastructure. No third-party dependencies. Built for the next generation.
           </p>
+          <div className="flex gap-4 text-xs text-muted-foreground">
+            <Link to="/docs/architecture" className="hover:text-foreground transition-colors">Docs</Link>
+            <Link to="/docs/api" className="hover:text-foreground transition-colors">API</Link>
+            <Link to="/docs/security" className="hover:text-foreground transition-colors">Security</Link>
+            <Link to="/login" className="hover:text-foreground transition-colors">Dashboard</Link>
+          </div>
         </div>
       </footer>
     </div>
