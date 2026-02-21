@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CryptonpayLogo } from "@/components/CryptonpayLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CryptoPriceTicker } from "@/components/CryptoPriceTicker";
 import {
   Shield, Zap, Globe, Key, Webhook, BarChart3, ArrowRight,
   Lock, Server, Eye, Layers, Bitcoin, Sparkles,
@@ -80,8 +81,15 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Live Crypto Prices */}
+      <section className="border-y border-border/50 bg-card/30">
+        <div className="container py-16">
+          <CryptoPriceTicker />
+        </div>
+      </section>
+
       {/* Chains */}
-      <section className="border-y border-border/50 bg-card/50">
+      <section className="bg-card/50">
         <div className="container py-10">
           <p className="text-center text-xs text-muted-foreground uppercase tracking-[0.2em] mb-6 font-medium">Supported Chains & Assets</p>
           <div className="flex flex-wrap justify-center gap-3">
