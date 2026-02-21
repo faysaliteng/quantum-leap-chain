@@ -10,6 +10,7 @@ import {
   Shield, Zap, Globe, Key, Webhook, BarChart3, ArrowRight,
   Lock, Server, Eye, Layers, Bitcoin, Sparkles, Menu, X,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
   { icon: Shield, title: "Non-Custodial by Default", desc: "XPUB-only on server. Private keys never touch the API. Cold wallet signing supported." },
@@ -31,6 +32,20 @@ const chains = [
   { name: "USDC", symbol: "USDC" },
   { name: "USDT", symbol: "USDT" },
 ];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" as const } }),
+};
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 24, scale: 0.96 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: "easeOut" as const } },
+};
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -93,77 +108,135 @@ export default function LandingPage() {
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
         </div>
-        <div className="relative">
-          <div className="flex justify-center mb-6">
+        <motion.div
+          className="relative"
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+        >
+          <motion.div className="flex justify-center mb-6" variants={fadeUp} custom={0}>
             <Badge variant="outline" className="px-4 py-1.5 text-xs font-medium border-primary/30 bg-primary/5">
               <Sparkles className="h-3 w-3 mr-1.5 text-primary" />
               Self-hosted · Non-custodial · Multi-chain
             </Badge>
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-display font-bold tracking-tight lg:text-7xl leading-[1.1]">
+          </motion.div>
+          <motion.h1
+            className="text-4xl sm:text-5xl font-display font-bold tracking-tight lg:text-7xl leading-[1.1]"
+            variants={fadeUp}
+            custom={1}
+          >
             The Future of<br />
             <span className="text-gradient-gold">Crypto Payments</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+          </motion.h1>
+          <motion.p
+            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed"
+            variants={fadeUp}
+            custom={2}
+          >
             Enterprise-grade payment infrastructure you deploy on your own servers.
             BTC, ETH, stablecoins — with automatic on-chain verification, webhooks, and instant settlement.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+          </motion.p>
+          <motion.div className="mt-10 flex flex-col sm:flex-row justify-center gap-4" variants={fadeUp} custom={3}>
             <Button size="lg" className="bg-gradient-gold text-primary-foreground font-semibold h-12 px-8 text-base glow-gold" asChild>
               <Link to="/login">Open Dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border/50" asChild>
               <Link to="/docs/architecture">View Architecture</Link>
             </Button>
-          </div>
-        </div>
+          </motion.div>
+
+          {/* Floating Bitcoin icon */}
+          <motion.div
+            className="absolute -top-4 right-[10%] hidden lg:block"
+            animate={{ y: [0, -14, 0], rotate: [0, 6, -6, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="h-16 w-16 rounded-2xl bg-gradient-gold glow-gold flex items-center justify-center opacity-20">
+              <Bitcoin className="h-9 w-9 text-primary-foreground" />
+            </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Live Crypto Prices */}
-      <section className="border-y border-border/50 bg-card/30">
+      <motion.section
+        className="border-y border-border/50 bg-card/30"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+      >
         <div className="container py-16">
           <CryptoPriceTicker />
         </div>
-      </section>
+      </motion.section>
 
       {/* Chains */}
       <section className="bg-card/50">
         <div className="container py-10">
           <p className="text-center text-xs text-muted-foreground uppercase tracking-[0.2em] mb-6 font-medium">Supported Chains & Assets</p>
-          <div className="flex flex-wrap justify-center gap-3">
+          <motion.div
+            className="flex flex-wrap justify-center gap-3"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+          >
             {chains.map((c) => (
-              <Badge key={c.symbol} variant="outline" className="text-sm px-4 py-2 font-mono font-medium border-border/50 bg-background/50">
-                {c.symbol === "BTC" && <Bitcoin className="h-3.5 w-3.5 mr-1.5 text-primary" />}
-                {c.symbol}
-              </Badge>
+              <motion.div key={c.symbol} variants={cardVariant}>
+                <Badge variant="outline" className="text-sm px-4 py-2 font-mono font-medium border-border/50 bg-background/50">
+                  {c.symbol === "BTC" && <Bitcoin className="h-3.5 w-3.5 mr-1.5 text-primary" />}
+                  {c.symbol}
+                </Badge>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Features */}
       <section className="container py-20">
-        <div className="text-center mb-12">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="text-3xl font-display font-bold">Built for Security & Scale</h2>
           <p className="text-muted-foreground mt-2">Infrastructure trusted by enterprises processing millions</p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        </motion.div>
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={stagger}
+        >
           {features.map((f) => (
-            <Card key={f.title} className="border-border/50 bg-card/80 hover:border-primary/30 transition-all duration-300 hover:glow-gold">
-              <CardContent className="pt-6">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <f.icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-display font-semibold mb-1.5">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
-              </CardContent>
-            </Card>
+            <motion.div key={f.title} variants={cardVariant}>
+              <Card className="border-border/50 bg-card/80 hover:border-primary/30 transition-all duration-300 hover:glow-gold h-full">
+                <CardContent className="pt-6">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <f.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-display font-semibold mb-1.5">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* Status Flow */}
-      <section className="border-t border-border/50 bg-card/50">
+      <motion.section
+        className="border-t border-border/50 bg-card/50"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
         <div className="container py-20">
           <h2 className="text-center text-3xl font-display font-bold mb-2">Payment Lifecycle</h2>
           <p className="text-center text-muted-foreground mb-10">Coinbase Commerce-compatible charge status model</p>
@@ -181,31 +254,47 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Docs Links */}
       <section className="container py-20">
-        <h2 className="text-center text-3xl font-display font-bold mb-10">Documentation</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <motion.h2
+          className="text-center text-3xl font-display font-bold mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          Documentation
+        </motion.h2>
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
           {[
             { title: "Architecture", desc: "System diagram, data flows, network isolation", to: "/docs/architecture", icon: Layers },
             { title: "Security", desc: "STRIDE threat model, hardening checklist", to: "/docs/security", icon: Shield },
             { title: "Database Schema", desc: "18 tables, indexes, relationships", to: "/docs/schema", icon: Server },
             { title: "API Reference", desc: "REST endpoints, webhooks, auth", to: "/docs/api", icon: Eye },
           ].map((d) => (
-            <Link key={d.to} to={d.to}>
-              <Card className="h-full border-border/50 hover:border-primary/30 transition-all duration-300 group">
-                <CardContent className="pt-6">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
-                    <d.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="font-display font-semibold mb-1">{d.title}</h3>
-                  <p className="text-sm text-muted-foreground">{d.desc}</p>
-                </CardContent>
-              </Card>
-            </Link>
+            <motion.div key={d.to} variants={cardVariant}>
+              <Link to={d.to}>
+                <Card className="h-full border-border/50 hover:border-primary/30 transition-all duration-300 group">
+                  <CardContent className="pt-6">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                      <d.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-display font-semibold mb-1">{d.title}</h3>
+                    <p className="text-sm text-muted-foreground">{d.desc}</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}

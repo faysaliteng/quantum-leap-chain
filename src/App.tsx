@@ -33,6 +33,7 @@ import ArchitectureDocs from "./pages/docs/ArchitectureDocs";
 import SecurityDocs from "./pages/docs/SecurityDocs";
 import SchemaDocs from "./pages/docs/SchemaDocs";
 import ApiDocs from "./pages/docs/ApiDocs";
+import SingularityCoinDocs from "./pages/docs/SingularityCoinDocs";
 
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/docs/security" element={<SecurityDocs />} />
               <Route path="/docs/schema" element={<SchemaDocs />} />
               <Route path="/docs/api" element={<ApiDocs />} />
+              <Route path="/docs/singularitycoin" element={<SingularityCoinDocs />} />
 
               <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                 <Route index element={<DashboardHome />} />
