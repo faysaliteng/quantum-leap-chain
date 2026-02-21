@@ -719,4 +719,94 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 
 ---
 
+## 9. Systemd Service (Alternative to Docker)
+
+If you prefer running directly on the VM without Docker:
+
+### Create the systemd unit file
+
+```bash
+sudo cat > /etc/systemd/system/cryptonpay-api.service << 'EOF'
+[Unit]
+Description=Cryptonpay API Server
+After=network.target postgresql.service redis.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=cryptonpay
+Group=cryptonpay
+WorkingDirectory=/home/cryptonpay/cryptonpay/backend
+Environment=NODE_ENV=production
+EnvironmentFile=/home/cryptonpay/cryptonpay/.env
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cryptonpay-api
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/cryptonpay/cryptonpay/backend/logs
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### Create the worker service
+
+```bash
+sudo cat > /etc/systemd/system/cryptonpay-worker.service << 'EOF'
+[Unit]
+Description=Cryptonpay Background Worker
+After=network.target postgresql.service redis.service cryptonpay-api.service
+Requires=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=cryptonpay
+Group=cryptonpay
+WorkingDirectory=/home/cryptonpay/cryptonpay/backend
+Environment=NODE_ENV=production
+EnvironmentFile=/home/cryptonpay/cryptonpay/.env
+ExecStart=/usr/bin/node dist/worker.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cryptonpay-worker
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+### Enable and start
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable cryptonpay-api cryptonpay-worker
+sudo systemctl start cryptonpay-api cryptonpay-worker
+
+# Check status
+sudo systemctl status cryptonpay-api
+sudo systemctl status cryptonpay-worker
+
+# View logs
+journalctl -u cryptonpay-api -f
+journalctl -u cryptonpay-worker -f
+```
+
+---
+
 *Last updated: 2026-02-21 · Cryptonpay v1.0*

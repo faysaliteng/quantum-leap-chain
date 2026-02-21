@@ -93,6 +93,9 @@ export default function LandingPage() {
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
                 <Link to="/docs/schema">Database Schema</Link>
               </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/docs/singularitycoin">SingularityCoin</Link>
+              </Button>
               <div className="border-t border-border/50 pt-2 mt-2">
                 <Button size="sm" className="w-full bg-gradient-gold text-primary-foreground font-semibold" asChild onClick={() => setMobileMenuOpen(false)}>
                   <Link to="/login">Sign in <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
