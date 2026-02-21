@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { checkout } from "@/lib/api-client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
+import { CryptonpayLogo } from "@/components/CryptonpayLogo";
 import { QRCodeSVG } from "qrcode.react";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,34 +36,38 @@ export default function CheckoutPage() {
     return () => clearInterval(interval);
   }, [charge]);
 
-  if (!charge) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (!charge) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   const isPaid = charge.status === "PAID" || charge.status === "CONFIRMED";
   const isExpired = charge.status === "EXPIRED";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border-border/50">
         <CardContent className="pt-6 space-y-6">
+          <div className="flex justify-center">
+            <CryptonpayLogo size="sm" />
+          </div>
+
           <div className="text-center">
-            <h1 className="text-lg font-semibold">{charge.name}</h1>
+            <h1 className="text-lg font-display font-semibold">{charge.name}</h1>
             {charge.description && <p className="text-sm text-muted-foreground mt-1">{charge.description}</p>}
-            {charge.local_price && <p className="text-3xl font-bold mt-2">{charge.local_price.amount} {charge.local_price.currency}</p>}
-            <div className="mt-2"><StatusBadge status={charge.status} /></div>
+            {charge.local_price && <p className="text-3xl font-display font-bold mt-3 text-gradient-gold">{charge.local_price.amount} {charge.local_price.currency}</p>}
+            <div className="mt-3"><StatusBadge status={charge.status} /></div>
           </div>
 
           {isPaid && (
             <div className="text-center space-y-2 py-4">
-              <CheckCircle className="h-12 w-12 mx-auto text-success" />
-              <p className="text-lg font-semibold text-success">Payment Complete</p>
-              {charge.redirect_url && <Button asChild className="mt-2"><a href={charge.redirect_url}>Continue</a></Button>}
+              <CheckCircle className="h-14 w-14 mx-auto text-success" />
+              <p className="text-lg font-display font-semibold text-success">Payment Complete</p>
+              {charge.redirect_url && <Button asChild className="mt-2 bg-gradient-gold text-primary-foreground"><a href={charge.redirect_url}>Continue</a></Button>}
             </div>
           )}
 
           {isExpired && (
             <div className="text-center space-y-2 py-4">
-              <AlertTriangle className="h-12 w-12 mx-auto text-warning" />
-              <p className="text-lg font-medium">This charge has expired</p>
+              <AlertTriangle className="h-14 w-14 mx-auto text-warning" />
+              <p className="text-lg font-display font-medium">This charge has expired</p>
             </div>
           )}
 
@@ -70,13 +75,13 @@ export default function CheckoutPage() {
             <>
               <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
-                <span>Expires in {timeLeft}</span>
+                <span>Expires in <span className="font-mono font-medium text-foreground">{timeLeft}</span></span>
               </div>
 
               {addressEntries.length > 1 && (
                 <div className="flex gap-1 justify-center flex-wrap">
                   {addressEntries.map(([key, addr], i) => (
-                    <Button key={key} variant={selected === i ? "default" : "outline"} size="sm" className="text-xs h-7" onClick={() => setSelected(i)}>
+                    <Button key={key} variant={selected === i ? "default" : "outline"} size="sm" className={`text-xs h-7 ${selected === i ? "bg-gradient-gold text-primary-foreground" : ""}`} onClick={() => setSelected(i)}>
                       {addr.asset} ({addr.chain})
                     </Button>
                   ))}
@@ -86,7 +91,7 @@ export default function CheckoutPage() {
               {selectedAddr && (
                 <div className="space-y-4">
                   <div className="flex justify-center">
-                    <div className="bg-foreground p-3 rounded-lg">
+                    <div className="bg-foreground p-3 rounded-xl">
                       <QRCodeSVG value={selectedAddr.address} size={180} bgColor="transparent" fgColor="hsl(var(--background))" />
                     </div>
                   </div>
@@ -97,7 +102,7 @@ export default function CheckoutPage() {
                       <p className="text-xl font-mono font-bold">{selectedAddr.amount} {selectedAddr.asset}</p>
                     </div>
 
-                    <div className="flex items-center gap-1 bg-muted rounded-md px-3 py-2">
+                    <div className="flex items-center gap-1 bg-muted rounded-lg px-3 py-2">
                       <span className="text-xs font-mono truncate flex-1">{selectedAddr.address}</span>
                       <CopyButton value={selectedAddr.address} />
                     </div>

@@ -2,9 +2,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CryptonpayLogo } from "@/components/CryptonpayLogo";
 import {
   Shield, Zap, Globe, Key, Webhook, BarChart3, ArrowRight,
-  Bitcoin, CircleDollarSign, Layers, Lock, Server, Eye,
+  Lock, Server, Eye, Layers, Bitcoin, Sparkles,
 } from "lucide-react";
 
 const features = [
@@ -32,60 +33,81 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <header className="border-b">
-        <div className="container flex h-14 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">SP</div>
-            <span className="font-semibold">SingularityPay</span>
-          </div>
-          <nav className="flex items-center gap-2">
+      <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+        <div className="container flex h-16 items-center justify-between">
+          <CryptonpayLogo size="md" />
+          <nav className="flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild><Link to="/docs/architecture">Docs</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/security">Security</Link></Button>
-            <Button size="sm" asChild><Link to="/login">Sign in <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link></Button>
+            <Button size="sm" className="bg-gradient-gold text-primary-foreground font-semibold ml-2" asChild>
+              <Link to="/login">Sign in <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+            </Button>
           </nav>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="container py-20 text-center">
-        <Badge variant="outline" className="mb-4 text-xs">Self-hosted · Non-custodial · Multi-chain</Badge>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          Accept Crypto Payments<br />
-          <span className="text-primary">Without Middlemen</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-          Enterprise-grade payment gateway you deploy on your own infrastructure. 
-          BTC, ETH, stablecoins — with automatic on-chain verification, webhooks, and settlement.
-        </p>
-        <div className="mt-8 flex justify-center gap-3">
-          <Button size="lg" asChild><Link to="/login">Open Dashboard <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
-          <Button size="lg" variant="outline" asChild><Link to="/docs/architecture">View Architecture</Link></Button>
+      <section className="container py-24 md:py-32 text-center relative">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
+        </div>
+        <div className="relative">
+          <div className="flex justify-center mb-6">
+            <Badge variant="outline" className="px-4 py-1.5 text-xs font-medium border-primary/30 bg-primary/5">
+              <Sparkles className="h-3 w-3 mr-1.5 text-primary" />
+              Self-hosted · Non-custodial · Multi-chain
+            </Badge>
+          </div>
+          <h1 className="text-5xl font-display font-bold tracking-tight sm:text-6xl lg:text-7xl leading-[1.1]">
+            The Future of<br />
+            <span className="text-gradient-gold">Crypto Payments</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+            Enterprise-grade payment infrastructure you deploy on your own servers.
+            BTC, ETH, stablecoins — with automatic on-chain verification, webhooks, and instant settlement.
+          </p>
+          <div className="mt-10 flex justify-center gap-4">
+            <Button size="lg" className="bg-gradient-gold text-primary-foreground font-semibold h-12 px-8 text-base glow-gold" asChild>
+              <Link to="/login">Open Dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border/50" asChild>
+              <Link to="/docs/architecture">View Architecture</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* Chains */}
-      <section className="border-y bg-muted/30">
-        <div className="container py-8">
-          <p className="text-center text-xs text-muted-foreground uppercase tracking-wider mb-4">Supported Chains & Assets</p>
+      <section className="border-y border-border/50 bg-card/50">
+        <div className="container py-10">
+          <p className="text-center text-xs text-muted-foreground uppercase tracking-[0.2em] mb-6 font-medium">Supported Chains & Assets</p>
           <div className="flex flex-wrap justify-center gap-3">
             {chains.map((c) => (
-              <Badge key={c.symbol} variant="outline" className="text-sm px-3 py-1.5 font-mono">{c.symbol}</Badge>
+              <Badge key={c.symbol} variant="outline" className="text-sm px-4 py-2 font-mono font-medium border-border/50 bg-background/50">
+                {c.symbol === "BTC" && <Bitcoin className="h-3.5 w-3.5 mr-1.5 text-primary" />}
+                {c.symbol}
+              </Badge>
             ))}
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="container py-16">
-        <h2 className="text-center text-2xl font-bold mb-8">Built for Security & Simplicity</h2>
+      <section className="container py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-display font-bold">Built for Security & Scale</h2>
+          <p className="text-muted-foreground mt-2">Infrastructure trusted by enterprises processing millions</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
-            <Card key={f.title}>
+            <Card key={f.title} className="border-border/50 bg-card/80 hover:border-primary/30 transition-all duration-300 hover:glow-gold">
               <CardContent className="pt-6">
-                <f.icon className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-1">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <f.icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="font-display font-semibold mb-1.5">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </CardContent>
             </Card>
           ))}
@@ -93,29 +115,29 @@ export default function LandingPage() {
       </section>
 
       {/* Status Flow */}
-      <section className="border-t bg-muted/30">
-        <div className="container py-16">
-          <h2 className="text-center text-2xl font-bold mb-2">Payment Lifecycle</h2>
-          <p className="text-center text-muted-foreground mb-8">Coinbase Commerce-compatible charge status model</p>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+      <section className="border-t border-border/50 bg-card/50">
+        <div className="container py-20">
+          <h2 className="text-center text-3xl font-display font-bold mb-2">Payment Lifecycle</h2>
+          <p className="text-center text-muted-foreground mb-10">Coinbase Commerce-compatible charge status model</p>
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
             {["NEW", "PENDING", "CONFIRMED", "PAID"].map((s, i) => (
-              <div key={s} className="flex items-center gap-2">
-                <Badge variant="outline" className="font-mono">{s}</Badge>
-                {i < 3 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />}
+              <div key={s} className="flex items-center gap-3">
+                <Badge variant="outline" className="font-mono px-4 py-1.5 border-primary/30 bg-primary/5">{s}</Badge>
+                {i < 3 && <ArrowRight className="h-4 w-4 text-primary/50" />}
               </div>
             ))}
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-sm mt-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm mt-4">
             {["UNDERPAID", "OVERPAID", "EXPIRED", "CANCELED"].map((s) => (
-              <Badge key={s} variant="outline" className="font-mono text-muted-foreground">{s}</Badge>
+              <Badge key={s} variant="outline" className="font-mono text-muted-foreground border-border/50">{s}</Badge>
             ))}
           </div>
         </div>
       </section>
 
       {/* Docs Links */}
-      <section className="container py-16">
-        <h2 className="text-center text-2xl font-bold mb-8">Documentation</h2>
+      <section className="container py-20">
+        <h2 className="text-center text-3xl font-display font-bold mb-10">Documentation</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { title: "Architecture", desc: "System diagram, data flows, network isolation", to: "/docs/architecture", icon: Layers },
@@ -124,10 +146,12 @@ export default function LandingPage() {
             { title: "API Reference", desc: "REST endpoints, webhooks, auth", to: "/docs/api", icon: Eye },
           ].map((d) => (
             <Link key={d.to} to={d.to}>
-              <Card className="h-full hover:border-primary/50 transition-colors">
+              <Card className="h-full border-border/50 hover:border-primary/30 transition-all duration-300 group">
                 <CardContent className="pt-6">
-                  <d.icon className="h-6 w-6 text-primary mb-2" />
-                  <h3 className="font-semibold mb-1">{d.title}</h3>
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                    <d.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-display font-semibold mb-1">{d.title}</h3>
                   <p className="text-sm text-muted-foreground">{d.desc}</p>
                 </CardContent>
               </Card>
@@ -137,10 +161,12 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container text-center text-xs text-muted-foreground">
-          <p>SingularityPay — Self-hosted crypto payment gateway</p>
-          <p className="mt-1">Deploy on your own infrastructure. No third-party dependencies.</p>
+      <footer className="border-t border-border/50 py-10">
+        <div className="container flex flex-col items-center gap-4">
+          <CryptonpayLogo size="sm" />
+          <p className="text-xs text-muted-foreground text-center">
+            Deploy on your own infrastructure. No third-party dependencies. Built for the next generation.
+          </p>
         </div>
       </footer>
     </div>

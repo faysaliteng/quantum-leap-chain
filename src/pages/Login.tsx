@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Lock } from "lucide-react";
+import { CryptonpayLogo } from "@/components/CryptonpayLogo";
 
 export default function Login() {
   const { login } = useAuth();
@@ -30,14 +30,17 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-background relative">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
+      </div>
+      <Card className="w-full max-w-sm border-border/50 relative">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Lock className="h-6 w-6" />
+          <div className="flex justify-center mb-3">
+            <CryptonpayLogo size="lg" showText={false} />
           </div>
-          <CardTitle className="text-xl">SingularityPay</CardTitle>
-          <CardDescription>Sign in to your merchant account</CardDescription>
+          <CardTitle className="text-xl font-display">Welcome back</CardTitle>
+          <CardDescription>Sign in to your Cryptonpay account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -50,7 +53,7 @@ export default function Login() {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-gradient-gold text-primary-foreground font-semibold" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
             </Button>
           </form>
