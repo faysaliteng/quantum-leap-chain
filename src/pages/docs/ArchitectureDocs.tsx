@@ -1,14 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DocsNav } from "@/components/DocsNav";
 
 export default function ArchitectureDocs() {
   return (
-    <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
-      <h1 className="text-2xl font-bold">Architecture</h1>
+    <div className="min-h-screen bg-background">
+      <DocsNav />
+      <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
+        <h1 className="text-2xl font-display font-bold">Architecture</h1>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">System Architecture</CardTitle></CardHeader>
-        <CardContent>
-          <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
+        <Card>
+          <CardHeader><CardTitle className="text-sm">System Architecture</CardTitle></CardHeader>
+          <CardContent>
+            <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
 ┌─────────────┐     ┌──────────────────────────────────────────────┐
 │   Browser   │────▶│              Nginx / Reverse Proxy            │
 │  (Merchant, │     │  :443 TLS termination                        │
@@ -16,12 +19,13 @@ export default function ArchitectureDocs() {
 └─────────────┘           │            │
                     ┌─────▼─────┐ ┌────▼──────┐
                     │ Frontend  │ │    API     │   Stateless, JWT auth
-                    │ (Next.js) │ │ (Go/Node)  │──┬── Postgres (charges,
-                    │  :3000    │ │   :8080    │  │    merchants, keys…)
-                    └───────────┘ └────┬───────┘  │
-                                       │          └── Redis (sessions,
-                                       │               rate limits,
-                                 ┌─────▼──────┐        webhook queue)
+                    │ (React +  │ │ (REST +   │──┬── PostgreSQL (charges,
+                    │  Vite)    │ │  Workers) │  │    merchants, keys…)
+                    │  :3000    │ │   :8080   │  │
+                    └───────────┘ └────┬──────┘  └── Redis (sessions,
+                                       │              rate limits,
+                                       │              webhook queue)
+                                 ┌─────▼──────┐
                                  │   Worker    │
                                  │  (watchers, │──── RPC endpoints
                                  │  webhooks,  │     (BTC, EVM chains)
@@ -35,13 +39,27 @@ export default function ArchitectureDocs() {
                     │  or local) │
                     └────────────┘
           `}</pre>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Create Charge Flow</CardTitle></CardHeader>
-        <CardContent>
-          <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Deployment Options</CardTitle></CardHeader>
+          <CardContent className="text-sm space-y-4">
+            <div>
+              <h3 className="font-medium mb-1">Option A: Cloudflare Pages + Workers</h3>
+              <p className="text-muted-foreground">React SPA deployed to Cloudflare Pages (global CDN). API logic runs on Cloudflare Workers with D1/KV for edge state. Ideal for low-ops teams wanting global performance.</p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-1">Option B: VM + Docker Compose</h3>
+              <p className="text-muted-foreground">Full self-hosted stack on a single Linux VM. Nginx reverse proxy with auto-TLS (Certbot), PostgreSQL, Redis, API, Worker, and isolated Signer — all orchestrated via Docker Compose. Complete control, no external dependencies.</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Create Charge Flow</CardTitle></CardHeader>
+          <CardContent>
+            <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
 Merchant ──POST /v1/charges──▶ API
   │                              │
   │  ◀── 201 { charge_id,       │── Insert charge (status=NEW)
@@ -65,31 +83,61 @@ Merchant ──POST /v1/charges──▶ API
   │                           │── Update charge (status=PAID)
   │                           │── Emit charge.paid webhook
           `}</pre>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Docker Network Isolation</CardTitle></CardHeader>
-        <CardContent>
-          <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Docker Network Isolation</CardTitle></CardHeader>
+          <CardContent>
+            <pre className="text-xs font-mono whitespace-pre overflow-x-auto text-muted-foreground">{`
 ┌── frontend_net ──────────┐
-│  frontend ◀──▶ api       │
+│  nginx ◀──▶ api          │   Browser-facing only
 └──────────────────────────┘
 
 ┌── backend_net ───────────┐
-│  api ◀──▶ postgres       │
+│  api ◀──▶ postgres       │   No internet access
 │  api ◀──▶ redis          │
 │  worker ◀──▶ postgres    │
 │  worker ◀──▶ redis       │
 └──────────────────────────┘
 
-┌── signer_net ────────────┐   ← Isolated
+┌── signer_net ────────────┐   ← Maximum isolation
 │  worker ◀──▶ signer      │   Only worker can reach signer
-│  (no external access)    │
+│  (no external access)    │   Private keys never leave this network
 └──────────────────────────┘
           `}</pre>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Tech Stack</CardTitle></CardHeader>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b text-left text-xs text-muted-foreground uppercase"><th className="px-4 py-2">Layer</th><th className="px-4 py-2">Technology</th></tr></thead>
+              <tbody>
+                {[
+                  ["Frontend", "React 18 + TypeScript + Vite + Tailwind CSS"],
+                  ["UI Components", "shadcn/ui + Radix Primitives"],
+                  ["State Management", "TanStack React Query"],
+                  ["Charts", "Recharts (sparklines, area charts)"],
+                  ["API Client", "Axios (typed, interceptors)"],
+                  ["Validation", "Zod (client-side form validation)"],
+                  ["QR Codes", "qrcode.react (checkout page)"],
+                  ["Reverse Proxy", "Nginx (TLS termination, rate limiting)"],
+                  ["Database", "PostgreSQL 15+ (18 tables, indexed)"],
+                  ["Cache / Queue", "Redis (sessions, rate limits, webhook queue)"],
+                  ["Deployment", "Docker Compose / Cloudflare Pages"],
+                ].map(([layer, tech]) => (
+                  <tr key={layer} className="border-b last:border-0">
+                    <td className="px-4 py-2 font-medium">{layer}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{tech}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
