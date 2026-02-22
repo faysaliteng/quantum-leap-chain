@@ -9,6 +9,7 @@ import { CryptoPriceTicker } from "@/components/CryptoPriceTicker";
 import {
   Shield, Zap, Globe, Key, Webhook, BarChart3, ArrowRight,
   Lock, Server, Eye, Layers, Bitcoin, Sparkles, Menu, X,
+  CheckCircle, Clock, Send, CreditCard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -258,6 +259,72 @@ export default function LandingPage() {
           </div>
         </div>
       </motion.section>
+
+      {/* How It Works */}
+      <section className="container py-20">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl font-display font-bold">How It Works</h2>
+          <p className="text-muted-foreground mt-2">Four steps from integration to settlement</p>
+        </motion.div>
+        <motion.div
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={stagger}
+        >
+          {[
+            { step: "1", icon: CreditCard, title: "Create Charge", desc: "Call the API or use the dashboard to create a payment charge with amount and currency." },
+            { step: "2", icon: Send, title: "Share Pay Link", desc: "Send the hosted checkout URL to your customer. QR code and copy-to-clipboard included." },
+            { step: "3", icon: Clock, title: "Auto-Verify", desc: "Chain watchers detect the payment on-chain and confirm with configurable thresholds." },
+            { step: "4", icon: CheckCircle, title: "Get Notified", desc: "Receive an HMAC-signed webhook. Funds settle to your wallet automatically." },
+          ].map((s) => (
+            <motion.div key={s.step} variants={cardVariant}>
+              <Card className="border-border/50 bg-card/80 h-full relative overflow-hidden">
+                <div className="absolute top-3 right-4 text-6xl font-display font-bold text-primary/5">{s.step}</div>
+                <CardContent className="pt-6 relative">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <s.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-display font-semibold mb-1.5">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* Trust Indicators */}
+      <section className="border-t border-border/50 bg-card/30">
+        <div className="container py-12">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={stagger}
+          >
+            {[
+              { value: "99.9%", label: "Uptime SLA" },
+              { value: "5+", label: "Chains Supported" },
+              { value: "<2s", label: "Detection Latency" },
+              { value: "0", label: "Custody Risk" },
+            ].map((stat) => (
+              <motion.div key={stat.label} variants={cardVariant}>
+                <p className="text-3xl font-display font-bold text-gradient-gold">{stat.value}</p>
+                <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
 
       {/* Docs Links */}
       <section className="container py-20">
