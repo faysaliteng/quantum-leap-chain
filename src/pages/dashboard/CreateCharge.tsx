@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import type { CreateChargeRequest, PricingType } from "@/lib/types";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ const chargeSchema = z.object({
 
 export default function CreateCharge() {
   usePageTitle("Create Charge");
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState<CreateChargeRequest>({
@@ -67,34 +69,34 @@ export default function CreateCharge() {
 
   return (
     <div className="max-w-2xl space-y-6" data-testid="page:dashboard-charges-new">
-      <h1 className="text-lg font-semibold">Create Charge</h1>
+      <h1 className="text-lg font-semibold">{t("createCharge.title")}</h1>
 
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div className="space-y-2">
-            <Label>Name *</Label>
+            <Label>{t("createCharge.name")} *</Label>
             <Input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Payment for Order #123" maxLength={200} />
             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("createCharge.description")}</Label>
             <Textarea value={form.description ?? ""} onChange={(e) => update("description", e.target.value)} placeholder="Optional details" rows={2} maxLength={1000} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Pricing Type</Label>
+              <Label>{t("createCharge.pricingType")}</Label>
               <Select value={form.pricing_type} onValueChange={(v: PricingType) => update("pricing_type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fixed_price">Fixed Price</SelectItem>
-                  <SelectItem value="no_price">Donation (Any Amount)</SelectItem>
+                  <SelectItem value="fixed_price">{t("createCharge.fixedPrice")}</SelectItem>
+                  <SelectItem value="no_price">{t("createCharge.donation")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Expiry (minutes)</Label>
+              <Label>{t("createCharge.expiry")}</Label>
               <Input type="number" min={5} max={1440} value={form.expires_in_minutes ?? 60} onChange={(e) => update("expires_in_minutes", parseInt(e.target.value) || 60)} />
             </div>
           </div>
@@ -102,12 +104,12 @@ export default function CreateCharge() {
           {form.pricing_type === "fixed_price" && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Amount</Label>
+                <Label>{t("createCharge.amount")}</Label>
                 <Input type="text" value={form.local_price?.amount ?? ""} onChange={(e) => update("local_price", { amount: e.target.value, currency: form.local_price?.currency ?? "USD" })} placeholder="100.00" />
                 {errors["local_price.amount"] && <p className="text-xs text-destructive">{errors["local_price.amount"]}</p>}
               </div>
               <div className="space-y-2">
-                <Label>Currency</Label>
+                <Label>{t("createCharge.currency")}</Label>
                 <Select value={form.local_price?.currency ?? "USD"} onValueChange={(v) => update("local_price", { amount: form.local_price?.amount ?? "", currency: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -122,34 +124,28 @@ export default function CreateCharge() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Redirect URL</Label>
+              <Label>{t("createCharge.redirectUrl")}</Label>
               <Input value={form.redirect_url ?? ""} onChange={(e) => update("redirect_url", e.target.value)} placeholder="https://yoursite.com/success" />
               {errors.redirect_url && <p className="text-xs text-destructive">{errors.redirect_url}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Cancel URL</Label>
+              <Label>{t("createCharge.cancelUrl")}</Label>
               <Input value={form.cancel_url ?? ""} onChange={(e) => update("cancel_url", e.target.value)} placeholder="https://yoursite.com/cancel" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Metadata (JSON)</Label>
-            <Textarea
-              rows={3}
-              placeholder='{"order_id": "abc123"}'
-              onChange={(e) => {
-                try { update("metadata", JSON.parse(e.target.value)); } catch {}
-              }}
-            />
+            <Label>{t("createCharge.metadata")}</Label>
+            <Textarea rows={3} placeholder='{"order_id": "abc123"}' onChange={(e) => { try { update("metadata", JSON.parse(e.target.value)); } catch {} }} />
           </div>
 
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSubmit} disabled={!form.name || mutation.isPending}>
-              {mutation.isPending ? "Creating…" : "Create Charge"}
+              {mutation.isPending ? t("createCharge.creating") : t("createCharge.create")}
             </Button>
-            <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+            <Button variant="outline" onClick={() => navigate(-1)}>{t("common.cancel")}</Button>
           </div>
-          {mutation.isError && <p className="text-sm text-destructive">{(mutation.error as any)?.response?.data?.message || "Failed to create charge"}</p>}
+          {mutation.isError && <p className="text-sm text-destructive">{(mutation.error as any)?.response?.data?.message || t("createCharge.failed")}</p>}
         </CardContent>
       </Card>
     </div>

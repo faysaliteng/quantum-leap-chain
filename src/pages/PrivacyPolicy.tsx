@@ -2,19 +2,21 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { useI18n } from "@/lib/i18n";
 
 export default function PrivacyPolicy() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background" data-testid="page:privacy">
-      <SEOHead title="Privacy Policy" description="Privacy Policy for the Cryptoniumpay payment gateway platform. Learn how we handle your data." />
+      <SEOHead title={t("privacy.title")} description="Privacy Policy for the Cryptoniumpay payment gateway platform. Learn how we handle your data." />
       <div className="container max-w-3xl py-16 space-y-8">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Home</Link>
+          <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("common.backToHome")}</Link>
         </Button>
 
         <div>
-          <h1 className="text-3xl font-display font-bold">Privacy Policy</h1>
-          <p className="text-muted-foreground mt-2">Last updated: February 22, 2026</p>
+          <h1 className="text-3xl font-display font-bold">{t("privacy.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("privacy.lastUpdated")}: February 22, 2026</p>
         </div>
 
         <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">

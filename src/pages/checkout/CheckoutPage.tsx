@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { useQuery } from "@tanstack/react-query";
 import { checkout } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
@@ -14,6 +15,7 @@ import type { ChainId, AssetSymbol } from "@/lib/types";
 
 export default function CheckoutPage() {
   const { chargeId } = useParams<{ chargeId: string }>();
+  const { t } = useI18n();
   const { data: charge, refetch } = useQuery({
     queryKey: ["checkout", chargeId],
     queryFn: () => checkout.getCharge(chargeId!),
@@ -47,9 +49,7 @@ export default function CheckoutPage() {
       <SEOHead title={`Pay ${charge.name}`} description="Complete your crypto payment securely." noindex />
       <Card className="w-full max-w-md border-border/50">
         <CardContent className="pt-6 space-y-6">
-          <div className="flex justify-center">
-            <CryptoniumpayLogo size="sm" />
-          </div>
+          <div className="flex justify-center"><CryptoniumpayLogo size="sm" /></div>
 
           <div className="text-center">
             <h1 className="text-lg font-display font-semibold">{charge.name}</h1>
@@ -61,15 +61,15 @@ export default function CheckoutPage() {
           {isPaid && (
             <div className="text-center space-y-2 py-4">
               <CheckCircle className="h-14 w-14 mx-auto text-success" />
-              <p className="text-lg font-display font-semibold text-success">Payment Complete</p>
-              {charge.redirect_url && <Button asChild className="mt-2 bg-gradient-gold text-primary-foreground"><a href={charge.redirect_url}>Continue</a></Button>}
+              <p className="text-lg font-display font-semibold text-success">{t("checkout.paymentComplete")}</p>
+              {charge.redirect_url && <Button asChild className="mt-2 bg-gradient-gold text-primary-foreground"><a href={charge.redirect_url}>{t("checkout.continue")}</a></Button>}
             </div>
           )}
 
           {isExpired && (
             <div className="text-center space-y-2 py-4">
               <AlertTriangle className="h-14 w-14 mx-auto text-warning" />
-              <p className="text-lg font-display font-medium">This charge has expired</p>
+              <p className="text-lg font-display font-medium">{t("checkout.expired")}</p>
             </div>
           )}
 
@@ -77,7 +77,7 @@ export default function CheckoutPage() {
             <>
               <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
-                <span>Expires in <span className="font-mono font-medium text-foreground">{timeLeft}</span></span>
+                <span>{t("checkout.expiresIn")} <span className="font-mono font-medium text-foreground">{timeLeft}</span></span>
               </div>
 
               {addressEntries.length > 1 && (
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2">
                     <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Send exactly</p>
+                      <p className="text-xs text-muted-foreground">{t("checkout.sendExactly")}</p>
                       <p className="text-xl font-mono font-bold">{selectedAddr.amount} {selectedAddr.asset}</p>
                     </div>
 
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-center gap-2 text-sm">
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
                       <span className="text-muted-foreground">
-                        {charge.status === "UNDERPAID" ? "Underpaid — send remaining amount" : "Detecting payment…"}
+                        {charge.status === "UNDERPAID" ? t("checkout.underpaid") : t("checkout.detectingPayment")}
                       </span>
                     </div>
                   )}
