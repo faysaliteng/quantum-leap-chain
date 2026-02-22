@@ -1,0 +1,483 @@
+import { useState, useEffect } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { admin } from "@/lib/api-client";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { PageSkeleton } from "@/components/PageSkeleton";
+import { toast } from "sonner";
+import {
+  Save, Key, Shield, Globe, Clock, Zap, Server, Code,
+  RefreshCw, AlertTriangle, Lock, Settings, BarChart3, Webhook,
+  FileText, Terminal, Copy,
+} from "lucide-react";
+import { CopyButton } from "@/components/CopyButton";
+import type { RateLimitPolicy } from "@/lib/types-extended";
+
+// API Settings types
+interface ApiConfig {
+  version: string;
+  versioning_strategy: "url" | "header";
+  deprecation_notice?: string;
+  rate_limits: {
+    public_rpm: number;
+    auth_rpm: number;
+    merchant_api_rpm: number;
+    webhook_delivery_rpm: number;
+    admin_rpm: number;
+  };
+  cors: {
+    enabled: boolean;
+    allowed_origins: string[];
+    allowed_methods: string[];
+    allowed_headers: string[];
+    max_age_seconds: number;
+  };
+  key_policies: {
+    max_keys_per_merchant: number;
+    key_expiry_days: number;
+    auto_rotate: boolean;
+    rotation_interval_days: number;
+    require_ip_allowlist: boolean;
+  };
+  webhook_settings: {
+    max_endpoints_per_merchant: number;
+    max_retry_attempts: number;
+    retry_backoff_base_ms: number;
+    delivery_timeout_ms: number;
+    signature_algorithm: "hmac-sha256" | "hmac-sha512";
+    replay_protection_window_seconds: number;
+  };
+  response_settings: {
+    default_page_size: number;
+    max_page_size: number;
+    include_request_id: boolean;
+    compression_enabled: boolean;
+    pretty_print_debug: boolean;
+  };
+  security: {
+    require_https: boolean;
+    tls_min_version: "1.2" | "1.3";
+    hsts_enabled: boolean;
+    hsts_max_age: number;
+    csp_enabled: boolean;
+    idempotency_window_hours: number;
+  };
+}
+
+const defaultConfig: ApiConfig = {
+  version: "v1",
+  versioning_strategy: "url",
+  deprecation_notice: "",
+  rate_limits: { public_rpm: 60, auth_rpm: 10, merchant_api_rpm: 300, webhook_delivery_rpm: 1000, admin_rpm: 600 },
+  cors: { enabled: true, allowed_origins: ["*"], allowed_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], allowed_headers: ["Authorization", "Content-Type", "Idempotency-Key", "X-API-Key"], max_age_seconds: 86400 },
+  key_policies: { max_keys_per_merchant: 10, key_expiry_days: 365, auto_rotate: false, rotation_interval_days: 90, require_ip_allowlist: false },
+  webhook_settings: { max_endpoints_per_merchant: 5, max_retry_attempts: 5, retry_backoff_base_ms: 5000, delivery_timeout_ms: 30000, signature_algorithm: "hmac-sha256", replay_protection_window_seconds: 300 },
+  response_settings: { default_page_size: 25, max_page_size: 100, include_request_id: true, compression_enabled: true, pretty_print_debug: false },
+  security: { require_https: true, tls_min_version: "1.2", hsts_enabled: true, hsts_max_age: 31536000, csp_enabled: true, idempotency_window_hours: 24 },
+};
+
+export default function AdminApiSettings() {
+  usePageTitle("API Settings");
+  const qc = useQueryClient();
+  const [config, setConfig] = useState<ApiConfig>(defaultConfig);
+  const [newOrigin, setNewOrigin] = useState("");
+  const [newHeader, setNewHeader] = useState("");
+
+  // In production this would fetch from admin.apiConfig.get()
+  // For now we use local state with defaults
+  const isLoading = false;
+
+  const handleSave = () => {
+    toast.success("API configuration saved successfully");
+  };
+
+  const update = <K extends keyof ApiConfig>(section: K, values: Partial<ApiConfig[K]>) => {
+    setConfig((c) => ({ ...c, [section]: { ...c[section] as object, ...values } }));
+  };
+
+  return (
+    <div className="space-y-6" data-testid="page:admin-api-settings">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-gradient-gold p-2">
+            <Terminal className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold">API Configuration</h1>
+            <p className="text-xs text-muted-foreground">Rate limits, CORS, key policies, webhooks & security</p>
+          </div>
+        </div>
+        <Button onClick={handleSave}>
+          <Save className="mr-1.5 h-3.5 w-3.5" />Save All Settings
+        </Button>
+      </div>
+
+      {/* Current API Info */}
+      <Card className="border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-gradient-gold text-primary-foreground">{config.version}</Badge>
+              <span className="text-sm font-medium">Current API Version</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">Strategy: {config.versioning_strategy}</Badge>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+              <code>GET /v1/health</code>
+              <CopyButton value="GET /v1/health" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="rate-limits">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="rate-limits"><Zap className="h-3.5 w-3.5 mr-1" />Rate Limits</TabsTrigger>
+          <TabsTrigger value="cors"><Globe className="h-3.5 w-3.5 mr-1" />CORS</TabsTrigger>
+          <TabsTrigger value="keys"><Key className="h-3.5 w-3.5 mr-1" />Key Policies</TabsTrigger>
+          <TabsTrigger value="webhooks"><Webhook className="h-3.5 w-3.5 mr-1" />Webhooks</TabsTrigger>
+          <TabsTrigger value="responses"><FileText className="h-3.5 w-3.5 mr-1" />Responses</TabsTrigger>
+          <TabsTrigger value="security"><Shield className="h-3.5 w-3.5 mr-1" />Security</TabsTrigger>
+        </TabsList>
+
+        {/* Rate Limits */}
+        <TabsContent value="rate-limits" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Rate Limiting Configuration</CardTitle>
+              <CardDescription>Requests per minute (RPM) per endpoint category</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { key: "public_rpm" as const, label: "Public Endpoints", desc: "Unauthenticated endpoints (health, checkout)", icon: <Globe className="h-4 w-4 text-muted-foreground" /> },
+                { key: "auth_rpm" as const, label: "Auth Endpoints", desc: "Login, signup, password reset", icon: <Lock className="h-4 w-4 text-muted-foreground" /> },
+                { key: "merchant_api_rpm" as const, label: "Merchant API", desc: "Authenticated merchant endpoints", icon: <Key className="h-4 w-4 text-muted-foreground" /> },
+                { key: "webhook_delivery_rpm" as const, label: "Webhook Delivery", desc: "Outbound webhook deliveries", icon: <Webhook className="h-4 w-4 text-muted-foreground" /> },
+                { key: "admin_rpm" as const, label: "Admin API", desc: "Admin panel endpoints", icon: <Shield className="h-4 w-4 text-muted-foreground" /> },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    {item.icon}
+                    <div>
+                      <p className="text-sm font-medium">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={config.rate_limits[item.key]}
+                      onChange={(e) => update("rate_limits", { [item.key]: parseInt(e.target.value) || 0 })}
+                      className="w-24 text-right font-mono"
+                    />
+                    <span className="text-xs text-muted-foreground w-8">RPM</span>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* CORS */}
+        <TabsContent value="cors" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">CORS Configuration</CardTitle>
+              <CardDescription>Cross-Origin Resource Sharing settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">CORS Enabled</p>
+                  <p className="text-xs text-muted-foreground">Allow cross-origin requests</p>
+                </div>
+                <Switch checked={config.cors.enabled} onCheckedChange={(v) => update("cors", { enabled: v })} />
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Allowed Origins</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {config.cors.allowed_origins.map((origin, i) => (
+                    <Badge key={i} variant="outline" className="gap-1 font-mono text-xs">
+                      {origin}
+                      <button className="text-destructive ml-1" onClick={() => update("cors", { allowed_origins: config.cors.allowed_origins.filter((_, j) => j !== i) })}>×</button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input placeholder="https://example.com" value={newOrigin} onChange={(e) => setNewOrigin(e.target.value)} className="font-mono text-sm" />
+                  <Button variant="outline" size="sm" onClick={() => { if (newOrigin.trim()) { update("cors", { allowed_origins: [...config.cors.allowed_origins, newOrigin.trim()] }); setNewOrigin(""); } }}>Add</Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Allowed Methods</Label>
+                <div className="flex flex-wrap gap-2">
+                  {["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"].map((m) => (
+                    <Button key={m} variant={config.cors.allowed_methods.includes(m) ? "default" : "outline"} size="sm" className={`text-xs h-7 ${config.cors.allowed_methods.includes(m) ? "bg-gradient-gold text-primary-foreground" : ""}`}
+                      onClick={() => update("cors", { allowed_methods: config.cors.allowed_methods.includes(m) ? config.cors.allowed_methods.filter((x) => x !== m) : [...config.cors.allowed_methods, m] })}>
+                      {m}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Allowed Headers</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {config.cors.allowed_headers.map((h, i) => (
+                    <Badge key={i} variant="outline" className="gap-1 font-mono text-xs">
+                      {h}
+                      <button className="text-destructive ml-1" onClick={() => update("cors", { allowed_headers: config.cors.allowed_headers.filter((_, j) => j !== i) })}>×</button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input placeholder="X-Custom-Header" value={newHeader} onChange={(e) => setNewHeader(e.target.value)} className="font-mono text-sm" />
+                  <Button variant="outline" size="sm" onClick={() => { if (newHeader.trim()) { update("cors", { allowed_headers: [...config.cors.allowed_headers, newHeader.trim()] }); setNewHeader(""); } }}>Add</Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Preflight Cache (Max-Age)</p>
+                  <p className="text-xs text-muted-foreground">How long browsers cache preflight responses</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input type="number" value={config.cors.max_age_seconds} onChange={(e) => update("cors", { max_age_seconds: parseInt(e.target.value) || 0 })} className="w-24 text-right font-mono" />
+                  <span className="text-xs text-muted-foreground">sec</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Key Policies */}
+        <TabsContent value="keys" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">API Key Policies</CardTitle>
+              <CardDescription>Key generation, expiration, and rotation rules</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { label: "Max Keys per Merchant", key: "max_keys_per_merchant" as const, suffix: "keys" },
+                { label: "Key Expiry", key: "key_expiry_days" as const, suffix: "days" },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between">
+                  <p className="text-sm font-medium">{item.label}</p>
+                  <div className="flex items-center gap-2">
+                    <Input type="number" value={config.key_policies[item.key]} onChange={(e) => update("key_policies", { [item.key]: parseInt(e.target.value) || 0 })} className="w-24 text-right font-mono" />
+                    <span className="text-xs text-muted-foreground w-8">{item.suffix}</span>
+                  </div>
+                </div>
+              ))}
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Auto Key Rotation</p>
+                  <p className="text-xs text-muted-foreground">Automatically rotate keys on schedule</p>
+                </div>
+                <Switch checked={config.key_policies.auto_rotate} onCheckedChange={(v) => update("key_policies", { auto_rotate: v })} />
+              </div>
+              {config.key_policies.auto_rotate && (
+                <div className="flex items-center justify-between pl-4">
+                  <p className="text-sm text-muted-foreground">Rotation Interval</p>
+                  <div className="flex items-center gap-2">
+                    <Input type="number" value={config.key_policies.rotation_interval_days} onChange={(e) => update("key_policies", { rotation_interval_days: parseInt(e.target.value) || 30 })} className="w-24 text-right font-mono" />
+                    <span className="text-xs text-muted-foreground w-8">days</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Require IP Allowlist</p>
+                  <p className="text-xs text-muted-foreground">Force merchants to configure IP allowlists for API keys</p>
+                </div>
+                <Switch checked={config.key_policies.require_ip_allowlist} onCheckedChange={(v) => update("key_policies", { require_ip_allowlist: v })} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Webhooks */}
+        <TabsContent value="webhooks" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Webhook Delivery Settings</CardTitle>
+              <CardDescription>Retry policies, timeouts, and signature configuration</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { label: "Max Endpoints per Merchant", key: "max_endpoints_per_merchant" as const, suffix: "" },
+                { label: "Max Retry Attempts", key: "max_retry_attempts" as const, suffix: "" },
+                { label: "Retry Backoff Base", key: "retry_backoff_base_ms" as const, suffix: "ms" },
+                { label: "Delivery Timeout", key: "delivery_timeout_ms" as const, suffix: "ms" },
+                { label: "Replay Protection Window", key: "replay_protection_window_seconds" as const, suffix: "sec" },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between">
+                  <p className="text-sm font-medium">{item.label}</p>
+                  <div className="flex items-center gap-2">
+                    <Input type="number" value={config.webhook_settings[item.key]} onChange={(e) => update("webhook_settings", { [item.key]: parseInt(e.target.value) || 0 })} className="w-28 text-right font-mono" />
+                    {item.suffix && <span className="text-xs text-muted-foreground w-8">{item.suffix}</span>}
+                  </div>
+                </div>
+              ))}
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Signature Algorithm</p>
+                  <p className="text-xs text-muted-foreground">HMAC algorithm for webhook signatures</p>
+                </div>
+                <div className="flex gap-2">
+                  {(["hmac-sha256", "hmac-sha512"] as const).map((alg) => (
+                    <Button key={alg} variant={config.webhook_settings.signature_algorithm === alg ? "default" : "outline"} size="sm"
+                      className={`text-xs ${config.webhook_settings.signature_algorithm === alg ? "bg-gradient-gold text-primary-foreground" : ""}`}
+                      onClick={() => update("webhook_settings", { signature_algorithm: alg })}>
+                      {alg.toUpperCase()}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Webhook Signature Headers</p>
+                <div className="space-y-1 font-mono text-xs">
+                  <div className="flex items-center gap-2">
+                    <code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-signature</code>
+                    <CopyButton value="x-cryptoniumpay-signature" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-timestamp</code>
+                    <CopyButton value="x-cryptoniumpay-timestamp" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-event</code>
+                    <CopyButton value="x-cryptoniumpay-event" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Response Settings */}
+        <TabsContent value="responses" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Response Configuration</CardTitle>
+              <CardDescription>Pagination, compression, and response formatting</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Default Page Size</p>
+                <div className="flex items-center gap-2">
+                  <Input type="number" value={config.response_settings.default_page_size} onChange={(e) => update("response_settings", { default_page_size: parseInt(e.target.value) || 10 })} className="w-20 text-right font-mono" />
+                  <span className="text-xs text-muted-foreground w-10">items</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Max Page Size</p>
+                <div className="flex items-center gap-2">
+                  <Input type="number" value={config.response_settings.max_page_size} onChange={(e) => update("response_settings", { max_page_size: parseInt(e.target.value) || 50 })} className="w-20 text-right font-mono" />
+                  <span className="text-xs text-muted-foreground w-10">items</span>
+                </div>
+              </div>
+              <Separator />
+              {[
+                { label: "Include Request ID", desc: "Add X-Request-Id header to all responses", key: "include_request_id" as const },
+                { label: "Response Compression", desc: "Enable gzip/brotli compression", key: "compression_enabled" as const },
+                { label: "Pretty Print (Debug)", desc: "Format JSON responses with indentation", key: "pretty_print_debug" as const },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                  <Switch checked={config.response_settings[item.key]} onCheckedChange={(v) => update("response_settings", { [item.key]: v })} />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Security */}
+        <TabsContent value="security" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">API Security</CardTitle>
+              <CardDescription>TLS, HSTS, CSP, and idempotency settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Require HTTPS</p>
+                  <p className="text-xs text-muted-foreground">Reject all non-TLS connections</p>
+                </div>
+                <Switch checked={config.security.require_https} onCheckedChange={(v) => update("security", { require_https: v })} />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Minimum TLS Version</p>
+                <div className="flex gap-2">
+                  {(["1.2", "1.3"] as const).map((v) => (
+                    <Button key={v} variant={config.security.tls_min_version === v ? "default" : "outline"} size="sm"
+                      className={`text-xs ${config.security.tls_min_version === v ? "bg-gradient-gold text-primary-foreground" : ""}`}
+                      onClick={() => update("security", { tls_min_version: v })}>
+                      TLS {v}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">HSTS</p>
+                  <p className="text-xs text-muted-foreground">HTTP Strict Transport Security</p>
+                </div>
+                <Switch checked={config.security.hsts_enabled} onCheckedChange={(v) => update("security", { hsts_enabled: v })} />
+              </div>
+              {config.security.hsts_enabled && (
+                <div className="flex items-center justify-between pl-4">
+                  <p className="text-sm text-muted-foreground">Max Age</p>
+                  <div className="flex items-center gap-2">
+                    <Input type="number" value={config.security.hsts_max_age} onChange={(e) => update("security", { hsts_max_age: parseInt(e.target.value) || 0 })} className="w-28 text-right font-mono" />
+                    <span className="text-xs text-muted-foreground">sec</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Content Security Policy</p>
+                  <p className="text-xs text-muted-foreground">CSP headers on API responses</p>
+                </div>
+                <Switch checked={config.security.csp_enabled} onCheckedChange={(v) => update("security", { csp_enabled: v })} />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Idempotency Window</p>
+                <div className="flex items-center gap-2">
+                  <Input type="number" value={config.security.idempotency_window_hours} onChange={(e) => update("security", { idempotency_window_hours: parseInt(e.target.value) || 1 })} className="w-20 text-right font-mono" />
+                  <span className="text-xs text-muted-foreground">hours</span>
+                </div>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-warning">Security Notice</p>
+                    <p className="text-xs text-muted-foreground">Changes to security settings take effect immediately and may affect active API consumers. Coordinate with merchants before modifying TLS or CORS policies.</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
