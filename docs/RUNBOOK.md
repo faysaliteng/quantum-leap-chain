@@ -1,6 +1,6 @@
-# Cryptonpay — Operations Runbook
+# Cryptoniumpay — Operations Runbook
 
-> Operational procedures for managing the Cryptonpay platform in production.
+> Operational procedures for managing the Cryptoniumpay platform in production.
 
 **Version:** 1.0.0
 **Last updated:** 2026-02-22
@@ -31,7 +31,7 @@
 openssl rand -hex 32
 
 # 2. Update .env on the server
-nano /opt/cryptonpay/.env
+nano /opt/cryptoniumpay/.env
 # Change JWT_SECRET=<new_value>
 
 # 3. Restart API + worker
@@ -49,7 +49,7 @@ curl -s https://api.yourdomain.com/v1/health | jq .
 openssl rand -hex 32
 
 # 2. Update .env
-nano /opt/cryptonpay/.env
+nano /opt/cryptoniumpay/.env
 # Change SIGNER_SECRET=<new_value>
 
 # 3. Restart signer + worker (both must share the secret)
@@ -64,10 +64,10 @@ docker compose exec worker curl -s http://signer:8080/health
 
 ```bash
 # 1. Connect to Postgres and change password
-docker compose exec postgres psql -U cryptonpay -c "ALTER USER cryptonpay PASSWORD 'NEW_PASSWORD_HERE';"
+docker compose exec postgres psql -U cryptoniumpay -c "ALTER USER cryptoniumpay PASSWORD 'NEW_PASSWORD_HERE';"
 
 # 2. Update .env
-nano /opt/cryptonpay/.env
+nano /opt/cryptoniumpay/.env
 # Update DATABASE_URL with new password
 
 # 3. Restart API + worker
@@ -95,7 +95,7 @@ docker compose exec api npx prisma migrate status
 docker compose exec api npx prisma migrate status
 
 # Manually apply down migration
-docker compose exec postgres psql -U cryptonpay -f /path/to/down.sql
+docker compose exec postgres psql -U cryptoniumpay -f /path/to/down.sql
 ```
 
 ### Create New Migration
@@ -109,7 +109,7 @@ npx prisma migrate dev --name describe_change
 ### Database Shell
 
 ```bash
-docker compose exec postgres psql -U cryptonpay -d cryptonpay
+docker compose exec postgres psql -U cryptoniumpay -d cryptoniumpay
 ```
 
 ### Useful Queries
@@ -250,7 +250,7 @@ UPDATE webhook_endpoints SET active = false WHERE id = 'ENDPOINT_ID';
 
 ```bash
 # Add to crontab (crontab -e)
-0 3 * * * /opt/cryptonpay/scripts/backup.sh >> /var/log/cryptonpay-backup.log 2>&1
+0 3 * * * /opt/cryptoniumpay/scripts/backup.sh >> /var/log/cryptoniumpay-backup.log 2>&1
 ```
 
 ### backup.sh
@@ -259,15 +259,15 @@ UPDATE webhook_endpoints SET active = false WHERE id = 'ENDPOINT_ID';
 #!/bin/bash
 set -euo pipefail
 
-BACKUP_DIR="/opt/backups/cryptonpay"
+BACKUP_DIR="/opt/backups/cryptoniumpay"
 DATE=$(date +%Y%m%d_%H%M%S)
 KEEP_DAYS=30
 
 mkdir -p "$BACKUP_DIR"
 
 # Dump database
-docker compose -f /opt/cryptonpay/docker-compose.yml exec -T postgres \
-  pg_dump -U cryptonpay -Fc cryptonpay > "$BACKUP_DIR/db_$DATE.dump"
+docker compose -f /opt/cryptoniumpay/docker-compose.yml exec -T postgres \
+  pg_dump -U cryptoniumpay -Fc cryptoniumpay > "$BACKUP_DIR/db_$DATE.dump"
 
 # Compress
 gzip "$BACKUP_DIR/db_$DATE.dump"
@@ -285,9 +285,9 @@ echo "$(date): Backup completed: db_$DATE.dump.gz"
 docker compose stop api worker
 
 # Restore
-gunzip -k /opt/backups/cryptonpay/db_20260222_030000.dump.gz
-docker compose exec -T postgres pg_restore -U cryptonpay -d cryptonpay --clean \
-  < /opt/backups/cryptonpay/db_20260222_030000.dump
+gunzip -k /opt/backups/cryptoniumpay/db_20260222_030000.dump.gz
+docker compose exec -T postgres pg_restore -U cryptoniumpay -d cryptoniumpay --clean \
+  < /opt/backups/cryptoniumpay/db_20260222_030000.dump
 
 # Restart
 docker compose start api worker
@@ -314,7 +314,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 ```bash
 # Add to crontab
 */5 * * * * curl -sf https://api.yourdomain.com/v1/health > /dev/null || \
-  echo "Cryptonpay API DOWN at $(date)" | mail -s "ALERT: API Down" ops@yourdomain.com
+  echo "Cryptoniumpay API DOWN at $(date)" | mail -s "ALERT: API Down" ops@yourdomain.com
 ```
 
 ### Key Metrics to Monitor
@@ -347,7 +347,7 @@ docker compose restart api
 
 ```bash
 # Check checkpoint
-docker compose exec postgres psql -U cryptonpay -c \
+docker compose exec postgres psql -U cryptoniumpay -c \
   "SELECT chain, current_block, latest_block, lag FROM watcher_checkpoints;"
 
 # Check RPC health

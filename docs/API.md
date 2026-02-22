@@ -1,4 +1,4 @@
-# Cryptonpay — API Reference
+# Cryptoniumpay — API Reference
 
 > Complete REST API reference with curl examples for every endpoint.
 

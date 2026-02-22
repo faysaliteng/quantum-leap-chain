@@ -13,14 +13,14 @@ const sizeMap = {
   xl: { box: "h-14 w-14", text: "text-2xl" },
 };
 
-export function CryptonpayLogo({ size = "md", showText = true, className = "" }: LogoProps) {
+export function CryptoniumpayLogo({ size = "md", showText = true, className = "" }: LogoProps) {
   const s = sizeMap[size];
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <img src={logoIcon} alt="Cryptonpay" className={`${s.box} rounded-lg object-contain`} />
+      <img src={logoIcon} alt="Cryptoniumpay" className={`${s.box} rounded-lg object-contain`} />
       {showText && (
         <span className={`${s.text} font-display font-bold tracking-tight`}>
-          Crypton<span className="text-gradient-gold">pay</span>
+          Cryptonium<span className="text-gradient-gold">pay</span>
         </span>
       )}
     </div>

@@ -109,7 +109,7 @@ export default function ApiDocs() {
                   id: "c7e8f9a0-1b2c-4d5e-6f7a-8b9c0d1e2f3a",
                   name: "Order #12345",
                   status: "NEW",
-                  hosted_url: "https://pay.cryptonpay.com/pay/c7e8f9a0",
+                  hosted_url: "https://pay.cryptoniumpay.com/pay/c7e8f9a0",
                   addresses: {
                     "btc-BTC": { chain: "btc", asset: "BTC", address: "bc1q...", amount: "0.00145200" },
                     "eth-USDC": { chain: "eth", asset: "USDC", address: "0x...", amount: "99.000000" },

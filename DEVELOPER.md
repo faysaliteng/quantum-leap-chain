@@ -1,6 +1,6 @@
-# Cryptonpay — Developer Reference (Atomic Detail)
+# Cryptoniumpay — Developer Reference (Atomic Detail)
 
-> Complete technical inventory of every file, route, component, type, hook, and design token in the Cryptonpay frontend codebase. This document is the single source of truth for developers onboarding to the project.
+> Complete technical inventory of every file, route, component, type, hook, and design token in the Cryptoniumpay frontend codebase. This document is the single source of truth for developers onboarding to the project.
 
 **Last updated:** 2026-02-21  
 **Frontend version:** 1.0.0  
@@ -72,7 +72,7 @@
 ## 2. File Tree (Complete)
 
 ```
-cryptonpay/
+cryptoniumpay/
 ├── index.html                          # HTML entry point + meta tags + favicon
 ├── package.json                        # Dependencies & scripts (read-only)
 ├── vite.config.ts                      # Vite build config (port 8080, path alias @/)
@@ -121,7 +121,7 @@ cryptonpay/
 │   │   └── AdminLayout.tsx            # Admin sidebar + header + <Outlet>
 │   │
 │   ├── components/
-│   │   ├── CryptonpayLogo.tsx         # Brand logo (img + text, 4 sizes)
+│   │   ├── CryptoniumpayLogo.tsx       # Brand logo (img + text, 4 sizes)
 │   │   ├── CryptoPriceTicker.tsx      # Live crypto prices from CoinGecko
 │   │   ├── CopyButton.tsx             # Click-to-copy with feedback
 │   │   ├── DocsNav.tsx                # Documentation navigation sidebar
@@ -313,7 +313,7 @@ interface AuthContextValue {
 - **Form fields:** Email (required) + Password (required, minLength 1)
 - **Submit:** Calls `auth.login()`, on success navigates to `/dashboard`
 - **Error handling:** Displays error message from API or generic fallback
-- **Visual:** Centered card, background glow, CryptonpayLogo header
+- **Visual:** Centered card, background glow, CryptoniumpayLogo header
 
 ### 5.3 CheckoutPage (`/pay/:chargeId`)
 
@@ -452,7 +452,7 @@ Same structure, different nav items: Overview, Merchants, Chain & Assets, Monito
 
 | Component | File | Props | Purpose |
 |-----------|------|-------|---------|
-| `CryptonpayLogo` | `CryptonpayLogo.tsx` | `size: sm\|md\|lg\|xl`, `showText`, `className` | Brand logo with img + gradient text |
+| `CryptoniumpayLogo` | `CryptoniumpayLogo.tsx` | `size: sm\|md\|lg\|xl`, `showText`, `className` | Brand logo with img + gradient text |
 | `CryptoPriceTicker` | `CryptoPriceTicker.tsx` | — | Live BTC/ETH/USDC/BNB/SOL prices from CoinGecko |
 | `CopyButton` | `CopyButton.tsx` | `text: string` | Click-to-copy with checkmark feedback |
 | `DocsNav` | `DocsNav.tsx` | — | Sidebar nav for documentation pages |
@@ -484,7 +484,7 @@ accordion, alert, alert-dialog, aspect-ratio, avatar, badge, breadcrumb, button,
 |------|------|---------|---------|
 | `useAuth()` | `lib/auth.tsx` | `{ user, isLoading, login, logout, isAuthenticated }` | Auth context consumer |
 | `useIsMobile()` | `hooks/use-mobile.tsx` | `boolean` | True when viewport < 768px |
-| `usePageTitle(title)` | `hooks/use-page-title.ts` | `void` | Sets `document.title` to `"title — Cryptonpay"` |
+| `usePageTitle(title)` | `hooks/use-page-title.ts` | `void` | Sets `document.title` to `"title — Cryptoniumpay"` |
 | `useToast()` | `hooks/use-toast.ts` | `{ toast, dismiss, toasts }` | Toast notification system |
 
 ---
@@ -765,4 +765,4 @@ The frontend connects to whatever API implements the endpoints documented in [Se
 
 ---
 
-*This document covers every file, route, component, type, hook, and token in the Cryptonpay frontend. For deployment instructions see `DEPLOYMENT.md`. For project overview see `README.md`.*
+*This document covers every file, route, component, type, hook, and token in the Cryptoniumpay frontend. For deployment instructions see `DEPLOYMENT.md`. For project overview see `README.md`.*
