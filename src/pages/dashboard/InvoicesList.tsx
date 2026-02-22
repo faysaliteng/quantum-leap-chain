@@ -14,8 +14,9 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   FileText, PlusCircle, Search, Send, Eye, Download, Trash2,
-  DollarSign, Clock, CheckCircle, XCircle, Receipt,
+  DollarSign, Clock, CheckCircle, XCircle, Receipt, FileDown,
 } from "lucide-react";
+import { useExport } from "@/hooks/use-export";
 import type { InvoiceStatus } from "@/lib/types";
 
 const statusStyles: Record<InvoiceStatus, string> = {
@@ -32,6 +33,7 @@ export default function InvoicesList() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const { startExport, isExporting } = useExport({ scope: "merchant" });
 
   const { data, isLoading } = useQuery({
     queryKey: ["invoices", statusFilter],
@@ -68,9 +70,14 @@ export default function InvoicesList() {
     <div className="space-y-6" data-testid="page:dashboard-invoices">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Invoices</h1>
-        <Button asChild>
-          <Link to="/dashboard/invoices/new"><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Create Invoice</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => startExport("invoices", "csv", { status: statusFilter !== "all" ? statusFilter : undefined })} disabled={isExporting}>
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+          </Button>
+          <Button asChild>
+            <Link to="/dashboard/invoices/new"><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Create Invoice</Link>
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}

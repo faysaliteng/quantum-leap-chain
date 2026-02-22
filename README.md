@@ -22,31 +22,34 @@
 ## 🚀 For Merchants
 
 - **Instant Setup** — Create account, get API key, start accepting payments. No company verification.
-- **52 Routes** — Landing, auth, dashboard, admin, CMS, checkout, docs, pricing, blog, contact, notifications, security
+- **52+ Routes** — Landing, auth, dashboard, admin, CMS, checkout, docs, pricing, blog, contact, notifications, security, exports
 - **50+ API Endpoints** — Fully typed Axios client across 20+ namespaces
-- **Charge Management** — Create, list, search, filter by status/date, export (CSV/JSON)
+- **Charge Management** — Create, list, search, filter by status/date, export (CSV/JSON, client + server-side)
 - **Invoice Management** — Create, send, track, PDF download with full lifecycle
 - **Hosted Checkout** — Public pay links with QR codes, countdown timer, multi-chain selector
 - **Wallet Management** — WalletConnect v2, Ledger, Trezor, Keystone USB, manual import. Send/receive/withdraw with hardware signing for cold wallets.
 - **Wallet Transaction History** — Full send/receive/withdraw audit trail with explorer links, status timeline, cursor pagination
+- **Data Export Center** — Server-side async exports (CSV/JSON) for charges, invoices, wallet transactions, webhook deliveries. Job queue with status tracking and downloadable files.
 - **Settlement** — Per-chain settlement addresses, sweep modes
 - **API Keys** — Scoped (read/write/admin), masked display, rotation tracking
-- **Webhooks** — HMAC-signed, test delivery, delivery logs
+- **Webhooks** — HMAC-signed, test delivery, delivery logs, export deliveries
 - **Reports** — Date-range exports with visual charts (volume by day, revenue by asset pie chart)
 - **Dashboard** — 6 KPI cards, wallet balance overview, transaction volume charts, quick actions
 - **Notification Center** — Real-time bell icon with unread badge, notification drawer, preferences management
 - **Security Settings** — 2FA (TOTP), backup codes, email verification, session management, password change
+- **Password Reset** — Forgot password / reset password flow with secure single-use tokens, anti-enumeration
 
 ## 🛡️ For Admins (Platform Owner)
 
-- **Revenue Dashboard** — KPI cards, daily revenue + transaction volume charts, revenue by chain donut chart, top merchants
+- **Revenue Dashboard** — KPI cards, daily revenue + transaction volume charts, revenue by chain donut chart, top merchants, server-side export
 - **Fee Management** — Global fee rate, per-merchant overrides, min fee threshold
-- **Merchant Management** — Enable/disable merchants, view details
+- **Merchant Management** — Enable/disable merchants, KPI cards (total/active/disabled), server-side export
 - **Wallet Management** — Hot wallet & cold wallet connect via WalletConnect v2 + hardware wallets, XPUB monitoring, balance tracking, lock/unlock, send/withdraw with audit notes
-- **Wallet Transaction Audit** — Full platform-wide wallet transaction history with filtering by wallet, direction, status, date range
-- **System Monitoring** — Watcher lag, RPC health, webhook queue depth, uptime, 6 KPI cards
+- **Wallet Transaction Audit** — Full platform-wide wallet transaction history with filtering, server-side export
+- **Data Export Center** — Server-side async exports for merchants, audit logs, revenue reports, health snapshots. BullMQ job queue with status tracking.
+- **System Monitoring** — Watcher lag, RPC health, webhook queue depth, uptime, health snapshot export
 - **Chain Config** — Enable/disable chains and assets, RPC management
-- **Audit Log** — Append-only, filterable, expandable JSON details
+- **Audit Log** — Append-only, filterable, expandable JSON details, server-side export
 - **Security Policies** — Centralized password policy, session policy, access control (maintenance mode, IP allowlist, geo blocking), rate limiting
 - **Role & Permission Management** — Fine-grained RBAC with 20 permissions, role CRUD, team invites, permission matrix
 - **Notification Center** — Admin-scoped notifications with preferences
@@ -206,9 +209,9 @@ cryptoniumpay/
 
 ---
 
-## 🗺️ Route Map (52 Routes)
+## 🗺️ Route Map (56 Routes)
 
-### Public Routes (12)
+### Public Routes (14)
 | Route | Page |
 |-------|------|
 | `/` | Landing page with pricing, comparison, live crypto ticker, socials |
@@ -216,10 +219,12 @@ cryptoniumpay/
 | `/blog` | Article listings with category filters |
 | `/faq` | FAQ with expandable category-grouped entries |
 | `/contact` | Contact form with enterprise info |
-| `/login` | Login with 3-step MFA support |
+| `/login` | Login with 3-step MFA support + forgot password link |
 | `/signup` | Signup with Zod password validation |
 | `/verify-email` | Email OTP verification step |
 | `/verify-2fa` | TOTP 2FA verification step |
+| `/forgot-password` | Forgot password (anti-enumeration) |
+| `/reset-password` | Reset password with strength meter |
 | `/pay/:chargeId` | Public checkout with QR code + countdown |
 | `/terms` | Terms of Service |
 | `/privacy` | Privacy Policy |
@@ -233,41 +238,43 @@ cryptoniumpay/
 | `/docs/schema` | Database schema |
 | `/docs/singularitycoin` | SingularityCoin protocol |
 
-### Merchant Dashboard (15, Protected)
+### Merchant Dashboard (16, Protected)
 | Route | Page |
 |-------|------|
 | `/dashboard` | Home with 6 KPIs, charts, wallet overview, quick actions |
-| `/dashboard/charges` | Charges list with search, filters, date range |
+| `/dashboard/charges` | Charges list with search, filters, date range, server export |
 | `/dashboard/charges/new` | Create charge |
 | `/dashboard/charges/:id` | Charge detail |
-| `/dashboard/invoices` | Invoice list with status filters |
+| `/dashboard/invoices` | Invoice list with status filters + server export |
 | `/dashboard/invoices/new` | Create invoice |
 | `/dashboard/invoices/:id` | Invoice detail |
 | `/dashboard/reports` | Reports with charts + CSV/JSON export |
 | `/dashboard/wallets` | Wallet management (WalletConnect + hardware + send/receive) |
-| `/dashboard/wallets/transactions` | Wallet transaction history with filters |
+| `/dashboard/wallets/transactions` | Wallet transaction history with filters + server export |
 | `/dashboard/notifications` | Notification center + preferences |
+| `/dashboard/exports` | Export center — job list, status, downloads |
 | `/dashboard/settings/settlement` | Settlement config |
 | `/dashboard/settings/api-keys` | API key management |
-| `/dashboard/settings/webhooks` | Webhook management |
+| `/dashboard/settings/webhooks` | Webhook management + delivery export |
 | `/dashboard/settings/addresses` | Address pool |
 | `/dashboard/settings/security` | Security settings (2FA, sessions, password) |
 
-### Admin Panel (16, Protected, role=admin)
+### Admin Panel (22, Protected, role=admin)
 | Route | Page |
 |-------|------|
 | `/admin` | System overview with live ticker, 6 KPIs, charts |
-| `/admin/revenue` | Revenue dashboard with multi-chart layout |
+| `/admin/revenue` | Revenue dashboard with multi-chart layout + export |
 | `/admin/fees` | Fee management (global + per-merchant overrides) |
-| `/admin/merchants` | Merchant management |
+| `/admin/merchants` | Merchant management with KPIs + export |
 | `/admin/chains` | Chain & asset configuration |
 | `/admin/wallets` | Platform wallet management (connect, send, lock) |
-| `/admin/wallets/transactions` | Wallet transaction audit view |
-| `/admin/monitoring` | System monitoring (watchers, RPC, webhooks) |
-| `/admin/audit-log` | Audit log |
+| `/admin/wallets/transactions` | Wallet transaction audit view + export |
+| `/admin/monitoring` | System monitoring (watchers, RPC, webhooks) + health snapshot export |
+| `/admin/audit-log` | Audit log + export |
 | `/admin/security-policies` | Security policies (password, session, access, rate limits) |
 | `/admin/roles` | Role & permission management + team invites |
 | `/admin/notifications` | Admin notification center |
+| `/admin/exports` | Admin export center — job list, status, downloads |
 | `/admin/cms` | CMS dashboard |
 | `/admin/cms/pages` | Page manager |
 | `/admin/cms/blog` | Blog post manager |
@@ -299,16 +306,17 @@ npx playwright test     # E2E smoke tests
 
 | Metric | Count |
 |--------|-------|
-| Routes | 52 |
-| Source files | 95+ |
-| Custom components | 30+ |
+| Routes | 56 |
+| Source files | 100+ |
+| Custom components | 35+ |
 | shadcn/ui primitives | 45 |
-| API endpoints | 50+ |
-| TypeScript interfaces | 50+ |
+| API endpoints | 55+ |
+| TypeScript interfaces | 65+ |
 | Documentation files | 6 |
 | Languages (i18n) | 10 |
 | Wallet connect methods | WalletConnect v2 + Ledger + Trezor + Keystone + GridPlus + Manual |
 | Admin permissions | 20 fine-grained RBAC permissions |
+| Server-side export types | 8 (charges, invoices, wallet_tx, webhook_deliveries, merchants, audit_logs, revenue, health_snapshot) |
 | External SaaS deps | 0 |
 
 ---

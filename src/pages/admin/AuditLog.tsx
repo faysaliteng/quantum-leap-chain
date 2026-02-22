@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { TableSkeleton } from "@/components/PageSkeleton";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, FileDown } from "lucide-react";
+import { useExport } from "@/hooks/use-export";
 import React from "react";
 
 export default function AuditLog() {
@@ -15,14 +16,20 @@ export default function AuditLog() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { startExport, isExporting } = useExport({ scope: "admin" });
 
   const { data, isLoading } = useQuery({ queryKey: ["audit-log", page, search], queryFn: () => admin.auditLog({ page, action: search || undefined }) });
 
   return (
     <div className="space-y-4" data-testid="page:admin-audit-log">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold">Audit Log</h1>
-        <Input className="max-w-xs h-8 text-sm" placeholder="Filter by action…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} maxLength={100} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => startExport("audit_logs", "csv", { action: search || undefined })} disabled={isExporting}>
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+          </Button>
+          <Input className="max-w-xs h-8 text-sm" placeholder="Filter by action…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} maxLength={100} />
+        </div>
       </div>
 
       <Card>

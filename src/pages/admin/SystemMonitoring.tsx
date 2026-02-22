@@ -3,18 +3,27 @@ import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { useExport } from "@/hooks/use-export";
+import { FileDown } from "lucide-react";
 
 export default function SystemMonitoring() {
   usePageTitle("System Monitoring");
   const { data: health, isLoading } = useQuery({ queryKey: ["admin-health"], queryFn: admin.health, refetchInterval: 10000 });
+  const { startExport, isExporting } = useExport({ scope: "admin" });
 
   if (isLoading) return <PageSkeleton />;
   if (!health) return <p className="text-muted-foreground">Unable to fetch system health</p>;
 
   return (
     <div className="space-y-6" data-testid="page:admin-monitoring">
-      <h1 className="text-lg font-semibold">System Monitoring</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">System Monitoring</h1>
+        <Button variant="outline" size="sm" onClick={() => startExport("health_snapshot", "json")} disabled={isExporting}>
+          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Snapshot"}
+        </Button>
+      </div>
 
       <Card>
         <CardHeader><CardTitle className="text-sm">Watcher Checkpoints</CardTitle></CardHeader>

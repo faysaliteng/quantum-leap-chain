@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Link, useNavigate } from "react-router-dom";
-import { PlusCircle, Download, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { PlusCircle, Download, ChevronLeft, ChevronRight, Search, FileDown } from "lucide-react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { SEOHead } from "@/components/SEOHead";
 import { TableSkeleton } from "@/components/PageSkeleton";
+import { useExport } from "@/hooks/use-export";
 import type { ChargeStatus, ListChargesParams, Charge } from "@/lib/types";
 
 const STATUSES: ChargeStatus[] = ["NEW", "PENDING", "CONFIRMED", "PAID", "EXPIRED", "UNDERPAID", "OVERPAID"];
@@ -40,6 +41,7 @@ export default function ChargesList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const { startExport, isExporting } = useExport({ scope: "merchant" });
 
   const { data, isLoading } = useQuery({
     queryKey: ["charges", filters, activeStatus, dateFrom, dateTo],
@@ -68,7 +70,10 @@ export default function ChargesList() {
         <h1 className="text-lg font-semibold">Charges</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => filteredData && exportCSV(filteredData)} disabled={!filteredData?.length}>
-            <Download className="mr-1.5 h-3.5 w-3.5" />Export CSV
+            <Download className="mr-1.5 h-3.5 w-3.5" />CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => startExport("charges", "csv", { status: activeStatus, from: dateFrom, to: dateTo })} disabled={isExporting}>
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Server Export"}
           </Button>
           <Button asChild size="sm"><Link to="/dashboard/charges/new"><PlusCircle className="mr-1.5 h-3.5 w-3.5" />New</Link></Button>
         </div>

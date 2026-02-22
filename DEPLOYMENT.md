@@ -901,6 +901,50 @@ crontab -e
 | `SIGNER_PORT` | ❌ | `8080` | Signer service port |
 | `ACME_EMAIL` | ✅ (VM) | — | Email for SSL cert notifications |
 | `DOMAIN` | ✅ (VM) | — | Your domain name |
+| `MAIL_HOST` | ❌ | — | SMTP server host for password reset emails |
+| `MAIL_PORT` | ❌ | `587` | SMTP server port |
+| `MAIL_USER` | ❌ | — | SMTP username |
+| `MAIL_PASS` | ❌ | — | SMTP password |
+| `MAIL_FROM` | ❌ | `noreply@yourdomain.com` | Sender email address |
+| `FRONTEND_URL` | ✅ | — | Public frontend URL (used in password reset links) |
+| `EXPORTS_PATH` | ❌ | `/data/exports` | Local filesystem path for data export files |
+| `EXPORTS_TTL_DAYS` | ❌ | `7` | Days before export files are cleaned up |
+
+### Password Reset (Local Dev — Mailpit)
+
+For local development, use [Mailpit](https://github.com/axllent/mailpit) to capture emails:
+
+```bash
+# Add to docker-compose.yml (dev only):
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"   # Web UI — open http://localhost:8025
+      - "1025:1025"   # SMTP
+    restart: unless-stopped
+
+# Set backend env vars:
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_FROM=noreply@cryptoniumpay.local
+```
+
+### Data Exports Volume (Option B — Docker)
+
+```bash
+# Add persistent volume for exports in docker-compose.yml:
+volumes:
+  exports_data:
+
+services:
+  api:
+    volumes:
+      - exports_data:/data/exports
+
+# Exports are stored at /data/exports inside the container
+# Files auto-expire after EXPORTS_TTL_DAYS (default: 7 days)
+# A BullMQ cleanup worker removes expired files automatically
+```
 
 ---
 

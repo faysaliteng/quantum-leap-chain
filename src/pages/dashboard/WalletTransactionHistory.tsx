@@ -11,8 +11,9 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import { CopyButton } from "@/components/CopyButton";
 import {
   ArrowUpRight, ArrowDownLeft, ArrowRightLeft, ExternalLink, Clock,
-  Filter, Search, Wallet, CheckCircle, Loader2, XCircle, AlertTriangle, FileSignature,
+  Filter, Search, Wallet, CheckCircle, Loader2, XCircle, AlertTriangle, FileSignature, FileDown,
 } from "lucide-react";
+import { useExport } from "@/hooks/use-export";
 import type { WalletTransaction, WalletTxDirection, WalletTxStatus } from "@/lib/types-extended";
 
 const directionConfig: Record<WalletTxDirection, { icon: React.ReactNode; label: string; color: string }> = {
@@ -36,6 +37,7 @@ export default function WalletTransactionHistory() {
   const [filterDir, setFilterDir] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const { startExport, isExporting } = useExport({ scope: "merchant" });
 
   const { data, isLoading } = useQuery({
     queryKey: ["wallet-tx", filterDir, filterStatus],
@@ -55,9 +57,14 @@ export default function WalletTransactionHistory() {
 
   return (
     <div className="space-y-6" data-testid="page:dashboard-wallet-transactions">
-      <div>
-        <h1 className="text-2xl font-display font-bold">Transaction History</h1>
-        <p className="text-sm text-muted-foreground mt-1">All wallet sends, receives, and withdrawals</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-bold">Transaction History</h1>
+          <p className="text-sm text-muted-foreground mt-1">All wallet sends, receives, and withdrawals</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => startExport("wallet_transactions", "csv", { direction: filterDir !== "all" ? filterDir : undefined, status: filterStatus !== "all" ? filterStatus : undefined })} disabled={isExporting}>
+          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+        </Button>
       </div>
 
       {/* Filters */}
