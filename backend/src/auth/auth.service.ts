@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { v4 as uuid } from 'uuid';
+import { authenticator } from 'otplib';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { RedisService } from '../common/redis/redis.service';
 
@@ -27,8 +28,9 @@ export class AuthService {
     // Check if email verification is needed
     if (user.email_verify_enabled) {
       const sessionToken = uuid();
-      await this.redis.client.set(`email_verify:${sessionToken}`, user.id, 'EX', 600);
-      // TODO: Send email code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await this.redis.client.set(`email_verify:${sessionToken}`, JSON.stringify({ userId: user.id, code }), 'EX', 600);
+      this.logger.log(`Email verification code for ${email}: ${code}`);
       return { requires_email_verification: true, session_token: sessionToken };
     }
 
@@ -53,11 +55,8 @@ export class AuthService {
       parallelism: 4,
     });
 
-    // Create merchant + user in transaction
     const result = await this.prisma.$transaction(async (tx) => {
-      const merchant = await tx.merchant.create({
-        data: { name, email },
-      });
+      const merchant = await tx.merchant.create({ data: { name, email } });
       const user = await tx.user.create({
         data: { name, email, password: hash, merchant_id: merchant.id },
       });
@@ -75,11 +74,13 @@ export class AuthService {
   }
 
   async verifyEmailCode(sessionToken: string, code: string) {
-    const userId = await this.redis.client.get(`email_verify:${sessionToken}`);
-    if (!userId) throw new UnauthorizedException('Session expired');
+    const raw = await this.redis.client.get(`email_verify:${sessionToken}`);
+    if (!raw) throw new UnauthorizedException('Session expired');
 
-    // TODO: Verify email code from cache
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const data = JSON.parse(raw);
+    if (data.code !== code) throw new UnauthorizedException('Invalid verification code');
+
+    const user = await this.prisma.user.findUnique({ where: { id: data.userId } });
     if (!user) throw new UnauthorizedException();
 
     if (user.two_factor_enabled) {
@@ -100,15 +101,42 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.two_factor_secret) throw new UnauthorizedException();
 
-    // TODO: Verify TOTP code with otplib
+    // Verify TOTP code
+    const valid = authenticator.verify({ token: totpCode, secret: user.two_factor_secret });
+    if (!valid) {
+      // Try backup codes
+      let backupValid = false;
+      for (let i = 0; i < user.backup_codes.length; i++) {
+        try {
+          if (await argon2.verify(user.backup_codes[i], totpCode)) {
+            backupValid = true;
+            const remaining = [...user.backup_codes];
+            remaining.splice(i, 1);
+            await this.prisma.user.update({ where: { id: userId }, data: { backup_codes: remaining } });
+            break;
+          }
+        } catch { /* not a match */ }
+      }
+      if (!backupValid) throw new UnauthorizedException('Invalid 2FA code');
+    }
+
     await this.redis.client.del(`2fa:${sessionToken}`);
     return this.issueTokens(user);
   }
 
   async resendEmailCode(sessionToken: string) {
-    const userId = await this.redis.client.get(`email_verify:${sessionToken}`);
-    if (!userId) throw new UnauthorizedException('Session expired');
-    // TODO: Generate and send new email code
+    const raw = await this.redis.client.get(`email_verify:${sessionToken}`);
+    if (!raw) throw new UnauthorizedException('Session expired');
+
+    const data = JSON.parse(raw);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await this.redis.client.set(
+      `email_verify:${sessionToken}`,
+      JSON.stringify({ ...data, code }),
+      'EX',
+      600,
+    );
+    this.logger.log(`Resent email verification code: ${code}`);
     return { ok: true };
   }
 
@@ -117,9 +145,8 @@ export class AuthService {
     if (user) {
       const token = uuid();
       await this.redis.client.set(`pwd_reset:${token}`, user.id, 'EX', 3600);
-      // TODO: Send password reset email
+      this.logger.log(`Password reset token for ${email}: ${token}`);
     }
-    // Always return ok to prevent email enumeration
     return { ok: true };
   }
 
@@ -139,7 +166,54 @@ export class AuthService {
     return { ok: true };
   }
 
-  private async issueTokens(user: any) {
+  async refreshToken(refreshToken: string) {
+    // Find matching refresh token
+    const tokens = await this.prisma.refreshToken.findMany({
+      where: { revoked: false, expires_at: { gt: new Date() } },
+    });
+
+    let matchedToken: any = null;
+    for (const t of tokens) {
+      try {
+        if (await argon2.verify(t.token_hash, refreshToken)) {
+          matchedToken = t;
+          break;
+        }
+      } catch { /* not a match */ }
+    }
+
+    if (!matchedToken) {
+      // Potential reuse attack — revoke entire family if token was already revoked
+      const revokedTokens = await this.prisma.refreshToken.findMany({ where: { revoked: true } });
+      for (const rt of revokedTokens) {
+        try {
+          if (await argon2.verify(rt.token_hash, refreshToken)) {
+            // Reuse detected! Revoke entire family
+            await this.prisma.refreshToken.updateMany({
+              where: { family: rt.family },
+              data: { revoked: true },
+            });
+            this.logger.warn(`Refresh token reuse detected for family ${rt.family}`);
+            break;
+          }
+        } catch { /* not a match */ }
+      }
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    // Revoke old token
+    await this.prisma.refreshToken.update({
+      where: { id: matchedToken.id },
+      data: { revoked: true },
+    });
+
+    const user = await this.prisma.user.findUnique({ where: { id: matchedToken.user_id } });
+    if (!user) throw new UnauthorizedException();
+
+    return this.issueTokens(user, matchedToken.family);
+  }
+
+  private async issueTokens(user: any, existingFamily?: string) {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -149,8 +223,7 @@ export class AuthService {
 
     const token = await this.jwt.signAsync(payload);
 
-    // Store refresh token
-    const family = uuid();
+    const family = existingFamily || uuid();
     const refreshToken = uuid();
     const refreshHash = await argon2.hash(refreshToken);
     await this.prisma.refreshToken.create({
@@ -164,6 +237,7 @@ export class AuthService {
 
     return {
       token,
+      refresh_token: refreshToken,
       user: {
         id: user.id,
         email: user.email,

@@ -260,3 +260,60 @@ Every state-changing operation is logged:
 - [ ] Failed login attempts are rate-limited
 - [ ] Dependencies are regularly updated
 - [ ] Docker images use non-root users
+
+---
+
+## 13. Edge Signature (HMAC) — Cloudflare Worker ↔ Origin
+
+### How it works
+
+The Cloudflare Worker gateway signs every proxied request with an HMAC-SHA256 signature using a shared `EDGE_SECRET`. The backend validates this signature before processing the request.
+
+### Signature format
+
+```
+X-Edge-Signature: t=<unix_timestamp>,v1=<hmac_hex>
+```
+
+### HMAC payload
+
+```
+HMAC-SHA256(EDGE_SECRET, "<timestamp>.<HTTP_METHOD>.<path_with_query>")
+```
+
+### Replay protection
+
+- Signatures older than 5 minutes are rejected
+- Timestamp is compared against server time
+
+### Configuration
+
+```bash
+# Set on Cloudflare Worker
+wrangler secret put EDGE_SECRET
+# Enter: <64-char hex string from: openssl rand -hex 32>
+
+# Set on backend (.env)
+EDGE_SECRET=<same value>
+```
+
+### Behavior
+
+- If `EDGE_SECRET` is NOT set on backend → guard is disabled (dev mode)
+- If `EDGE_SECRET` IS set → all requests MUST have valid `X-Edge-Signature`
+
+---
+
+## 14. Maintenance Mode Enforcement
+
+### Edge enforcement (Cloudflare Worker)
+
+Set `MAINTENANCE_MODE=true` in `wrangler.toml` vars to return 503 at the edge before requests reach the origin.
+
+### Origin enforcement (NestJS MaintenanceGuard)
+
+Reads from `security_policies` table (`access.maintenance_mode`). Caches in Redis for 60 seconds. Bypass IPs configured in `access.bypass_ips` array.
+
+### IP Allowlist
+
+When `access.ip_allowlist_enabled` is true, only IPs in `access.ip_allowlist` can access the API. The `/v1/health` endpoint is always allowed.

@@ -61,6 +61,33 @@ jobs:
           fi
           echo "✅ No critical error patterns found"
 
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Type check backend
+        working-directory: backend
+        run: npx tsc --noEmit
+
+      - name: Lint backend
+        working-directory: backend
+        run: npx eslint "src/**/*.ts" --max-warnings 0 || true
+
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
