@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { SEOHead } from "@/components/SEOHead";
 import { SocialLinks } from "@/components/SocialLinks";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -53,6 +54,7 @@ const cardVariant = {
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <div className="min-h-screen bg-background" data-testid="page:landing">
@@ -64,16 +66,16 @@ export default function LandingPage() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
-            <Button variant="ghost" size="sm" asChild><Link to="/pricing">Pricing</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/blog">Blog</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/pricing">{t("nav.pricing")}</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/blog">{t("nav.blog")}</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/faq">FAQ</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API Docs</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/contact">Contact</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/login">Sign in</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/docs/api">{t("nav.docs")}</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/contact">{t("nav.contact")}</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/login">{t("nav.signin")}</Link></Button>
             <LanguageSwitcher />
             <ThemeToggle />
             <Button size="sm" className="bg-gradient-gold text-primary-foreground font-semibold ml-2" asChild>
-              <Link to="/signup">Get Started Free <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+              <Link to="/signup">{t("nav.getStarted")} <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
             </Button>
           </nav>
 
@@ -171,23 +173,22 @@ export default function LandingPage() {
             variants={fadeUp}
             custom={1}
           >
-            Accept Crypto.<br />
-            <span className="text-gradient-gold">Pay Less.</span>
+            {t("hero.title1")}<br />
+            <span className="text-gradient-gold">{t("hero.title2")}</span>
           </motion.h1>
           <motion.p
             className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed"
             variants={fadeUp}
             custom={2}
           >
-            The lowest-fee crypto payment gateway. Sign up, get your API key, and start receiving
-            BTC, ETH, and stablecoin payments in minutes. No company verification. No monthly fees.
+            {t("hero.subtitle")}
           </motion.p>
           <motion.div className="mt-10 flex flex-col sm:flex-row justify-center gap-4" variants={fadeUp} custom={3}>
             <Button size="lg" className="bg-gradient-gold text-primary-foreground font-semibold h-12 px-8 text-base glow-gold" asChild>
-              <Link to="/signup">Create Free Account <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/signup">{t("hero.cta")} <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border/50" asChild>
-              <Link to="/docs/api">View API Docs</Link>
+              <Link to="/docs/api">{t("hero.docs")}</Link>
             </Button>
           </motion.div>
         </motion.div>
@@ -205,17 +206,17 @@ export default function LandingPage() {
           <div className="grid gap-8 md:grid-cols-3 text-center">
             <div>
               <p className="text-5xl font-display font-bold text-gradient-gold">0.5%</p>
-              <p className="text-muted-foreground mt-2">Flat fee per transaction</p>
+              <p className="text-muted-foreground mt-2">{t("pricing.fee")}</p>
               <p className="text-xs text-muted-foreground mt-1">Lowest in the entire crypto payment industry</p>
             </div>
             <div>
               <p className="text-5xl font-display font-bold text-gradient-gold">$0</p>
-              <p className="text-muted-foreground mt-2">Monthly fee</p>
+              <p className="text-muted-foreground mt-2">{t("pricing.monthly")}</p>
               <p className="text-xs text-muted-foreground mt-1">Free forever. No credit card required.</p>
             </div>
             <div>
               <p className="text-5xl font-display font-bold text-gradient-gold">0</p>
-              <p className="text-muted-foreground mt-2">Documents required</p>
+              <p className="text-muted-foreground mt-2">{t("pricing.docs")}</p>
               <p className="text-xs text-muted-foreground mt-1">No KYC, no company verification to start.</p>
             </div>
           </div>
