@@ -1321,5 +1321,112 @@ journalctl -u cryptoniumpay-worker -f
 
 ---
 
-*Cryptoniumpay v1.0 — Enterprise Deployment Guide*
+## 13. Frontend Features Reference
+
+This section documents all frontend features that are production-ready.
+
+### 13.1 Route Map (31 Routes)
+
+| Route | Auth | Description |
+|-------|------|-------------|
+| `/` | Public | Landing page with pricing, comparison, socials |
+| `/login` | Public | Email/password login |
+| `/signup` | Public | Registration with Zod validation |
+| `/pay/:chargeId` | Public | Hosted checkout with QR codes |
+| `/docs/api` | Public | API reference docs |
+| `/docs/security` | Public | Security model docs |
+| `/docs/architecture` | Public | Architecture docs |
+| `/docs/schema` | Public | Database schema docs |
+| `/docs/singularitycoin` | Public | SingularityCoin protocol docs |
+| `/dashboard` | Merchant | Dashboard with 6 KPIs, charts, wallet overview |
+| `/dashboard/charges` | Merchant | Charges list with search, filter, date range |
+| `/dashboard/charges/new` | Merchant | Create charge form |
+| `/dashboard/charges/:id` | Merchant | Charge detail + transactions |
+| `/dashboard/reports` | Merchant | Reports with charts + CSV/JSON export |
+| `/dashboard/settings/settlement` | Merchant | Settlement config |
+| `/dashboard/settings/api-keys` | Merchant | API key management |
+| `/dashboard/settings/webhooks` | Merchant | Webhook management |
+| `/dashboard/settings/addresses` | Merchant | Address pool management |
+| `/admin` | Admin | System overview (6 KPIs, crypto ticker, charts) |
+| `/admin/revenue` | Admin | Revenue dashboard (multi-chart layout) |
+| `/admin/fees` | Admin | Fee configuration + per-merchant overrides |
+| `/admin/merchants` | Admin | Merchant management |
+| `/admin/chains` | Admin | Chain & asset configuration |
+| `/admin/monitoring` | Admin | System health monitoring |
+| `/admin/audit-log` | Admin | Audit log viewer |
+| `/admin/cms` | Admin | CMS content dashboard |
+| `/admin/cms/pages` | Admin | Page SEO manager |
+| `/admin/cms/blog` | Admin | Blog post CRUD |
+| `/admin/cms/announcements` | Admin | Announcement banner manager |
+| `/admin/cms/faq` | Admin | FAQ entry manager |
+| `/admin/cms/settings` | Admin | CMS global settings |
+
+### 13.2 SEO Configuration
+
+The frontend includes enterprise-grade SEO out of the box:
+
+**Static assets (pre-built):**
+- `public/sitemap.xml` — All public routes with priority and changefreq
+- `public/manifest.json` — PWA manifest for mobile indexing
+- `public/robots.txt` — Sitemap reference + all major crawlers allowed
+- `index.html` — JSON-LD (Organization, SoftwareApplication, FAQPage), OG tags, Twitter Cards
+
+**Dynamic SEO:**
+- `SEOHead` component sets per-page `<title>`, `<meta description>`, OG tags
+- Template: `%s — Cryptoniumpay` (configurable in `constants.ts`)
+
+**After deployment, update these values:**
+
+```bash
+# In index.html, replace all instances of:
+#   cryptoniumpay.com → your actual domain
+# In public/sitemap.xml, replace:
+#   https://cryptoniumpay.com → https://yourdomain.com
+# In public/robots.txt, replace:
+#   https://cryptoniumpay.com → https://yourdomain.com
+```
+
+### 13.3 CMS API Endpoints
+
+The admin CMS requires these backend endpoints:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/v1/admin/cms/stats` | CMS content statistics |
+| `GET` | `/v1/admin/cms/pages` | List all managed pages |
+| `PUT` | `/v1/admin/cms/pages/:id` | Update page SEO metadata |
+| `GET` | `/v1/admin/cms/announcements` | List announcements |
+| `POST` | `/v1/admin/cms/announcements` | Create announcement |
+| `PUT` | `/v1/admin/cms/announcements/:id` | Update announcement |
+| `DELETE` | `/v1/admin/cms/announcements/:id` | Delete announcement |
+| `GET` | `/v1/admin/cms/blog` | List blog posts |
+| `POST` | `/v1/admin/cms/blog` | Create blog post |
+| `PUT` | `/v1/admin/cms/blog/:id` | Update blog post |
+| `DELETE` | `/v1/admin/cms/blog/:id` | Delete blog post |
+| `GET` | `/v1/admin/cms/faq` | List FAQ entries |
+| `POST` | `/v1/admin/cms/faq` | Create FAQ entry |
+| `PUT` | `/v1/admin/cms/faq/:id` | Update FAQ entry |
+| `DELETE` | `/v1/admin/cms/faq/:id` | Delete FAQ entry |
+| `GET` | `/v1/admin/cms/settings` | Get CMS settings |
+| `PUT` | `/v1/admin/cms/settings` | Update CMS settings |
+
+### 13.4 Social Media Links
+
+Social URLs are configured in `src/lib/constants.ts`:
+
+```typescript
+export const SOCIAL_LINKS = {
+  twitter: "https://x.com/cryptoniumpay",
+  github: "https://github.com/cryptoniumpay",
+  discord: "https://discord.gg/cryptoniumpay",
+  telegram: "https://t.me/cryptoniumpay",
+  linkedin: "https://linkedin.com/company/cryptoniumpay",
+};
+```
+
+Update these values before deployment.
+
+---
+
+*Cryptoniumpay v2.0 — Enterprise Deployment Guide*
 *No room for error. Deploy with confidence.*
