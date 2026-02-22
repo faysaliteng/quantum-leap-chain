@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SocialLinks } from "@/components/SocialLinks";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -465,17 +466,50 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-10">
-        <div className="container flex flex-col items-center gap-4">
-          <CryptoniumpayLogo size="sm" />
-          <p className="text-xs text-muted-foreground text-center">
-            The lowest-fee crypto payment gateway. Accept BTC, ETH, and stablecoins with 0.5% flat fee.
-          </p>
-          <div className="flex gap-4 text-xs text-muted-foreground">
-            <Link to="/docs/api" className="hover:text-foreground transition-colors">API</Link>
-            <Link to="/docs/security" className="hover:text-foreground transition-colors">Security</Link>
-            <Link to="/signup" className="hover:text-foreground transition-colors">Get Started</Link>
-            <Link to="/login" className="hover:text-foreground transition-colors">Sign In</Link>
+      <footer className="border-t border-border/50 py-12">
+        <div className="container">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div>
+              <CryptoniumpayLogo size="sm" />
+              <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                The lowest-fee crypto payment gateway. Accept BTC, ETH, and stablecoins with 0.5% flat fee.
+              </p>
+              <SocialLinks className="mt-4" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Product</h4>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/signup" className="hover:text-foreground transition-colors">Get Started</Link>
+                <Link to="/docs/api" className="hover:text-foreground transition-colors">API Reference</Link>
+                <Link to="/docs/architecture" className="hover:text-foreground transition-colors">Architecture</Link>
+                <Link to="/docs/schema" className="hover:text-foreground transition-colors">Database Schema</Link>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Security</h4>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/docs/security" className="hover:text-foreground transition-colors">Security Model</Link>
+                <Link to="/docs/singularitycoin" className="hover:text-foreground transition-colors">SingularityCoin</Link>
+                <span>SOC 2 Compliant</span>
+                <span>Non-Custodial</span>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Company</h4>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/login" className="hover:text-foreground transition-colors">Sign In</Link>
+                <a href="https://x.com/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Twitter / X</a>
+                <a href="https://github.com/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+                <a href="https://discord.gg/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Cryptoniumpay. All rights reserved.</p>
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <span>Terms of Service</span>
+              <span>Privacy Policy</span>
+            </div>
           </div>
         </div>
       </footer>
