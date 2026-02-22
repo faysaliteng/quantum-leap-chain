@@ -1,4 +1,4 @@
-# Cryptonpay — Backend Specification
+# Cryptoniumpay — Backend Specification
 
 > Complete NestJS backend specification aligned with the frontend API client (`src/lib/api-client.ts`).
 > This document is the blueprint for building the backend. Every endpoint, table, queue, and module is specified here.
@@ -661,9 +661,9 @@ Request
 ### Signature Format
 
 ```
-x-cryptonpay-signature: sha256=<hex_hmac>
-x-cryptonpay-timestamp: <unix_seconds>
-x-cryptonpay-event: charge.paid
+x-cryptoniumpay-signature: sha256=<hex_hmac>
+x-cryptoniumpay-timestamp: <unix_seconds>
+x-cryptoniumpay-event: charge.paid
 ```
 
 ### Verification (merchant side)

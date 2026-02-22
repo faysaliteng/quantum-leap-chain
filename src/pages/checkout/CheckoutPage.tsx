@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { checkout } from "@/lib/api-client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
-import { CryptonpayLogo } from "@/components/CryptonpayLogo";
+import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { QRCodeSVG } from "qrcode.react";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,7 +46,7 @@ export default function CheckoutPage() {
       <Card className="w-full max-w-md border-border/50">
         <CardContent className="pt-6 space-y-6">
           <div className="flex justify-center">
-            <CryptonpayLogo size="sm" />
+            <CryptoniumpayLogo size="sm" />
           </div>
 
           <div className="text-center">

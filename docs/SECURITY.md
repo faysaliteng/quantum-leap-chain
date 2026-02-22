@@ -1,6 +1,6 @@
-# Cryptonpay — Security Documentation
+# Cryptoniumpay — Security Documentation
 
-> Threat model, authentication flows, webhook security, and secrets handling for the Cryptonpay platform.
+> Threat model, authentication flows, webhook security, and secrets handling for the Cryptoniumpay platform.
 
 **Version:** 1.0.0
 **Last updated:** 2026-02-22
@@ -106,9 +106,9 @@ Signature = HMAC-SHA256(secret, timestamp + "." + JSON.stringify(payload))
 ### Headers Sent
 
 ```
-x-cryptonpay-signature: sha256=<hex>
-x-cryptonpay-timestamp: <unix_seconds>
-x-cryptonpay-event: charge.paid
+x-cryptoniumpay-signature: sha256=<hex>
+x-cryptoniumpay-timestamp: <unix_seconds>
+x-cryptoniumpay-event: charge.paid
 ```
 
 ### Replay Protection

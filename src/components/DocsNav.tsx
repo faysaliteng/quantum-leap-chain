@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { CryptonpayLogo } from "@/components/CryptonpayLogo";
+import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Menu, X } from "lucide-react";
@@ -25,7 +25,7 @@ export function DocsNav() {
           <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
             <Link to="/"><ArrowLeft className="h-4 w-4" /></Link>
           </Button>
-          <CryptonpayLogo size="sm" />
+          <CryptoniumpayLogo size="sm" />
         </div>
 
         {/* Desktop nav */}

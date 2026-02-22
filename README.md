@@ -1,8 +1,8 @@
-# Cryptonpay — Self-Hosted Crypto Payment Gateway
+# Cryptoniumpay — Self-Hosted Crypto Payment Gateway
 
 > Enterprise-grade, non-custodial cryptocurrency payment infrastructure. Accept BTC, ETH, and stablecoins with automatic on-chain verification, HMAC-signed webhooks, and instant settlement.
 
-[![CI](https://github.com/your-org/cryptonpay/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/cryptonpay/actions/workflows/ci.yml)
+[![CI](https://github.com/your-org/cryptoniumpay/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/cryptoniumpay/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-gold.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://typescriptlang.org)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev)
@@ -83,8 +83,8 @@
 
 ```bash
 # Clone
-git clone https://github.com/your-org/cryptonpay.git
-cd cryptonpay
+git clone https://github.com/your-org/cryptoniumpay.git
+cd cryptoniumpay
 
 # Install dependencies
 npm install
@@ -150,7 +150,7 @@ See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for atomic, A-Z instructions with copy-
 ## 📁 Project Structure
 
 ```
-cryptonpay/
+cryptoniumpay/
 ├── src/                          # React frontend source
 │   ├── components/               # 13 custom + 45 shadcn/ui components
 │   │   ├── OfflineBanner.tsx     # Global offline detection
@@ -227,4 +227,4 @@ MIT — Deploy anywhere, modify freely, no restrictions.
 
 **No Lovable. No Supabase. No Firebase. 100% self-hosted.**
 
-*Built with conviction. Deployed with confidence. Cryptonpay v1.0*
+*Built with conviction. Deployed with confidence. Cryptoniumpay v1.0*

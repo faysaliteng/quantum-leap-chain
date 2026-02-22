@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CryptonpayLogo } from "@/components/CryptonpayLogo";
+import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CryptoPriceTicker } from "@/components/CryptoPriceTicker";
 import {
@@ -56,7 +56,7 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container flex h-16 items-center justify-between">
-          <CryptonpayLogo size="md" />
+          <CryptoniumpayLogo size="md" />
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
@@ -370,7 +370,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-border/50 py-10">
         <div className="container flex flex-col items-center gap-4">
-          <CryptonpayLogo size="sm" />
+          <CryptoniumpayLogo size="sm" />
           <p className="text-xs text-muted-foreground text-center">
             Deploy on your own infrastructure. No third-party dependencies. Built for the next generation.
           </p>

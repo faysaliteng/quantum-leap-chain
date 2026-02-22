@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CryptonpayLogo } from "@/components/CryptonpayLogo";
+import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 
 export default function Login() {
   const { login } = useAuth();
@@ -42,10 +42,10 @@ export default function Login() {
       <Card className="w-full max-w-sm border-border/50 relative">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-3">
-            <CryptonpayLogo size="lg" showText={false} />
+            <CryptoniumpayLogo size="lg" showText={false} />
           </div>
           <CardTitle className="text-xl font-display">Welcome back</CardTitle>
-          <CardDescription>Sign in to your Cryptonpay account</CardDescription>
+          <CardDescription>Sign in to your Cryptoniumpay account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

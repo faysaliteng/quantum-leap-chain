@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { CryptonpayLogo } from "@/components/CryptonpayLogo";
+import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { z } from "zod";
 
 const signupSchema = z.object({
@@ -77,7 +77,7 @@ export default function Signup() {
       <Card className="w-full max-w-sm border-border/50 relative">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-3">
-            <CryptonpayLogo size="lg" showText={false} />
+            <CryptoniumpayLogo size="lg" showText={false} />
           </div>
           <CardTitle className="text-xl font-display">Create your account</CardTitle>
           <CardDescription>Start accepting crypto payments today</CardDescription>

@@ -1,4 +1,4 @@
-# Cryptonpay — Enterprise Deployment Guide
+# Cryptoniumpay — Enterprise Deployment Guide
 
 > Atomic, step-by-step deployment instructions. No room for error.
 > Written for absolute beginners. Every command is copy-pasteable.
@@ -65,15 +65,15 @@ docker compose version
 | Account | Purpose | Where to Sign Up |
 |---------|---------|-----------------|
 | **Cloudflare** (Option A) | Frontend hosting + API gateway | [dash.cloudflare.com](https://dash.cloudflare.com) |
-| **Domain registrar** | Custom domain (e.g. `cryptonpay.com`) | Any registrar (Cloudflare, Namecheap, etc.) |
+| **Domain registrar** | Custom domain (e.g. `cryptoniumpay.com`) | Any registrar (Cloudflare, Namecheap, etc.) |
 | **VPS provider** (Option B) | Server to run Docker Compose | Hetzner, DigitalOcean, AWS, etc. |
 | **GitHub** | Source code + CI/CD | [github.com](https://github.com) |
 
 ### 1.3 Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/cryptonpay.git
-cd cryptonpay
+git clone https://github.com/your-org/cryptoniumpay.git
+cd cryptoniumpay
 ```
 
 ### 1.4 Install Frontend Dependencies
@@ -136,31 +136,31 @@ npm run build
 ### Step 3: Create Cloudflare Pages Project
 
 ```bash
-wrangler pages project create cryptonpay --production-branch main
+wrangler pages project create cryptoniumpay --production-branch main
 ```
 
 **Expected output:**
 ```
-✨ Successfully created the Pages project "cryptonpay"
+✨ Successfully created the Pages project "cryptoniumpay"
 ```
 
 ### Step 4: Deploy Frontend to Pages
 
 ```bash
-wrangler pages deploy dist --project-name=cryptonpay
+wrangler pages deploy dist --project-name=cryptoniumpay
 ```
 
 **Expected output:**
 ```
 ✨ Deployment complete!
-URL: https://cryptonpay.pages.dev
+URL: https://cryptoniumpay.pages.dev
 ```
 
-**Verify:** Open the URL in your browser. You should see the Cryptonpay landing page.
+**Verify:** Open the URL in your browser. You should see the Cryptoniumpay landing page.
 
 ### Step 5: Set Custom Domain on Pages
 
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → **Pages** → `cryptonpay`
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → **Pages** → `cryptoniumpay`
 2. Click **Custom domains** → **Set up a custom domain**
 3. Enter: `pay.yourdomain.com`
 4. Cloudflare creates a CNAME record automatically
@@ -174,7 +174,7 @@ curl -sI https://pay.yourdomain.com | head -5
 
 ### Step 6: Configure Environment Variables in Pages
 
-1. Cloudflare Dashboard → Pages → `cryptonpay` → **Settings** → **Environment variables**
+1. Cloudflare Dashboard → Pages → `cryptoniumpay` → **Settings** → **Environment variables**
 2. Click **Add variable** for **Production**:
 
 | Variable | Value |
@@ -194,7 +194,7 @@ mkdir -p infra/cloudflare
 Create `infra/cloudflare/wrangler.toml`:
 
 ```toml
-name = "cryptonpay-api"
+name = "cryptoniumpay-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
@@ -264,13 +264,13 @@ wrangler deploy
 
 **Expected output:**
 ```
-Published cryptonpay-api (x.xx sec)
-  https://cryptonpay-api.your-subdomain.workers.dev
+Published cryptoniumpay-api (x.xx sec)
+  https://cryptoniumpay-api.your-subdomain.workers.dev
 ```
 
 ### Step 9: Set Custom Domain on Worker
 
-1. Cloudflare Dashboard → **Workers & Pages** → `cryptonpay-api` → **Settings** → **Domains & Routes**
+1. Cloudflare Dashboard → **Workers & Pages** → `cryptoniumpay-api` → **Settings** → **Domains & Routes**
 2. Click **Add** → **Custom Domain**
 3. Enter: `api.yourdomain.com`
 4. Click **Add**
@@ -294,7 +294,7 @@ wrangler secret put BACKEND_ORIGIN
 
 ### Step 11: Enable GitHub CI/CD for Pages
 
-1. Cloudflare Dashboard → Pages → `cryptonpay` → **Settings** → **Builds & deployments**
+1. Cloudflare Dashboard → Pages → `cryptoniumpay` → **Settings** → **Builds & deployments**
 2. Click **Connect to Git** → Select your GitHub repository
 3. Configure build settings:
    - **Build command:** `npm run build`
@@ -341,11 +341,11 @@ apt update && apt upgrade -y
 apt install -y curl wget git ufw fail2ban
 
 # Create non-root user
-adduser cryptonpay
-usermod -aG sudo cryptonpay
+adduser cryptoniumpay
+usermod -aG sudo cryptoniumpay
 
 # Switch to new user
-su - cryptonpay
+su - cryptoniumpay
 ```
 
 ### Step 4: Install Docker
@@ -385,9 +385,9 @@ sudo ufw status
 
 ```bash
 cd /opt
-sudo mkdir cryptonpay && sudo chown cryptonpay:cryptonpay cryptonpay
-cd cryptonpay
-git clone https://github.com/your-org/cryptonpay.git .
+sudo mkdir cryptoniumpay && sudo chown cryptoniumpay:cryptoniumpay cryptoniumpay
+cd cryptoniumpay
+git clone https://github.com/your-org/cryptoniumpay.git .
 ```
 
 ### Step 7: Generate Secrets
@@ -416,10 +416,10 @@ cat > .env << 'ENVEOF'
 VITE_API_BASE_URL=https://yourdomain.com/api
 
 # ── Database ──
-POSTGRES_DB=cryptonpay
-POSTGRES_USER=cryptonpay
+POSTGRES_DB=cryptoniumpay
+POSTGRES_USER=cryptoniumpay
 POSTGRES_PASSWORD=REPLACE_WITH_DB_PASSWORD
-DATABASE_URL=postgres://cryptonpay:REPLACE_WITH_DB_PASSWORD@postgres:5432/cryptonpay
+DATABASE_URL=postgres://cryptoniumpay:REPLACE_WITH_DB_PASSWORD@postgres:5432/cryptoniumpay
 
 # ── Redis ──
 REDIS_URL=redis://redis:6379
@@ -453,7 +453,7 @@ sed -i "s/REPLACE_WITH_JWT_SECRET/$JWT_SECRET/g" .env
 sed -i "s/REPLACE_WITH_SIGNER_SECRET/$SIGNER_SECRET/g" .env
 
 # Replace domain
-read -p "Enter your domain (e.g. cryptonpay.com): " DOMAIN
+read -p "Enter your domain (e.g. cryptoniumpay.com): " DOMAIN
 sed -i "s/yourdomain.com/$DOMAIN/g" .env
 
 # Verify
@@ -766,13 +766,13 @@ docker compose ps
 **Expected output:**
 ```
 NAME                STATUS              PORTS
-cryptonpay-api      Up (healthy)
-cryptonpay-frontend Up                  0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
-cryptonpay-worker   Up
-cryptonpay-signer   Up
-cryptonpay-postgres Up (healthy)
-cryptonpay-redis    Up (healthy)
-cryptonpay-certbot  Up
+cryptoniumpay-api      Up (healthy)
+cryptoniumpay-frontend Up                  0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+cryptoniumpay-worker   Up
+cryptoniumpay-signer   Up
+cryptoniumpay-postgres Up (healthy)
+cryptoniumpay-redis    Up (healthy)
+cryptoniumpay-certbot  Up
 ```
 
 ### Step 14: Run Database Migrations
@@ -845,7 +845,7 @@ Create these DNS records at your registrar:
 
 | Type | Name | Value | Proxy |
 |------|------|-------|-------|
-| CNAME | `pay` | `cryptonpay.pages.dev` | Proxied ☁️ |
+| CNAME | `pay` | `cryptoniumpay.pages.dev` | Proxied ☁️ |
 | A | `api` | `YOUR_BACKEND_IP` | Proxied ☁️ |
 
 ### SSL Certificate Renewal (Option B)
@@ -862,7 +862,7 @@ Add auto-renewal to crontab:
 ```bash
 crontab -e
 # Add this line:
-0 3 1,15 * * cd /opt/cryptonpay && docker compose run --rm certbot renew && docker compose restart frontend
+0 3 1,15 * * cd /opt/cryptoniumpay && docker compose run --rm certbot renew && docker compose restart frontend
 ```
 
 ---
@@ -954,10 +954,10 @@ Add:
 
 ```
 # Health check every 5 minutes
-*/5 * * * * curl -sf https://yourdomain.com/api/v1/health > /dev/null || echo "ALERT: Cryptonpay API down at $(date)" | mail -s "API DOWN" ops@yourdomain.com
+*/5 * * * * curl -sf https://yourdomain.com/api/v1/health > /dev/null || echo "ALERT: Cryptoniumpay API down at $(date)" | mail -s "API DOWN" ops@yourdomain.com
 
 # SSL renewal check (1st and 15th of month)
-0 3 1,15 * * cd /opt/cryptonpay && docker compose run --rm certbot renew && docker compose restart frontend >> /var/log/certbot-renew.log 2>&1
+0 3 1,15 * * cd /opt/cryptoniumpay && docker compose run --rm certbot renew && docker compose restart frontend >> /var/log/certbot-renew.log 2>&1
 ```
 
 ### Log Viewing
@@ -979,7 +979,7 @@ docker compose logs --since 1h api
 
 ### Log Rotation
 
-Create `/etc/logrotate.d/docker-cryptonpay`:
+Create `/etc/logrotate.d/docker-cryptoniumpay`:
 
 ```
 /var/lib/docker/containers/*/*.log {
@@ -996,7 +996,7 @@ Create `/etc/logrotate.d/docker-cryptonpay`:
 ### Container Updates
 
 ```bash
-cd /opt/cryptonpay
+cd /opt/cryptoniumpay
 
 # Pull latest code
 git pull origin main
@@ -1018,13 +1018,13 @@ curl -s https://yourdomain.com/api/v1/health
 
 ### Automated Daily Backup
 
-Create `/opt/cryptonpay/scripts/backup.sh`:
+Create `/opt/cryptoniumpay/scripts/backup.sh`:
 
 ```bash
 #!/bin/bash
 set -euo pipefail
 
-BACKUP_DIR="/opt/backups/cryptonpay"
+BACKUP_DIR="/opt/backups/cryptoniumpay"
 DATE=$(date +%Y%m%d_%H%M%S)
 KEEP_DAYS=30
 
@@ -1032,8 +1032,8 @@ mkdir -p "$BACKUP_DIR"
 
 # Database backup
 echo "$(date): Starting database backup..."
-docker compose -f /opt/cryptonpay/docker-compose.yml exec -T postgres \
-  pg_dump -U cryptonpay -Fc --no-owner cryptonpay > "$BACKUP_DIR/db_$DATE.dump"
+docker compose -f /opt/cryptoniumpay/docker-compose.yml exec -T postgres \
+  pg_dump -U cryptoniumpay -Fc --no-owner cryptoniumpay > "$BACKUP_DIR/db_$DATE.dump"
 
 # Compress
 gzip "$BACKUP_DIR/db_$DATE.dump"
@@ -1049,34 +1049,34 @@ echo "$(date): Backups older than $KEEP_DAYS days removed"
 ```
 
 ```bash
-chmod +x /opt/cryptonpay/scripts/backup.sh
+chmod +x /opt/cryptoniumpay/scripts/backup.sh
 
 # Add to crontab
 crontab -e
 # Add:
-0 3 * * * /opt/cryptonpay/scripts/backup.sh >> /var/log/cryptonpay-backup.log 2>&1
+0 3 * * * /opt/cryptoniumpay/scripts/backup.sh >> /var/log/cryptoniumpay-backup.log 2>&1
 ```
 
 ### Manual Backup
 
 ```bash
-/opt/cryptonpay/scripts/backup.sh
+/opt/cryptoniumpay/scripts/backup.sh
 ```
 
 ### Restore from Backup
 
 ```bash
 # List available backups
-ls -la /opt/backups/cryptonpay/
+ls -la /opt/backups/cryptoniumpay/
 
 # Stop services that write to DB
-cd /opt/cryptonpay
+cd /opt/cryptoniumpay
 docker compose stop api worker
 
 # Restore (replace filename with your backup)
-gunzip -k /opt/backups/cryptonpay/db_20260222_030000.dump.gz
-docker compose exec -T postgres pg_restore -U cryptonpay -d cryptonpay --clean --if-exists \
-  < /opt/backups/cryptonpay/db_20260222_030000.dump
+gunzip -k /opt/backups/cryptoniumpay/db_20260222_030000.dump.gz
+docker compose exec -T postgres pg_restore -U cryptoniumpay -d cryptoniumpay --clean --if-exists \
+  < /opt/backups/cryptoniumpay/db_20260222_030000.dump
 
 # Restart services
 docker compose start api worker
@@ -1132,7 +1132,7 @@ docker compose logs --tail=50 api
 docker compose restart api
 
 # Verify database is healthy
-docker compose exec postgres pg_isready -U cryptonpay
+docker compose exec postgres pg_isready -U cryptoniumpay
 ```
 
 ### Frontend shows blank page
@@ -1179,13 +1179,13 @@ docker compose restart redis
 
 ```bash
 # Check database size
-docker compose exec postgres psql -U cryptonpay -c "SELECT pg_size_pretty(pg_database_size('cryptonpay'));"
+docker compose exec postgres psql -U cryptoniumpay -c "SELECT pg_size_pretty(pg_database_size('cryptoniumpay'));"
 
 # Check table sizes
-docker compose exec postgres psql -U cryptonpay -c "SELECT relname, pg_size_pretty(pg_total_relation_size(oid)) FROM pg_class ORDER BY pg_total_relation_size(oid) DESC LIMIT 10;"
+docker compose exec postgres psql -U cryptoniumpay -c "SELECT relname, pg_size_pretty(pg_total_relation_size(oid)) FROM pg_class ORDER BY pg_total_relation_size(oid) DESC LIMIT 10;"
 
 # Vacuum (reclaim space)
-docker compose exec postgres psql -U cryptonpay -c "VACUUM ANALYZE;"
+docker compose exec postgres psql -U cryptoniumpay -c "VACUUM ANALYZE;"
 ```
 
 ---
@@ -1242,62 +1242,62 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 
 If running without Docker, use systemd:
 
-### `/etc/systemd/system/cryptonpay-api.service`
+### `/etc/systemd/system/cryptoniumpay-api.service`
 
 ```ini
 [Unit]
-Description=Cryptonpay API Server
+Description=Cryptoniumpay API Server
 After=network.target postgresql.service redis.service
 Requires=postgresql.service redis.service
 
 [Service]
 Type=simple
-User=cryptonpay
-Group=cryptonpay
-WorkingDirectory=/opt/cryptonpay/backend
+User=cryptoniumpay
+Group=cryptoniumpay
+WorkingDirectory=/opt/cryptoniumpay/backend
 ExecStart=/usr/bin/node dist/main.js
 Restart=always
 RestartSec=5
-EnvironmentFile=/opt/cryptonpay/.env
+EnvironmentFile=/opt/cryptoniumpay/.env
 
 # Security
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/cryptonpay
+ReadWritePaths=/opt/cryptoniumpay
 
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=cryptonpay-api
+SyslogIdentifier=cryptoniumpay-api
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-### `/etc/systemd/system/cryptonpay-worker.service`
+### `/etc/systemd/system/cryptoniumpay-worker.service`
 
 ```ini
 [Unit]
-Description=Cryptonpay Background Worker
-After=network.target postgresql.service redis.service cryptonpay-api.service
+Description=Cryptoniumpay Background Worker
+After=network.target postgresql.service redis.service cryptoniumpay-api.service
 
 [Service]
 Type=simple
-User=cryptonpay
-Group=cryptonpay
-WorkingDirectory=/opt/cryptonpay/backend
+User=cryptoniumpay
+Group=cryptoniumpay
+WorkingDirectory=/opt/cryptoniumpay/backend
 ExecStart=/usr/bin/node dist/worker.js
 Restart=always
 RestartSec=5
-EnvironmentFile=/opt/cryptonpay/.env
+EnvironmentFile=/opt/cryptoniumpay/.env
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/cryptonpay
+ReadWritePaths=/opt/cryptoniumpay
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=cryptonpay-worker
+SyslogIdentifier=cryptoniumpay-worker
 
 [Install]
 WantedBy=multi-user.target
@@ -1307,19 +1307,19 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable cryptonpay-api cryptonpay-worker
-sudo systemctl start cryptonpay-api cryptonpay-worker
+sudo systemctl enable cryptoniumpay-api cryptoniumpay-worker
+sudo systemctl start cryptoniumpay-api cryptoniumpay-worker
 
 # Check status
-sudo systemctl status cryptonpay-api
-sudo systemctl status cryptonpay-worker
+sudo systemctl status cryptoniumpay-api
+sudo systemctl status cryptoniumpay-worker
 
 # View logs
-journalctl -u cryptonpay-api -f
-journalctl -u cryptonpay-worker -f
+journalctl -u cryptoniumpay-api -f
+journalctl -u cryptoniumpay-worker -f
 ```
 
 ---
 
-*Cryptonpay v1.0 — Enterprise Deployment Guide*
+*Cryptoniumpay v1.0 — Enterprise Deployment Guide*
 *No room for error. Deploy with confidence.*
