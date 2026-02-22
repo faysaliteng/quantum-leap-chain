@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/lib/auth";
+import { auth as authApi } from "@/lib/api-client";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { loginWithToken } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +23,26 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login({ email, password });
+      const res = await authApi.login({ email, password });
+
+      // Multi-step auth: email verification first, then 2FA
+      if (res.requires_email_verification) {
+        navigate("/verify-email", {
+          state: { session_token: res.session_token, email, requires_2fa: res.requires_2fa },
+          replace: true,
+        });
+        return;
+      }
+      if (res.requires_2fa) {
+        navigate("/verify-2fa", {
+          state: { session_token: res.session_token, email },
+          replace: true,
+        });
+        return;
+      }
+
+      // Direct login (no 2FA / email verification)
+      loginWithToken(res.token, res.user);
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid credentials");
@@ -34,7 +54,6 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background relative">
       <SEOHead title="Sign In" description="Log in to your Cryptoniumpay merchant dashboard." />
-      {/* Back to Home */}
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
         <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Home</Link>
       </Button>

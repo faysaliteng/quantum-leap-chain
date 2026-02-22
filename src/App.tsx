@@ -12,6 +12,8 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerifyEmail from "./pages/VerifyEmail";
+import Verify2FA from "./pages/Verify2FA";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -24,6 +26,7 @@ import SettlementSettings from "./pages/dashboard/settings/SettlementSettings";
 import ApiKeysSettings from "./pages/dashboard/settings/ApiKeysSettings";
 import WebhookSettings from "./pages/dashboard/settings/WebhookSettings";
 import AddressPool from "./pages/dashboard/settings/AddressPool";
+import SecuritySettings from "./pages/dashboard/settings/SecuritySettings";
 import MerchantWallets from "./pages/dashboard/MerchantWallets";
 import InvoicesList from "./pages/dashboard/InvoicesList";
 import CreateInvoice from "./pages/dashboard/CreateInvoice";
@@ -80,6 +83,8 @@ const App = () => (
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/verify-2fa" element={<Verify2FA />} />
               <Route path="/pay/:chargeId" element={<CheckoutPage />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -104,6 +109,7 @@ const App = () => (
                 <Route path="settings/api-keys" element={<ApiKeysSettings />} />
                 <Route path="settings/webhooks" element={<WebhookSettings />} />
                 <Route path="settings/addresses" element={<AddressPool />} />
+                <Route path="settings/security" element={<SecuritySettings />} />
                 <Route path="wallets" element={<MerchantWallets />} />
                 <Route path="invoices" element={<InvoicesList />} />
                 <Route path="invoices/new" element={<CreateInvoice />} />

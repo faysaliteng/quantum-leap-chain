@@ -465,11 +465,42 @@ export interface PaginatedResponse<T> {
 export interface LoginRequest {
   email: string;
   password: string;
+  totp_code?: string;
+  email_code?: string;
 }
 
 export interface LoginResponse {
   token: string;
   user: { id: string; email: string; role: "merchant" | "admin"; merchant_id?: string };
+  requires_2fa?: boolean;
+  requires_email_verification?: boolean;
+  session_token?: string;
+}
+
+// ── 2FA / Security ──
+
+export interface TwoFactorSetup {
+  secret: string;
+  otpauth_url: string;
+  qr_code_data_url: string;
+  backup_codes: string[];
+}
+
+export interface SecuritySettings {
+  two_factor_enabled: boolean;
+  email_verification_enabled: boolean;
+  last_password_change?: string;
+  active_sessions: ActiveSession[];
+  backup_codes_remaining: number;
+}
+
+export interface ActiveSession {
+  id: string;
+  device: string;
+  ip_address: string;
+  location?: string;
+  last_active: string;
+  current: boolean;
 }
 
 export interface HealthResponse {
