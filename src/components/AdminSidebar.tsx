@@ -1,5 +1,6 @@
 import {
   LayoutDashboard, Users, Link2, Activity, FileText, LogOut, Shield,
+  Percent, DollarSign,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -11,6 +12,8 @@ import {
 
 const nav = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
+  { title: "Revenue", url: "/admin/revenue", icon: DollarSign },
+  { title: "Fee Management", url: "/admin/fees", icon: Percent },
   { title: "Merchants", url: "/admin/merchants", icon: Users },
   { title: "Chains & Assets", url: "/admin/chains", icon: Link2 },
   { title: "Monitoring", url: "/admin/monitoring", icon: Activity },

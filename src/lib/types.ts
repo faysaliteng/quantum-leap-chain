@@ -215,6 +215,40 @@ export interface AdminStats {
   transactions_today: number;
 }
 
+// ── Fee Management ──
+
+export interface FeeConfig {
+  rate_percent: number;
+  min_fee_usd: number;
+  model: "flat" | "tiered";
+}
+
+export interface MerchantFeeOverride {
+  merchant_id: string;
+  rate_percent: number;
+  created_at: string;
+}
+
+// ── Revenue ──
+
+export interface RevenueStats {
+  total_revenue_usd: string;
+  fees_today_usd: string;
+  total_transactions: number;
+  active_merchants: number;
+  revenue_change_pct: number;
+  daily_revenue: { date: string; amount: number }[];
+}
+
+export interface TopMerchant {
+  merchant_id: string;
+  name: string;
+  volume_usd: string;
+  fees_usd: string;
+  tx_count: number;
+  rate_percent: number;
+}
+
 // ── API request/response types ──
 
 export interface CreateChargeRequest {
