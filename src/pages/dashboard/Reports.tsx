@@ -86,28 +86,28 @@ export default function Reports() {
       {/* KPI Summary */}
       {charges.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Total Charges" value={charges.length} icon={Receipt} />
-          <StatCard label="Volume (USD)" value={`$${totalVolume.toLocaleString()}`} icon={DollarSign} />
-          <StatCard label="Confirmed/Paid" value={confirmed} icon={TrendingUp} subtitle={`${charges.length > 0 ? ((confirmed / charges.length) * 100).toFixed(1) : 0}% success rate`} />
+          <StatCard label={t("reports.totalCharges")} value={charges.length} icon={Receipt} />
+          <StatCard label={t("reports.volumeUsd")} value={`$${totalVolume.toLocaleString()}`} icon={DollarSign} />
+          <StatCard label={t("reports.confirmedPaid")} value={confirmed} icon={TrendingUp} subtitle={`${charges.length > 0 ? ((confirmed / charges.length) * 100).toFixed(1) : 0}% ${t("reports.successRate")}`} />
         </div>
       )}
 
       {/* Export Controls */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Export Transactions</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("reports.exportTransactions")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>From</Label>
+              <Label>{t("reports.from")}</Label>
               <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>To</Label>
+              <Label>{t("reports.to")}</Label>
               <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
             </div>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => refetch()} disabled={isLoading}>{isLoading ? "Loading…" : "Fetch Data"}</Button>
+            <Button size="sm" onClick={() => refetch()} disabled={isLoading}>{isLoading ? t("reports.loading") : t("reports.fetchData")}</Button>
             <Button size="sm" variant="outline" onClick={() => exportData(charges, "csv")} disabled={!charges.length}>
               <Download className="mr-1.5 h-3.5 w-3.5" />CSV
             </Button>
@@ -115,7 +115,7 @@ export default function Reports() {
               <Download className="mr-1.5 h-3.5 w-3.5" />JSON
             </Button>
           </div>
-          {charges.length > 0 && <p className="text-xs text-muted-foreground">{charges.length} charges fetched</p>}
+          {charges.length > 0 && <p className="text-xs text-muted-foreground">{charges.length} {t("reports.chargesFetched")}</p>}
         </CardContent>
       </Card>
 
@@ -124,7 +124,7 @@ export default function Reports() {
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Volume by Day */}
           <Card>
-            <CardHeader><CardTitle className="text-sm">Volume by Day</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm">{t("reports.volumeByDay")}</CardTitle></CardHeader>
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -148,7 +148,7 @@ export default function Reports() {
 
           {/* Revenue by Asset */}
           <Card>
-            <CardHeader><CardTitle className="text-sm">Revenue by Asset</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm">{t("reports.revenueByAsset")}</CardTitle></CardHeader>
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">

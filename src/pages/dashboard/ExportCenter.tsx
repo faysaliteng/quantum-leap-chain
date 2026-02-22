@@ -80,7 +80,7 @@ export default function ExportCenter() {
           <p className="text-sm text-muted-foreground mt-1">{t("exports.subtitle") || "Export your data as CSV or JSON files"}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />New Export
+          <Plus className="mr-1.5 h-4 w-4" />{t("exports.newExport") || "New Export"}
         </Button>
       </div>
 
@@ -139,10 +139,10 @@ export default function ExportCenter() {
       {/* Create Export Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Create New Export</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("exports.createNew") || "Create New Export"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Data Type</Label>
+              <Label>{t("exports.dataType") || "Data Type"}</Label>
               <Select value={kind} onValueChange={(v) => setKind(v as ExportKind)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -153,7 +153,7 @@ export default function ExportCenter() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Format</Label>
+              <Label>{t("exports.format") || "Format"}</Label>
               <Select value={format} onValueChange={(v) => setFormat(v as "csv" | "json")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -164,19 +164,19 @@ export default function ExportCenter() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>From Date</Label>
+                <Label>{t("reports.from")}</Label>
                 <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>To Date</Label>
+                <Label>{t("reports.to")}</Label>
                 <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel") || "Cancel"}</Button>
             <Button onClick={() => createMut.mutate()} disabled={createMut.isPending}>
-              {createMut.isPending ? "Creating…" : "Create Export"}
+              {createMut.isPending ? t("exports.creating") || "Creating…" : t("exports.createExport") || "Create Export"}
             </Button>
           </DialogFooter>
         </DialogContent>
