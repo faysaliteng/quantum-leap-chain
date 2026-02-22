@@ -13,6 +13,7 @@ interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   login: (creds: LoginRequest) => Promise<void>;
+  loginWithToken: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -39,6 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.user);
   }, []);
 
+  const loginWithToken = useCallback((token: string, userData: User) => {
+    localStorage.setItem("sp_token", token);
+    localStorage.setItem("sp_user", JSON.stringify(userData));
+    setUser(userData);
+  }, []);
+
   const logout = useCallback(() => {
     authApi.logout().catch(() => {});
     localStorage.removeItem("sp_token");
@@ -47,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, isLoading, login, loginWithToken, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

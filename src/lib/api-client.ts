@@ -47,6 +47,26 @@ export const auth = {
   login: (data: LoginRequest) => http.post<LoginResponse>("/v1/auth/login", data).then((r) => r.data),
   signup: (data: SignupRequest) => http.post<SignupResponse>("/v1/auth/signup", data).then((r) => r.data),
   logout: () => http.delete("/v1/auth/logout"),
+  verifyEmailCode: (data: { session_token: string; code: string }) =>
+    http.post<LoginResponse>("/v1/auth/verify-email", data).then((r) => r.data),
+  verify2fa: (data: { session_token: string; totp_code: string }) =>
+    http.post<LoginResponse>("/v1/auth/verify-2fa", data).then((r) => r.data),
+  resendEmailCode: (session_token: string) =>
+    http.post("/v1/auth/resend-email-code", { session_token }),
+};
+
+// ── Security / 2FA ──
+export const security = {
+  getSettings: () => http.get<import("./types").SecuritySettings>("/v1/security/settings").then((r) => r.data),
+  setup2fa: () => http.post<import("./types").TwoFactorSetup>("/v1/security/2fa/setup").then((r) => r.data),
+  enable2fa: (code: string) => http.post("/v1/security/2fa/enable", { totp_code: code }),
+  disable2fa: (code: string) => http.post("/v1/security/2fa/disable", { totp_code: code }),
+  toggleEmailVerification: (enabled: boolean) => http.put("/v1/security/email-verification", { enabled }),
+  regenerateBackupCodes: () => http.post<{ backup_codes: string[] }>("/v1/security/backup-codes").then((r) => r.data),
+  revokeSession: (id: string) => http.delete(`/v1/security/sessions/${id}`),
+  revokeAllSessions: () => http.delete("/v1/security/sessions"),
+  changePassword: (data: { current_password: string; new_password: string }) =>
+    http.put("/v1/security/password", data),
 };
 
 // ── Charges ──
