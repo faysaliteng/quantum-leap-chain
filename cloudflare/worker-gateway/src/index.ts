@@ -107,9 +107,14 @@ export default {
     // Forward request to VPS backend
     const headers = new Headers(request.headers);
 
+    // Override Host header to backend origin (prevents Cloudflare Error 1003)
+    const backendHost = new URL(env.BACKEND_ORIGIN).host;
+    headers.set('Host', backendHost);
+
     // Add forwarding headers
     headers.set('X-Forwarded-For', clientIp);
     headers.set('X-Forwarded-Proto', 'https');
+    headers.set('X-Forwarded-Host', url.host);
     headers.set('X-Real-IP', clientIp);
 
     // Add HMAC edge signature
