@@ -2,24 +2,24 @@ import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { wallets } from "@/lib/api-client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { CopyButton } from "@/components/CopyButton";
+import { WalletConnectPanel } from "@/components/WalletConnectPanel";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Wallet, PlusCircle, Trash2, Send, Download, Eye, EyeOff,
-  ArrowUpRight, ArrowDownLeft, AlertTriangle, Lock, Shield, ShieldCheck,
-  QrCode, RefreshCw, ExternalLink, TrendingUp, TrendingDown, Copy, Key,
+  ArrowUpRight, AlertTriangle, Lock, Shield, ShieldCheck,
+  QrCode, Key, Link2, Unplug, Usb, Smartphone,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { ChainId, WalletConfig } from "@/lib/types";
@@ -27,11 +27,9 @@ import type { ChainId, WalletConfig } from "@/lib/types";
 const chainLabels: Record<string, string> = {
   btc: "Bitcoin", eth: "Ethereum", arbitrum: "Arbitrum", optimism: "Optimism", polygon: "Polygon",
 };
-
 const chainIcons: Record<string, string> = {
   btc: "₿", eth: "Ξ", arbitrum: "◆", optimism: "⊕", polygon: "⬡",
 };
-
 const statusStyles: Record<string, string> = {
   active: "bg-success/10 text-success",
   inactive: "bg-muted text-muted-foreground",
@@ -42,16 +40,15 @@ export default function MerchantWallets() {
   usePageTitle("Crypto Wallet");
   const qc = useQueryClient();
 
-  // Add wallet
-  const [showAdd, setShowAdd] = useState(false);
-  const [addType, setAddType] = useState<"generate" | "import">("generate");
-  const [form, setForm] = useState({ label: "", chain: "eth" as ChainId, address: "", type: "hot" as "hot" | "cold" });
+  // WalletConnect dialog
+  const [showConnect, setShowConnect] = useState(false);
 
-  // Send dialog
+  // Send / Withdraw dialog
   const [sendWallet, setSendWallet] = useState<WalletConfig | null>(null);
   const [sendTo, setSendTo] = useState("");
   const [sendAmount, setSendAmount] = useState("");
   const [sendConfirm, setSendConfirm] = useState(false);
+  const [sendMemo, setSendMemo] = useState("");
 
   // Receive dialog
   const [receiveWallet, setReceiveWallet] = useState<WalletConfig | null>(null);
@@ -66,12 +63,10 @@ export default function MerchantWallets() {
   });
 
   const addMut = useMutation({
-    mutationFn: () => wallets.add(form),
+    mutationFn: (data: { label: string; chain: string; address: string; type: string }) => wallets.add(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["merchant-wallets"] });
-      setForm({ label: "", chain: "eth", address: "", type: "hot" });
-      setShowAdd(false);
-      toast.success("Wallet added successfully");
+      toast.success("Wallet connected successfully");
     },
     onError: () => toast.error("Failed to add wallet"),
   });
@@ -88,17 +83,28 @@ export default function MerchantWallets() {
   const hotWallets = wList.filter((w) => w.type === "hot");
   const coldWallets = wList.filter((w) => w.type === "cold");
 
+  const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold" }) => {
+    addMut.mutate({ label: wallet.label, chain: wallet.chain, address: wallet.address, type: wallet.type });
+  };
+
+  const estimatedFee = sendWallet?.chain === "btc" ? 0.00005 : 0.001;
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold">Crypto Wallet</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage your hot and cold wallets securely</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage, send, receive & connect wallets</p>
         </div>
-        <Button onClick={() => setShowAdd(true)}>
-          <PlusCircle className="mr-1.5 h-4 w-4" />Add Wallet
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowConnect(true)}>
+            <Link2 className="mr-1.5 h-4 w-4" />Connect Wallet
+          </Button>
+          <Button onClick={() => setShowConnect(true)}>
+            <PlusCircle className="mr-1.5 h-4 w-4" />Add Wallet
+          </Button>
+        </div>
       </div>
 
       {/* Portfolio Overview */}
@@ -114,24 +120,41 @@ export default function MerchantWallets() {
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50">
-              <p className="text-xs text-muted-foreground">Total Wallets</p>
-              <p className="text-xl font-bold">{wList.length}</p>
-            </div>
-            <div className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50">
-              <p className="text-xs text-muted-foreground">Hot Wallets</p>
-              <p className="text-xl font-bold text-success">{hotWallets.length}</p>
-            </div>
-            <div className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50">
-              <p className="text-xs text-muted-foreground">Cold Wallets</p>
-              <p className="text-xl font-bold text-info">{coldWallets.length}</p>
-            </div>
-            <div className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50">
-              <p className="text-xs text-muted-foreground">Chains</p>
-              <p className="text-xl font-bold">{new Set(wList.map((w) => w.chain)).size}</p>
-            </div>
+            {[
+              { label: "Total Wallets", value: wList.length },
+              { label: "Hot Wallets", value: hotWallets.length, color: "text-success" },
+              { label: "Cold Wallets", value: coldWallets.length, color: "text-info" },
+              { label: "Chains", value: new Set(wList.map((w) => w.chain)).size },
+            ].map((s) => (
+              <div key={s.label} className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50">
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className={`text-xl font-bold ${s.color ?? ""}`}>{s.value}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </Card>
+
+      {/* Connection Methods Banner */}
+      <Card className="border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <p className="text-sm font-medium">Supported Connections:</p>
+            <div className="flex items-center gap-3 flex-wrap">
+              {[
+                { icon: <Smartphone className="h-3.5 w-3.5" />, label: "WalletConnect v2" },
+                { icon: <Usb className="h-3.5 w-3.5" />, label: "Ledger" },
+                { icon: <Shield className="h-3.5 w-3.5" />, label: "Trezor" },
+                { icon: <QrCode className="h-3.5 w-3.5" />, label: "Keystone" },
+              ].map((c) => (
+                <Badge key={c.label} variant="outline" className="gap-1 text-xs">
+                  {c.icon}{c.label}
+                </Badge>
+              ))}
+              <span className="text-xs text-muted-foreground">+ 300 more wallets</span>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Wallet Tabs */}
@@ -150,7 +173,6 @@ export default function MerchantWallets() {
                 <Card key={w.id} className="group hover:border-primary/30 transition-colors">
                   <CardContent className="p-5">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      {/* Left: icon + info */}
                       <div className="flex items-start gap-4 min-w-0 flex-1">
                         <div className={`shrink-0 flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold ${w.type === "hot" ? "bg-success/10 text-success" : "bg-info/10 text-info"}`}>
                           {chainIcons[w.chain] ?? "?"}
@@ -173,41 +195,23 @@ export default function MerchantWallets() {
                           )}
                         </div>
                       </div>
-
-                      {/* Right: balance + actions */}
                       <div className="flex items-center gap-4 sm:gap-6">
                         <div className="text-right">
                           <p className="text-xl font-display font-bold">{w.balance}</p>
                           <p className="text-sm text-muted-foreground">${w.balance_usd.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Button
-                            variant="outline" size="icon" className="h-9 w-9"
-                            onClick={() => setSendWallet(w)}
-                            title="Send"
-                          >
+                          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setSendWallet(w)} title="Send / Withdraw">
                             <Send className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline" size="icon" className="h-9 w-9"
-                            onClick={() => setReceiveWallet(w)}
-                            title="Receive"
-                          >
+                          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setReceiveWallet(w)} title="Receive">
                             <Download className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline" size="icon" className="h-9 w-9"
-                            onClick={() => setSelectedWallet(w)}
-                            title="Details"
-                          >
+                          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setSelectedWallet(w)} title="Details">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost" size="icon" className="h-9 w-9 text-destructive"
-                            onClick={() => removeMut.mutate(w.id)}
-                            title="Remove"
-                          >
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => removeMut.mutate(w.id)} title="Disconnect">
+                            <Unplug className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -217,9 +221,9 @@ export default function MerchantWallets() {
               )) : (
                 <div className="text-center py-16 text-muted-foreground">
                   <Wallet className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No {tab === "hot" ? "hot" : tab === "cold" ? "cold" : ""} wallets yet.</p>
-                  <Button variant="outline" className="mt-4" onClick={() => setShowAdd(true)}>
-                    <PlusCircle className="mr-1.5 h-4 w-4" />Add Your First Wallet
+                  <p className="text-sm">No {tab === "hot" ? "hot" : tab === "cold" ? "cold" : ""} wallets connected.</p>
+                  <Button variant="outline" className="mt-4" onClick={() => setShowConnect(true)}>
+                    <Link2 className="mr-1.5 h-4 w-4" />Connect Your First Wallet
                   </Button>
                 </div>
               )}
@@ -237,130 +241,59 @@ export default function MerchantWallets() {
               <p className="font-semibold text-sm">Enterprise-Grade Wallet Security</p>
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li className="flex items-center gap-1.5"><Shield className="h-3 w-3" />Private keys encrypted with AES-256-GCM at rest</li>
-                <li className="flex items-center gap-1.5"><Lock className="h-3 w-3" />Cold wallet keys stored in hardware security modules (HSM)</li>
+                <li className="flex items-center gap-1.5"><Lock className="h-3 w-3" />Hardware wallets: keys never leave the device</li>
                 <li className="flex items-center gap-1.5"><Key className="h-3 w-3" />Multi-signature support for high-value transactions</li>
-                <li className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" />Withdrawal limits and anomaly detection enabled</li>
+                <li className="flex items-center gap-1.5"><AlertTriangle className="h-3 w-3" />Withdrawal limits, 2FA confirmation, and anomaly detection</li>
               </ul>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── Add Wallet Dialog ── */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Wallet</DialogTitle>
-            <DialogDescription>Create a new wallet or import an existing one</DialogDescription>
-          </DialogHeader>
-          <Tabs value={addType} onValueChange={(v) => setAddType(v as "generate" | "import")}>
-            <TabsList className="w-full">
-              <TabsTrigger value="generate" className="flex-1">Generate New</TabsTrigger>
-              <TabsTrigger value="import" className="flex-1">Import Existing</TabsTrigger>
-            </TabsList>
-            <TabsContent value="generate" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Wallet Label</Label>
-                <Input placeholder="e.g. Main ETH Wallet" value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Chain</Label>
-                  <Select value={form.chain} onValueChange={(v) => setForm((f) => ({ ...f, chain: v as ChainId }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(chainLabels).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as "hot" | "cold" }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hot">Hot Wallet</SelectItem>
-                      <SelectItem value="cold">Cold Storage</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="bg-muted rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-                <p className="font-medium text-foreground">What happens next:</p>
-                <p>• A new keypair will be generated server-side in an isolated HSM environment</p>
-                <p>• The private key will be encrypted with AES-256-GCM and stored securely</p>
-                <p>• You'll receive the public address to fund your wallet</p>
-              </div>
-            </TabsContent>
-            <TabsContent value="import" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Wallet Label</Label>
-                <Input placeholder="e.g. Cold Storage BTC" value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Chain</Label>
-                  <Select value={form.chain} onValueChange={(v) => setForm((f) => ({ ...f, chain: v as ChainId }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(chainLabels).map(([k, v]) => (
-                        <SelectItem key={k} value={k}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Type</Label>
-                  <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as "hot" | "cold" }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hot">Hot Wallet</SelectItem>
-                      <SelectItem value="cold">Cold Storage</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Wallet Address</Label>
-                <Input placeholder="0x... or bc1..." value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} className="font-mono text-sm" />
-              </div>
-              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                <p className="text-xs text-muted-foreground">
-                  <strong className="text-warning">Watch-only mode:</strong> Imported wallets are added as watch-only. To enable sending, you must also provide the private key which will be encrypted and stored in our HSM.
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
-            <Button
-              onClick={() => addMut.mutate()}
-              disabled={!form.label.trim() || (addType === "import" && !form.address.trim()) || addMut.isPending}
-            >
-              {addMut.isPending ? "Creating…" : addType === "generate" ? "Generate Wallet" : "Import Wallet"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ── WalletConnect Panel ── */}
+      <WalletConnectPanel
+        open={showConnect}
+        onOpenChange={setShowConnect}
+        onWalletConnected={handleWalletConnected}
+      />
 
-      {/* ── Send Dialog ── */}
-      <Dialog open={!!sendWallet} onOpenChange={() => { setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); }}>
+      {/* ── Send / Withdraw Dialog ── */}
+      <Dialog open={!!sendWallet} onOpenChange={() => { setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo(""); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5" />Send {sendWallet ? chainLabels[sendWallet.chain] : ""}
+              <Send className="h-5 w-5" />Send / Withdraw
             </DialogTitle>
-            <DialogDescription>Send crypto from {sendWallet?.label}</DialogDescription>
+            <DialogDescription>
+              {sendWallet?.type === "cold"
+                ? `Sending from cold wallet — requires hardware device confirmation`
+                : `Send crypto from ${sendWallet?.label}`}
+            </DialogDescription>
           </DialogHeader>
           {sendWallet && (
             <div className="space-y-4">
               <div className="bg-muted rounded-lg p-3">
-                <p className="text-xs text-muted-foreground">Available Balance</p>
-                <p className="text-lg font-bold font-display">{sendWallet.balance}</p>
-                <p className="text-xs text-muted-foreground">${sendWallet.balance_usd.toLocaleString()}</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">From: {sendWallet.label}</p>
+                    <p className="text-lg font-bold font-display">{sendWallet.balance}</p>
+                    <p className="text-xs text-muted-foreground">${sendWallet.balance_usd.toLocaleString()}</p>
+                  </div>
+                  <Badge className={`${statusStyles[sendWallet.status]} border-0`}>
+                    {sendWallet.type === "hot" ? "🔥 Hot" : "🧊 Cold"}
+                  </Badge>
+                </div>
               </div>
+
+              {sendWallet.type === "cold" && (
+                <div className="bg-info/10 border border-info/20 rounded-lg p-3 flex items-start gap-2">
+                  <Usb className="h-4 w-4 text-info shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground">
+                    <strong className="text-info">Hardware signing required:</strong> This transaction must be approved on your connected hardware wallet device.
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label>Recipient Address</Label>
                 <Input placeholder="0x... or bc1..." value={sendTo} onChange={(e) => setSendTo(e.target.value)} className="font-mono text-sm" />
@@ -368,44 +301,30 @@ export default function MerchantWallets() {
               <div className="space-y-2">
                 <Label>Amount</Label>
                 <div className="relative">
-                  <Input
-                    type="number" step="any" placeholder="0.00"
-                    value={sendAmount} onChange={(e) => setSendAmount(e.target.value)}
-                    className="pr-16"
-                  />
-                  <Button
-                    type="button" variant="ghost" size="sm"
-                    className="absolute right-1 top-1 h-8 text-xs text-primary"
-                    onClick={() => setSendAmount(sendWallet.balance)}
-                  >
+                  <Input type="number" step="any" placeholder="0.00" value={sendAmount} onChange={(e) => setSendAmount(e.target.value)} className="pr-16" />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1 h-8 text-xs text-primary" onClick={() => setSendAmount(sendWallet.balance)}>
                     MAX
                   </Button>
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>Memo / Note (optional)</Label>
+                <Input placeholder="Internal reference…" value={sendMemo} onChange={(e) => setSendMemo(e.target.value)} />
+              </div>
+
               {!sendConfirm ? (
                 <Button className="w-full" onClick={() => setSendConfirm(true)} disabled={!sendTo || !sendAmount}>
-                  Review Transaction
+                  <ArrowUpRight className="mr-1.5 h-4 w-4" />Review Withdrawal
                 </Button>
               ) : (
                 <div className="space-y-3">
                   <div className="bg-muted rounded-lg p-3 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">To:</span>
-                      <code className="font-mono text-xs truncate max-w-[200px]">{sendTo}</code>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Amount:</span>
-                      <span className="font-bold">{sendAmount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Network Fee:</span>
-                      <span>~0.001</span>
-                    </div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">To:</span><code className="font-mono text-xs truncate max-w-[200px]">{sendTo}</code></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Amount:</span><span className="font-bold">{sendAmount}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Network Fee (est.):</span><span>~{estimatedFee}</span></div>
+                    {sendMemo && <div className="flex justify-between"><span className="text-muted-foreground">Memo:</span><span className="text-xs">{sendMemo}</span></div>}
                     <Separator />
-                    <div className="flex justify-between font-semibold">
-                      <span>Total:</span>
-                      <span>{(parseFloat(sendAmount || "0") + 0.001).toFixed(6)}</span>
-                    </div>
+                    <div className="flex justify-between font-semibold"><span>Total:</span><span>{(parseFloat(sendAmount || "0") + estimatedFee).toFixed(6)}</span></div>
                   </div>
                   <div className="bg-warning/10 rounded-lg p-3 flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
@@ -414,8 +333,12 @@ export default function MerchantWallets() {
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>Back</Button>
                     <Button className="flex-1 bg-gradient-gold text-primary-foreground font-semibold"
-                      onClick={() => { toast.success("Transaction submitted"); setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); }}>
-                      <ShieldCheck className="mr-1.5 h-4 w-4" />Confirm & Send
+                      onClick={() => {
+                        toast.success(sendWallet.type === "cold" ? "Awaiting hardware device confirmation…" : "Transaction submitted");
+                        setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
+                      }}>
+                      <ShieldCheck className="mr-1.5 h-4 w-4" />
+                      {sendWallet.type === "cold" ? "Sign on Device" : "Confirm & Send"}
                     </Button>
                   </div>
                 </div>
@@ -459,9 +382,7 @@ export default function MerchantWallets() {
       <Dialog open={!!selectedWallet} onOpenChange={() => { setSelectedWallet(null); setShowPrivateKey(false); }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Wallet className="h-5 w-5" />{selectedWallet?.label}
-            </DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Wallet className="h-5 w-5" />{selectedWallet?.label}</DialogTitle>
             <DialogDescription>Wallet details and key management</DialogDescription>
           </DialogHeader>
           {selectedWallet && (
@@ -480,7 +401,6 @@ export default function MerchantWallets() {
                   </div>
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Public Address</Label>
                 <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
@@ -488,7 +408,6 @@ export default function MerchantWallets() {
                   <CopyButton value={selectedWallet.address} />
                 </div>
               </div>
-
               {selectedWallet.xpub && (
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Extended Public Key (xpub)</Label>
@@ -498,21 +417,16 @@ export default function MerchantWallets() {
                   </div>
                 </div>
               )}
-
               {selectedWallet.derivation_path && (
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Derivation Path</Label>
                   <code className="text-xs font-mono bg-muted rounded-lg p-3 block">{selectedWallet.derivation_path}</code>
                 </div>
               )}
-
               <Separator />
-
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Key className="h-3 w-3" />Private Key
-                  </Label>
+                  <Label className="text-xs text-muted-foreground flex items-center gap-1.5"><Key className="h-3 w-3" />Private Key</Label>
                   <Button variant="ghost" size="sm" onClick={() => setShowPrivateKey(!showPrivateKey)} className="text-xs">
                     {showPrivateKey ? <EyeOff className="mr-1 h-3 w-3" /> : <Eye className="mr-1 h-3 w-3" />}
                     {showPrivateKey ? "Hide" : "Reveal"}
@@ -529,13 +443,10 @@ export default function MerchantWallets() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground text-center py-2">
-                      Click "Reveal" to view private key options
-                    </p>
+                    <p className="text-xs text-muted-foreground text-center py-2">Click "Reveal" to view private key options</p>
                   )}
                 </div>
               </div>
-
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground">

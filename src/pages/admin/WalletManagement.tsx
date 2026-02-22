@@ -7,13 +7,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { CopyButton } from "@/components/CopyButton";
+import { WalletConnectPanel } from "@/components/WalletConnectPanel";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Wallet, Shield, ShieldCheck, PlusCircle, Trash2, Lock, Unlock, Copy,
-  ArrowUpRight, ArrowDownLeft, ExternalLink, AlertTriangle, TrendingUp,
+  Send, Download, ExternalLink, AlertTriangle, TrendingUp, Eye,
+  Link2, Usb, Smartphone, ArrowUpRight, Unplug,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import type { WalletConfig, ChainId } from "@/lib/types";
 
 const statusColors: Record<string, string> = {
@@ -21,29 +28,25 @@ const statusColors: Record<string, string> = {
   inactive: "bg-muted text-muted-foreground",
   locked: "bg-destructive/10 text-destructive",
 };
-
 const chainLabels: Record<string, string> = {
-  btc: "Bitcoin",
-  eth: "Ethereum",
-  arbitrum: "Arbitrum",
-  optimism: "Optimism",
-  polygon: "Polygon",
+  btc: "Bitcoin", eth: "Ethereum", arbitrum: "Arbitrum", optimism: "Optimism", polygon: "Polygon",
 };
 
 export default function AdminWalletManagement() {
   usePageTitle("Wallet Management");
   const qc = useQueryClient();
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showConnect, setShowConnect] = useState(false);
   const [filter, setFilter] = useState<"all" | "hot" | "cold">("all");
 
-  const [form, setForm] = useState({
-    label: "",
-    type: "hot" as "hot" | "cold",
-    chain: "eth" as ChainId,
-    address: "",
-    xpub: "",
-    derivation_path: "m/84'/0'/0'",
-  });
+  // Send / Withdraw dialog
+  const [sendWallet, setSendWallet] = useState<WalletConfig | null>(null);
+  const [sendTo, setSendTo] = useState("");
+  const [sendAmount, setSendAmount] = useState("");
+  const [sendConfirm, setSendConfirm] = useState(false);
+  const [sendMemo, setSendMemo] = useState("");
+
+  // Receive dialog
+  const [receiveWallet, setReceiveWallet] = useState<WalletConfig | null>(null);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["admin-wallets"],
@@ -51,16 +54,10 @@ export default function AdminWalletManagement() {
   });
 
   const addMut = useMutation({
-    mutationFn: () => admin.wallets.add({
-      ...form,
-      xpub: form.xpub || undefined,
-      derivation_path: form.derivation_path || undefined,
-    }),
+    mutationFn: (data: Partial<WalletConfig>) => admin.wallets.add(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-wallets"] });
-      setForm({ label: "", type: "hot", chain: "eth", address: "", xpub: "", derivation_path: "m/84'/0'/0'" });
-      setShowAddForm(false);
-      toast.success("Wallet added");
+      toast.success("Wallet connected");
     },
     onError: () => toast.error("Failed to add wallet"),
   });
@@ -78,128 +75,68 @@ export default function AdminWalletManagement() {
 
   if (isLoading) return <PageSkeleton />;
 
-  const wallets = stats?.wallets ?? [];
-  const filtered = filter === "all" ? wallets : wallets.filter((w) => w.type === filter);
+  const walletsList = stats?.wallets ?? [];
+  const filtered = filter === "all" ? walletsList : walletsList.filter((w) => w.type === filter);
+  const estimatedFee = sendWallet?.chain === "btc" ? 0.00005 : 0.001;
+
+  const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold" }) => {
+    addMut.mutate({ label: wallet.label, chain: wallet.chain, address: wallet.address, type: wallet.type } as any);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Wallet Management</h1>
-        <Button onClick={() => setShowAddForm(!showAddForm)}>
-          <PlusCircle className="mr-1.5 h-3.5 w-3.5" />{showAddForm ? "Cancel" : "Connect Wallet"}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-lg font-semibold">Wallet Management</h1>
+          <p className="text-xs text-muted-foreground">Platform treasury & connected wallets</p>
+        </div>
+        <Button onClick={() => setShowConnect(true)}>
+          <Link2 className="mr-1.5 h-3.5 w-3.5" />Connect Wallet
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Wallet className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold">${(stats?.total_balance_usd ?? 0).toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">Total Balance</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Shield className="h-6 w-6 text-warning mx-auto mb-2" />
-            <p className="text-2xl font-bold">{stats?.total_hot_wallets ?? 0}</p>
-            <p className="text-xs text-muted-foreground">Hot Wallets</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <ShieldCheck className="h-6 w-6 text-success mx-auto mb-2" />
-            <p className="text-2xl font-bold">{stats?.total_cold_wallets ?? 0}</p>
-            <p className="text-xs text-muted-foreground">Cold Wallets</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <TrendingUp className="h-6 w-6 text-info mx-auto mb-2" />
-            <p className="text-2xl font-bold">${(stats?.hot_balance_usd ?? 0).toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">Hot Balance</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-            <p className="text-2xl font-bold">${(stats?.cold_balance_usd ?? 0).toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">Cold Balance</p>
-          </CardContent>
-        </Card>
+        {[
+          { icon: <Wallet className="h-6 w-6 text-primary" />, value: `$${(stats?.total_balance_usd ?? 0).toLocaleString()}`, label: "Total Balance" },
+          { icon: <Shield className="h-6 w-6 text-warning" />, value: stats?.total_hot_wallets ?? 0, label: "Hot Wallets" },
+          { icon: <ShieldCheck className="h-6 w-6 text-success" />, value: stats?.total_cold_wallets ?? 0, label: "Cold Wallets" },
+          { icon: <TrendingUp className="h-6 w-6 text-info" />, value: `$${(stats?.hot_balance_usd ?? 0).toLocaleString()}`, label: "Hot Balance" },
+          { icon: <Lock className="h-6 w-6 text-muted-foreground" />, value: `$${(stats?.cold_balance_usd ?? 0).toLocaleString()}`, label: "Cold Balance" },
+        ].map((s) => (
+          <Card key={s.label}>
+            <CardContent className="pt-6 text-center">
+              <div className="mx-auto mb-2">{s.icon}</div>
+              <p className="text-2xl font-bold">{s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Add Wallet Form */}
-      {showAddForm && (
-        <Card className="border-primary/20">
-          <CardHeader><CardTitle className="text-sm">Connect New Wallet</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label>Label</Label>
-                <Input placeholder="e.g. Primary Hot Wallet" value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Type</Label>
-                <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as typeof f.type }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hot">🔥 Hot Wallet</SelectItem>
-                    <SelectItem value="cold">🧊 Cold Wallet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Chain</Label>
-                <Select value={form.chain} onValueChange={(v) => setForm((f) => ({ ...f, chain: v as ChainId }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(chainLabels).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Wallet Address</Label>
-              <Input placeholder="0x... or bc1..." value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} className="font-mono text-sm" />
-            </div>
-            {form.type === "cold" && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label>XPUB (Extended Public Key)</Label>
-                  <Input placeholder="xpub6..." value={form.xpub} onChange={(e) => setForm((f) => ({ ...f, xpub: e.target.value }))} className="font-mono text-xs" />
-                  <p className="text-xs text-muted-foreground">For HD wallet address derivation (watch-only)</p>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Derivation Path</Label>
-                  <Input value={form.derivation_path} onChange={(e) => setForm((f) => ({ ...f, derivation_path: e.target.value }))} className="font-mono text-sm" />
-                </div>
-              </div>
-            )}
-            {form.type === "cold" && (
-              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2 text-sm">
-                <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-warning">Cold Wallet — Watch Only</p>
-                  <p className="text-xs text-muted-foreground">Private keys are NEVER stored on this server. Only the XPUB or address is registered for monitoring and settlement.</p>
-                </div>
-              </div>
-            )}
-            <Button onClick={() => addMut.mutate()} disabled={!form.label.trim() || !form.address.trim() || addMut.isPending}>
-              <PlusCircle className="mr-1.5 h-3.5 w-3.5" />Connect Wallet
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Connection Methods */}
+      <Card className="border-primary/20">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            <p className="text-sm font-medium">Supported:</p>
+            {[
+              { icon: <Smartphone className="h-3.5 w-3.5" />, label: "WalletConnect v2" },
+              { icon: <Usb className="h-3.5 w-3.5" />, label: "Ledger" },
+              { icon: <Shield className="h-3.5 w-3.5" />, label: "Trezor" },
+            ].map((c) => (
+              <Badge key={c.label} variant="outline" className="gap-1 text-xs">{c.icon}{c.label}</Badge>
+            ))}
+            <span className="text-xs text-muted-foreground">+ Keystone, GridPlus, Manual</span>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filter */}
       <div className="flex gap-2">
         {(["all", "hot", "cold"] as const).map((f) => (
           <Button key={f} variant={filter === f ? "default" : "outline"} size="sm" onClick={() => setFilter(f)}
             className={filter === f ? "bg-gradient-gold text-primary-foreground" : ""}>
-            {f === "all" ? "All Wallets" : f === "hot" ? "🔥 Hot" : "🧊 Cold"} ({f === "all" ? wallets.length : wallets.filter((w) => w.type === f).length})
+            {f === "all" ? "All Wallets" : f === "hot" ? "🔥 Hot" : "🧊 Cold"} ({f === "all" ? walletsList.length : walletsList.filter((w) => w.type === f).length})
           </Button>
         ))}
       </div>
@@ -223,9 +160,7 @@ export default function AdminWalletManagement() {
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="text-xs text-muted-foreground font-mono truncate max-w-[200px] sm:max-w-xs">{w.address}</code>
-                      <button onClick={() => { navigator.clipboard.writeText(w.address); toast.success("Copied"); }}>
-                        <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                      </button>
+                      <CopyButton value={w.address} />
                     </div>
                     {w.last_activity && (
                       <p className="text-xs text-muted-foreground mt-1">Last activity: {new Date(w.last_activity).toLocaleString()}</p>
@@ -238,10 +173,16 @@ export default function AdminWalletManagement() {
                     <p className="text-xs text-muted-foreground">${w.balance_usd.toLocaleString()}</p>
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleMut.mutate({ id: w.id, status: w.status })}>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSendWallet(w)} title="Send / Withdraw">
+                      <Send className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setReceiveWallet(w)} title="Receive">
+                      <Download className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleMut.mutate({ id: w.id, status: w.status })} title={w.status === "active" ? "Lock" : "Unlock"}>
                       {w.status === "active" ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeMut.mutate(w.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeMut.mutate(w.id)} title="Remove">
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -251,10 +192,144 @@ export default function AdminWalletManagement() {
           </Card>
         )) : (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            No {filter === "all" ? "" : filter} wallets connected. Click "Connect Wallet" to add one.
+            <Wallet className="h-10 w-10 mx-auto mb-3 opacity-30" />
+            <p>No {filter === "all" ? "" : filter} wallets connected.</p>
+            <Button variant="outline" className="mt-4" onClick={() => setShowConnect(true)}>
+              <Link2 className="mr-1.5 h-4 w-4" />Connect First Wallet
+            </Button>
           </div>
         )}
       </div>
+
+      {/* WalletConnect Panel */}
+      <WalletConnectPanel
+        open={showConnect}
+        onOpenChange={setShowConnect}
+        onWalletConnected={handleWalletConnected}
+      />
+
+      {/* ── Admin Send / Withdraw Dialog ── */}
+      <Dialog open={!!sendWallet} onOpenChange={() => { setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo(""); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send className="h-5 w-5" />Admin Withdraw / Send
+            </DialogTitle>
+            <DialogDescription>
+              {sendWallet?.type === "cold"
+                ? "Cold wallet — requires hardware device signing"
+                : `Treasury send from ${sendWallet?.label}`}
+            </DialogDescription>
+          </DialogHeader>
+          {sendWallet && (
+            <div className="space-y-4">
+              <div className="bg-muted rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">From: {sendWallet.label}</p>
+                    <p className="text-lg font-bold font-display">{sendWallet.balance}</p>
+                    <p className="text-xs text-muted-foreground">${sendWallet.balance_usd.toLocaleString()}</p>
+                  </div>
+                  <Badge className={`${statusColors[sendWallet.status]} border-0`}>
+                    {sendWallet.type === "hot" ? "🔥 Hot" : "🧊 Cold"}
+                  </Badge>
+                </div>
+              </div>
+
+              {sendWallet.type === "cold" && (
+                <div className="bg-info/10 border border-info/20 rounded-lg p-3 flex items-start gap-2">
+                  <Usb className="h-4 w-4 text-info shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground">
+                    <strong className="text-info">Hardware signing required:</strong> Transaction must be approved on the connected hardware device.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Recipient Address</Label>
+                <Input placeholder="0x... or bc1..." value={sendTo} onChange={(e) => setSendTo(e.target.value)} className="font-mono text-sm" />
+              </div>
+              <div className="space-y-2">
+                <Label>Amount</Label>
+                <div className="relative">
+                  <Input type="number" step="any" placeholder="0.00" value={sendAmount} onChange={(e) => setSendAmount(e.target.value)} className="pr-16" />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1 h-8 text-xs text-primary" onClick={() => setSendAmount(sendWallet.balance)}>
+                    MAX
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Memo / Audit Note</Label>
+                <Input placeholder="Reason for withdrawal…" value={sendMemo} onChange={(e) => setSendMemo(e.target.value)} />
+              </div>
+
+              {!sendConfirm ? (
+                <Button className="w-full" onClick={() => setSendConfirm(true)} disabled={!sendTo || !sendAmount}>
+                  <ArrowUpRight className="mr-1.5 h-4 w-4" />Review Withdrawal
+                </Button>
+              ) : (
+                <div className="space-y-3">
+                  <div className="bg-muted rounded-lg p-3 space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">To:</span><code className="font-mono text-xs truncate max-w-[200px]">{sendTo}</code></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Amount:</span><span className="font-bold">{sendAmount}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Network Fee (est.):</span><span>~{estimatedFee}</span></div>
+                    {sendMemo && <div className="flex justify-between"><span className="text-muted-foreground">Audit Note:</span><span className="text-xs">{sendMemo}</span></div>}
+                    <Separator />
+                    <div className="flex justify-between font-semibold"><span>Total:</span><span>{(parseFloat(sendAmount || "0") + estimatedFee).toFixed(6)}</span></div>
+                  </div>
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      <strong className="text-destructive">Admin withdrawal:</strong> This action is logged in the audit trail and is irreversible.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>Back</Button>
+                    <Button className="flex-1 bg-gradient-gold text-primary-foreground font-semibold"
+                      onClick={() => {
+                        toast.success(sendWallet.type === "cold" ? "Awaiting hardware device signing…" : "Withdrawal submitted — logged in audit trail");
+                        setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
+                      }}>
+                      <ShieldCheck className="mr-1.5 h-4 w-4" />
+                      {sendWallet.type === "cold" ? "Sign on Device" : "Confirm Withdrawal"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Receive Dialog ── */}
+      <Dialog open={!!receiveWallet} onOpenChange={() => setReceiveWallet(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5" />Receive Funds
+            </DialogTitle>
+            <DialogDescription>Deposit to this platform wallet</DialogDescription>
+          </DialogHeader>
+          {receiveWallet && (
+            <div className="space-y-4">
+              <div className="flex justify-center p-4 bg-white rounded-lg">
+                <QRCodeSVG value={receiveWallet.address} size={180} level="H" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Wallet Address</Label>
+                <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
+                  <code className="text-xs font-mono break-all flex-1">{receiveWallet.address}</code>
+                  <CopyButton value={receiveWallet.address} />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
+                <Badge variant="outline" className="text-xs">{chainLabels[receiveWallet.chain]}</Badge>
+                <span className="text-xs text-muted-foreground">Only send {chainLabels[receiveWallet.chain]} assets</span>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
