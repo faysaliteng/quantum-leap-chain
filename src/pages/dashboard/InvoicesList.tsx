@@ -65,7 +65,7 @@ export default function InvoicesList() {
   const pendingAmount = allInvoices.filter((i) => i.status === "sent" || i.status === "viewed").reduce((s, i) => s + parseFloat(i.total), 0);
 
   return (
-    <div className="space-y-6" data-testid="page:invoices-list">
+    <div className="space-y-6" data-testid="page:dashboard-invoices">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Invoices</h1>
         <Button asChild>

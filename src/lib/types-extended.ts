@@ -151,3 +151,45 @@ export interface TeamInvite {
   created_at: string;
   expires_at: string;
 }
+
+// ── Password Reset types ──
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
+// ── Data Export types ──
+
+export type ExportKind =
+  | "charges"
+  | "invoices"
+  | "wallet_transactions"
+  | "webhook_deliveries"
+  | "merchants"
+  | "audit_logs"
+  | "revenue"
+  | "health_snapshot";
+
+export type ExportStatus = "queued" | "running" | "completed" | "failed";
+
+export interface DataExportJob {
+  id: string;
+  scope: "merchant" | "admin";
+  requested_by_user_id: string;
+  merchant_id?: string;
+  kind: ExportKind;
+  filters: Record<string, unknown>;
+  status: ExportStatus;
+  file_path?: string;
+  file_format: "csv" | "json";
+  size_bytes?: number;
+  error_message?: string;
+  expires_at?: string;
+  created_at: string;
+  updated_at: string;
+}

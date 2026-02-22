@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, Link2, Activity, FileText, LogOut, Shield,
   Percent, DollarSign, Newspaper, Megaphone, HelpCircle, Settings, FileEdit,
-  Mail, Share2, Wallet, Bell, History, ShieldCheck, UserCog,
+  Mail, Share2, Wallet, Bell, History, ShieldCheck, UserCog, FileSpreadsheet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -24,6 +24,7 @@ const adminNav = [
   { title: "Security Policies", url: "/admin/security-policies", icon: ShieldCheck },
   { title: "Roles & Permissions", url: "/admin/roles", icon: UserCog },
   { title: "Notifications", url: "/admin/notifications", icon: Bell },
+  { title: "Exports", url: "/admin/exports", icon: FileSpreadsheet },
 ];
 
 const cmsNav = [
