@@ -62,6 +62,11 @@ import SchemaDocs from "./pages/docs/SchemaDocs";
 import ApiDocs from "./pages/docs/ApiDocs";
 import SingularityCoinDocs from "./pages/docs/SingularityCoinDocs";
 
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import ExportCenter from "./pages/dashboard/ExportCenter";
+import AdminExportCenter from "./pages/admin/ExportCenter";
+
 import NotFound from "./pages/NotFound";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -90,6 +95,8 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/verify-2fa" element={<Verify2FA />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/pay/:chargeId" element={<CheckoutPage />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -121,6 +128,7 @@ const App = () => (
                 <Route path="invoices/new" element={<CreateInvoice />} />
                 <Route path="invoices/:id" element={<InvoiceDetail />} />
                 <Route path="notifications" element={<NotificationsPage />} />
+                <Route path="exports" element={<ExportCenter />} />
               </Route>
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
@@ -144,6 +152,7 @@ const App = () => (
                 <Route path="cms/contacts" element={<ContactSubmissions />} />
                 <Route path="cms/social" element={<SocialLinksManager />} />
                 <Route path="cms/settings" element={<CMSSettings />} />
+                <Route path="exports" element={<AdminExportCenter />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

@@ -53,6 +53,10 @@ export const auth = {
     http.post<LoginResponse>("/v1/auth/verify-2fa", data).then((r) => r.data),
   resendEmailCode: (session_token: string) =>
     http.post("/v1/auth/resend-email-code", { session_token }),
+  forgotPassword: (data: { email: string }) =>
+    http.post<{ ok: true }>("/v1/auth/forgot-password", data).then((r) => r.data),
+  resetPassword: (data: { token: string; new_password: string }) =>
+    http.post<{ ok: true }>("/v1/auth/reset-password", data).then((r) => r.data),
 };
 
 // ── Security / 2FA ──

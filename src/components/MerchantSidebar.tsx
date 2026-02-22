@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Receipt, PlusCircle, Settings, Key, Webhook, MapPin, BarChart3, LogOut, Wallet, FileText, ShieldCheck, Bell, History,
+  LayoutDashboard, Receipt, PlusCircle, Settings, Key, Webhook, MapPin, BarChart3, LogOut, Wallet, FileText, ShieldCheck, Bell, History, FileSpreadsheet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -18,6 +18,7 @@ const mainNav = [
   { title: "Wallets", url: "/dashboard/wallets", icon: Wallet },
   { title: "Transactions", url: "/dashboard/wallets/transactions", icon: History },
   { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
+  { title: "Exports", url: "/dashboard/exports", icon: FileSpreadsheet },
 ];
 
 const settingsNav = [

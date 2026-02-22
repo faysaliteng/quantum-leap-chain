@@ -35,7 +35,7 @@ export default function WebhookSettings() {
   const { data: deliveries } = useQuery({ queryKey: ["webhook-deliveries", expandedId], queryFn: () => webhooks.deliveries(expandedId!), enabled: !!expandedId });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="page:dashboard-settings-webhooks">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Webhooks</h1>
         <Button size="sm" onClick={() => setShowCreate(true)}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Add Endpoint</Button>

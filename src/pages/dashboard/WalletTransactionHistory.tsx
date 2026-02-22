@@ -54,7 +54,7 @@ export default function WalletTransactionHistory() {
     : txs;
 
   return (
-    <div className="space-y-6" data-testid="page:wallet-transactions">
+    <div className="space-y-6" data-testid="page:dashboard-wallet-transactions">
       <div>
         <h1 className="text-2xl font-display font-bold">Transaction History</h1>
         <p className="text-sm text-muted-foreground mt-1">All wallet sends, receives, and withdrawals</p>

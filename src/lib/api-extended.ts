@@ -4,8 +4,11 @@ import type {
   SecurityPolicies,
   WalletTransaction,
   AdminRole, AdminUserRole, TeamInvite,
+  DataExportJob,
 } from "./types-extended";
 import type { PaginatedResponse } from "./types";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 // ── Notifications ──
 export const notifications = {
@@ -67,4 +70,26 @@ export const adminRoles = {
     http.post<TeamInvite>("/v1/admin/roles/invites", data).then((r) => r.data),
   revokeInvite: (id: string) =>
     http.delete(`/v1/admin/roles/invites/${id}`),
+};
+
+// ── Merchant Exports ──
+export const exports = {
+  create: (data: { kind: string; format: string; filters?: Record<string, unknown> }) =>
+    http.post<DataExportJob>("/v1/exports", data).then((r) => r.data),
+  list: (params?: { cursor?: string; limit?: number }) =>
+    http.get<PaginatedResponse<DataExportJob>>("/v1/exports", { params }).then((r) => r.data),
+  get: (id: string) =>
+    http.get<DataExportJob>(`/v1/exports/${id}`).then((r) => r.data),
+  downloadUrl: (id: string) => `${BASE_URL}/v1/exports/${id}/download`,
+};
+
+// ── Admin Exports ──
+export const adminExports = {
+  create: (data: { kind: string; format: string; filters?: Record<string, unknown> }) =>
+    http.post<DataExportJob>("/v1/admin/exports", data).then((r) => r.data),
+  list: (params?: { cursor?: string; limit?: number }) =>
+    http.get<PaginatedResponse<DataExportJob>>("/v1/admin/exports", { params }).then((r) => r.data),
+  get: (id: string) =>
+    http.get<DataExportJob>(`/v1/admin/exports/${id}`).then((r) => r.data),
+  downloadUrl: (id: string) => `${BASE_URL}/v1/admin/exports/${id}/download`,
 };

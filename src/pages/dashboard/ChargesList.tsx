@@ -61,7 +61,7 @@ export default function ChargesList() {
   );
 
   return (
-    <div className="space-y-4" data-testid="page:charges-list">
+    <div className="space-y-4" data-testid="page:dashboard-charges">
       <SEOHead title="Charges" noindex />
 
       <div className="flex items-center justify-between">
