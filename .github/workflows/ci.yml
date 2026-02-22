@@ -42,3 +42,85 @@ jobs:
           name: frontend-dist
           path: dist/
           retention-days: 7
+
+      # ── Noob-proof CI gate: log grep ──
+      - name: Grep for runtime error patterns
+        if: always()
+        run: |
+          echo "=== Checking build output for critical errors ==="
+          ERRORS=0
+          for pattern in "UnhandledPromiseRejection" "TypeError:" "ECONNREFUSED" "ReferenceError:" "SyntaxError:"; do
+            if grep -r "$pattern" dist/ 2>/dev/null; then
+              echo "❌ FOUND: $pattern in build output"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ CI FAILED: $ERRORS critical error pattern(s) found"
+            exit 1
+          fi
+          echo "✅ No critical error patterns found"
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: frontend
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:3001
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: test-results/
+          retention-days: 7
+
+      # ── Noob-proof log grep gate ──
+      - name: Grep Playwright output for runtime errors
+        if: always()
+        run: |
+          echo "=== Post-E2E log grep ==="
+          ERRORS=0
+          for pattern in "UnhandledPromiseRejection" "TypeError" "ECONNREFUSED"; do
+            if grep -r "$pattern" playwright-report/ test-results/ 2>/dev/null; then
+              echo "❌ FOUND: $pattern in test output"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ E2E LOG GREP FAILED: $ERRORS pattern(s) found"
+            exit 1
+          fi
+          echo "✅ No runtime error patterns in E2E output"
