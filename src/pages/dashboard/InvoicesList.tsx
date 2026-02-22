@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { invoices } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,8 @@ const statusStyles: Record<InvoiceStatus, string> = {
 };
 
 export default function InvoicesList() {
-  usePageTitle("Invoices");
+  const { t } = useI18n();
+  usePageTitle(t("sidebar.invoices"));
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -69,41 +71,41 @@ export default function InvoicesList() {
   return (
     <div className="space-y-6" data-testid="page:dashboard-invoices">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Invoices</h1>
+        <h1 className="text-lg font-semibold">{t("invoices.totalInvoices")}</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => startExport("invoices", "csv", { status: statusFilter !== "all" ? statusFilter : undefined })} disabled={isExporting}>
-            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? t("charges.exporting") : t("charges.serverExport")}
           </Button>
           <Button asChild>
-            <Link to="/dashboard/invoices/new"><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Create Invoice</Link>
+            <Link to="/dashboard/invoices/new"><PlusCircle className="mr-1.5 h-3.5 w-3.5" />{t("invoices.createFirst")}</Link>
           </Button>
         </div>
       </div>
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total Invoices" value={allInvoices.length} icon={FileText} />
-        <StatCard label="Paid Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} />
-        <StatCard label="Pending" value={`$${pendingAmount.toLocaleString()}`} icon={Clock} />
-        <StatCard label="Overdue" value={allInvoices.filter((i) => i.status === "overdue").length} icon={XCircle} />
+        <StatCard label={t("invoices.totalInvoices")} value={allInvoices.length} icon={FileText} />
+        <StatCard label={t("invoices.paidRevenue")} value={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} />
+        <StatCard label={t("invoices.pending")} value={`$${pendingAmount.toLocaleString()}`} icon={Clock} />
+        <StatCard label={t("invoices.overdue")} value={allInvoices.filter((i) => i.status === "overdue").length} icon={XCircle} />
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search invoices..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <Input placeholder={t("invoices.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="sent">Sent</SelectItem>
-            <SelectItem value="viewed">Viewed</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-            <SelectItem value="overdue">Overdue</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="all">{t("invoices.allStatus")}</SelectItem>
+            <SelectItem value="draft">{t("invoices.draft")}</SelectItem>
+            <SelectItem value="sent">{t("invoices.sent")}</SelectItem>
+            <SelectItem value="viewed">{t("invoices.viewed")}</SelectItem>
+            <SelectItem value="paid">{t("invoices.paid")}</SelectItem>
+            <SelectItem value="overdue">{t("invoices.overdue")}</SelectItem>
+            <SelectItem value="cancelled">{t("invoices.cancelled")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -115,13 +117,13 @@ export default function InvoicesList() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wide">
-                  <th className="px-4 py-3">Invoice #</th>
-                  <th className="px-4 py-3">Customer</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Due Date</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-4 py-3">{t("invoices.invoice")} #</th>
+                  <th className="px-4 py-3">{t("table.customer")}</th>
+                  <th className="px-4 py-3">{t("table.amount")}</th>
+                  <th className="px-4 py-3">{t("table.status")}</th>
+                  <th className="px-4 py-3">{t("table.dueDate")}</th>
+                  <th className="px-4 py-3">{t("table.created")}</th>
+                  <th className="px-4 py-3 text-right">{t("table.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -166,7 +168,7 @@ export default function InvoicesList() {
                   <tr>
                     <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
                       <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                      No invoices yet. <Link to="/dashboard/invoices/new" className="text-primary hover:underline">Create your first invoice</Link>
+                      {t("invoices.noInvoices")} <Link to="/dashboard/invoices/new" className="text-primary hover:underline">{t("invoices.createFirst")}</Link>
                     </td>
                   </tr>
                 )}

@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
@@ -12,7 +13,8 @@ import { useExport } from "@/hooks/use-export";
 import React from "react";
 
 export default function AuditLog() {
-  usePageTitle("Audit Log");
+  const { t } = useI18n();
+  usePageTitle(t("admin.auditLog"));
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export default function AuditLog() {
   return (
     <div className="space-y-4" data-testid="page:admin-audit-log">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold">Audit Log</h1>
+        <h1 className="text-lg font-semibold">{t("admin.auditLog")}</h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => startExport("audit_logs", "csv", { action: search || undefined })} disabled={isExporting}>
             <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}

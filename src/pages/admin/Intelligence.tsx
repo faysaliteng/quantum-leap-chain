@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -44,7 +45,8 @@ const gradeColors: Record<string, string> = {
 };
 
 export default function AdminIntelligence() {
-  usePageTitle("Platform Intelligence");
+  const { t } = useI18n();
+  usePageTitle(t("admin.intelligence"));
   const [range, setRange] = useState<TimeRange>("1M");
 
   const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["admin-stats"], queryFn: admin.stats });
@@ -107,7 +109,7 @@ export default function AdminIntelligence() {
             <Brain className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold">Platform Intelligence</h1>
+            <h1 className="text-lg font-semibold">{t("admin.intelligence")}</h1>
             <p className="text-xs text-muted-foreground">Algorithmic predictions, anomaly detection & merchant scoring</p>
           </div>
         </div>

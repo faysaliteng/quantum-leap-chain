@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminRoles } from "@/lib/api-extended";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -69,7 +70,8 @@ const allPermissions: { group: string; perms: { key: AdminPermission; label: str
 ];
 
 export default function AdminRoleManagement() {
-  usePageTitle("Roles & Permissions");
+  const { t } = useI18n();
+  usePageTitle(t("admin.roles"));
   const qc = useQueryClient();
 
   const [showCreate, setShowCreate] = useState(false);
@@ -150,7 +152,7 @@ export default function AdminRoleManagement() {
     <div className="space-y-6" data-testid="page:admin-roles">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Roles & Permissions</h1>
+          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />{t("admin.roles")}</h1>
           <p className="text-xs text-muted-foreground mt-1">Fine-grained RBAC for admin team</p>
         </div>
         <div className="flex gap-2">

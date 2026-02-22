@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notifications } from "@/lib/api-extended";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,7 +36,8 @@ const categories: { key: NotificationCategory; label: string; icon: React.ReactN
 ];
 
 export default function NotificationsPage() {
-  usePageTitle("Notifications");
+  const { t } = useI18n();
+  usePageTitle(t("notifications.title"));
   const location = useLocation();
   const qc = useQueryClient();
   const [filterCat, setFilterCat] = useState<string>("all");
@@ -104,8 +106,8 @@ export default function NotificationsPage() {
     <div className="space-y-6" data-testid={location.pathname.startsWith("/admin") ? "page:admin-notifications" : "page:dashboard-notifications"}>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Notifications</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage alerts and notification preferences</p>
+          <h1 className="text-2xl font-display font-bold">{t("notifications.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("notifications.subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => markAllMut.mutate()} disabled={markAllMut.isPending}>
           <CheckCheck className="mr-1.5 h-4 w-4" />Mark All Read

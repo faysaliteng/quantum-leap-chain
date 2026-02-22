@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,8 @@ const chainLabels: Record<string, string> = {
 };
 
 export default function AdminWalletManagement() {
-  usePageTitle("Wallet Management");
+  const { t } = useI18n();
+  usePageTitle(t("admin.walletMgmt"));
   const qc = useQueryClient();
   const [showConnect, setShowConnect] = useState(false);
   const [filter, setFilter] = useState<"all" | "hot" | "cold">("all");
@@ -87,7 +89,7 @@ export default function AdminWalletManagement() {
     <div className="space-y-6" data-testid="page:admin-wallets">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-lg font-semibold">Wallet Management</h1>
+          <h1 className="text-lg font-semibold">{t("admin.walletMgmt")}</h1>
           <p className="text-xs text-muted-foreground">Platform treasury & connected wallets</p>
         </div>
         <Button onClick={() => setShowConnect(true)}>

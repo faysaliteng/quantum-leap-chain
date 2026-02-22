@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { webhooks } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,8 @@ const ALL_EVENTS: WebhookEventType[] = [
 ];
 
 export default function WebhookSettings() {
-  usePageTitle("Webhooks");
+  const { t } = useI18n();
+  usePageTitle(t("settings.webhooks"));
   const qc = useQueryClient();
   const { data: endpoints } = useQuery({ queryKey: ["webhooks"], queryFn: webhooks.list });
   const [showCreate, setShowCreate] = useState(false);
@@ -39,7 +41,7 @@ export default function WebhookSettings() {
   return (
     <div className="space-y-4" data-testid="page:dashboard-settings-webhooks">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Webhooks</h1>
+        <h1 className="text-lg font-semibold">{t("settings.webhooks")}</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => startExport("webhook_deliveries", "csv")} disabled={isExporting}>
             <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export Deliveries"}

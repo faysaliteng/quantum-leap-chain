@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settlement } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,8 @@ import type { SettlementConfig, SweepMode } from "@/lib/types";
 import { useState, useEffect } from "react";
 
 export default function SettlementSettings() {
-  usePageTitle("Settlement Settings");
+  const { t } = useI18n();
+  usePageTitle(t("settings.settlement"));
   const qc = useQueryClient();
   const { data: configs } = useQuery({ queryKey: ["settlement-config"], queryFn: settlement.getConfig });
   const [editing, setEditing] = useState<SettlementConfig | null>(null);
@@ -22,7 +24,7 @@ export default function SettlementSettings() {
 
   return (
     <div className="space-y-4" data-testid="page:dashboard-settings-settlement">
-      <h1 className="text-lg font-semibold">Settlement Settings</h1>
+      <h1 className="text-lg font-semibold">{t("settings.settlement")}</h1>
       <div className="grid gap-4">
         {configs?.map((cfg) => (
           <Card key={`${cfg.chain}-${cfg.asset}`}>

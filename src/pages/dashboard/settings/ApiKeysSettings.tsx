@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiKeys } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,8 @@ import type { ApiKeyScope, ApiKeyCreated } from "@/lib/types";
 const SCOPES: ApiKeyScope[] = ["read", "write", "admin"];
 
 export default function ApiKeysSettings() {
-  usePageTitle("API Keys");
+  const { t } = useI18n();
+  usePageTitle(t("settings.apiKeys"));
   const qc = useQueryClient();
   const { data: keys } = useQuery({ queryKey: ["api-keys"], queryFn: apiKeys.list });
   const [showCreate, setShowCreate] = useState(false);
@@ -37,7 +39,7 @@ export default function ApiKeysSettings() {
   return (
     <div className="space-y-4" data-testid="page:dashboard-settings-api-keys">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">API Keys</h1>
+        <h1 className="text-lg font-semibold">{t("settings.apiKeys")}</h1>
         <Button size="sm" onClick={() => setShowCreate(true)}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />New Key</Button>
       </div>
 

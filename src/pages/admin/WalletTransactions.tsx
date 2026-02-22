@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { adminWalletTransactions } from "@/lib/api-extended";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +34,8 @@ const statusConfig: Record<WalletTxStatus, { icon: React.ReactNode; color: strin
 };
 
 export default function AdminWalletTransactions() {
-  usePageTitle("Wallet Audit Trail");
+  const { t } = useI18n();
+  usePageTitle(t("admin.walletAudit"));
   const [filterDir, setFilterDir] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -59,7 +61,7 @@ export default function AdminWalletTransactions() {
     <div className="space-y-6" data-testid="page:admin-wallet-transactions">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Wallet Audit Trail</h1>
+          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />{t("admin.walletAudit")}</h1>
           <p className="text-xs text-muted-foreground mt-1">All platform wallet transactions — full audit view</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => startExport("wallet_transactions", "csv", { direction: filterDir !== "all" ? filterDir : undefined, status: filterStatus !== "all" ? filterStatus : undefined })} disabled={isExporting}>
