@@ -28,9 +28,9 @@ export default function AuditLog() {
         <h1 className="text-lg font-semibold">{t("admin.auditLog")}</h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => startExport("audit_logs", "csv", { action: search || undefined })} disabled={isExporting}>
-            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? t("charges.exporting") : t("common.export")}
           </Button>
-          <Input className="max-w-xs h-8 text-sm" placeholder="Filter by action…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} maxLength={100} />
+          <Input className="max-w-xs h-8 text-sm" placeholder={t("admin.filterByAction")} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} maxLength={100} />
         </div>
       </div>
 
@@ -39,7 +39,7 @@ export default function AuditLog() {
           {isLoading ? <TableSkeleton rows={10} cols={6} /> : (
             <>
               <table className="w-full text-sm">
-                <thead><tr className="border-b text-left text-xs text-muted-foreground uppercase"><th className="px-4 py-2">Time</th><th className="px-4 py-2">Actor</th><th className="px-4 py-2">Action</th><th className="px-4 py-2">Resource</th><th className="px-4 py-2">IP</th><th className="px-4 py-2 w-8"></th></tr></thead>
+                <thead><tr className="border-b text-left text-xs text-muted-foreground uppercase"><th className="px-4 py-2">{t("admin.time")}</th><th className="px-4 py-2">{t("admin.actor")}</th><th className="px-4 py-2">{t("admin.action")}</th><th className="px-4 py-2">{t("admin.resource")}</th><th className="px-4 py-2">{t("admin.ip")}</th><th className="px-4 py-2 w-8"></th></tr></thead>
                 <tbody>
                   {data?.data?.length ? data.data.map((entry) => (
                     <React.Fragment key={entry.id}>
@@ -55,12 +55,12 @@ export default function AuditLog() {
                         <tr><td colSpan={6} className="px-4 py-2 bg-muted/30"><pre className="text-xs font-mono whitespace-pre-wrap max-h-40 overflow-auto">{JSON.stringify(entry.details, null, 2)}</pre></td></tr>
                       )}
                     </React.Fragment>
-                  )) : <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No audit log entries</td></tr>}
+                  )) : <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">{t("admin.noAuditEntries")}</td></tr>}
                 </tbody>
               </table>
               {data && data.total_pages > 1 && (
                 <div className="flex items-center justify-between border-t px-4 py-2">
-                  <span className="text-xs text-muted-foreground">Page {data.page} / {data.total_pages}</span>
+                  <span className="text-xs text-muted-foreground">{t("admin.page")} {data.page} / {data.total_pages}</span>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" className="h-7 w-7" disabled={page <= 1} onClick={() => setPage(page - 1)}><ChevronLeft className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" disabled={page >= data.total_pages} onClick={() => setPage(page + 1)}><ChevronRight className="h-4 w-4" /></Button>
