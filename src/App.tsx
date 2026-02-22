@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/lib/auth";
+import { I18nProvider } from "@/lib/i18n";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -24,6 +25,9 @@ import ApiKeysSettings from "./pages/dashboard/settings/ApiKeysSettings";
 import WebhookSettings from "./pages/dashboard/settings/WebhookSettings";
 import AddressPool from "./pages/dashboard/settings/AddressPool";
 import MerchantWallets from "./pages/dashboard/MerchantWallets";
+import InvoicesList from "./pages/dashboard/InvoicesList";
+import CreateInvoice from "./pages/dashboard/CreateInvoice";
+import InvoiceDetail from "./pages/dashboard/InvoiceDetail";
 
 import AdminHome from "./pages/admin/AdminHome";
 import MerchantManagement from "./pages/admin/MerchantManagement";
@@ -56,6 +60,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
+import FAQ from "./pages/FAQ";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -63,6 +68,7 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <I18nProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -80,6 +86,7 @@ const App = () => (
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/faq" element={<FAQ />} />
 
               <Route path="/docs/architecture" element={<ArchitectureDocs />} />
               <Route path="/docs/security" element={<SecurityDocs />} />
@@ -98,6 +105,9 @@ const App = () => (
                 <Route path="settings/webhooks" element={<WebhookSettings />} />
                 <Route path="settings/addresses" element={<AddressPool />} />
                 <Route path="wallets" element={<MerchantWallets />} />
+                <Route path="invoices" element={<InvoicesList />} />
+                <Route path="invoices/new" element={<CreateInvoice />} />
+                <Route path="invoices/:id" element={<InvoiceDetail />} />
               </Route>
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
@@ -125,6 +135,7 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </I18nProvider>
   </QueryClientProvider>
 );
 

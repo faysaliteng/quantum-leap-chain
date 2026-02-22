@@ -8,7 +8,7 @@ import type {
   SystemHealth, DashboardStats, AdminStats, AuditLogEntry,
   FeeConfig, MerchantFeeOverride, RevenueStats, TopMerchant,
   CMSPage, Announcement, BlogPost, FAQEntry, CMSSettings, CMSStats, ContactSubmission,
-  WalletConfig, WalletStats,
+  WalletConfig, WalletStats, Invoice, CreateInvoiceRequest,
 } from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -99,6 +99,24 @@ export const wallets = {
   add: (data: { label: string; chain: string; address: string; type: string }) =>
     http.post<WalletConfig>("/v1/wallets", data).then((r) => r.data),
   remove: (id: string) => http.delete(`/v1/wallets/${id}`),
+};
+
+// ── Invoices ──
+export const invoices = {
+  list: (params?: { status?: string; page?: number; per_page?: number }) =>
+    http.get<PaginatedResponse<Invoice>>("/v1/invoices", { params }).then((r) => r.data),
+  get: (id: string) => http.get<Invoice>(`/v1/invoices/${id}`).then((r) => r.data),
+  create: (data: CreateInvoiceRequest) => http.post<Invoice>("/v1/invoices", data).then((r) => r.data),
+  update: (id: string, data: Partial<Invoice>) => http.put<Invoice>(`/v1/invoices/${id}`, data).then((r) => r.data),
+  send: (id: string) => http.post<Invoice>(`/v1/invoices/${id}/send`).then((r) => r.data),
+  cancel: (id: string) => http.post(`/v1/invoices/${id}/cancel`),
+  delete: (id: string) => http.delete(`/v1/invoices/${id}`),
+  downloadPdf: (id: string) => http.get(`/v1/invoices/${id}/pdf`, { responseType: "blob" }).then((r) => r.data),
+};
+
+// ── Public FAQ (no auth) ──
+export const publicApi = {
+  faq: () => axios.get<FAQEntry[]>(`${BASE_URL}/v1/public/faq`).then((r) => r.data),
 };
 
 // ── Dashboard ──

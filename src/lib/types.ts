@@ -380,6 +380,57 @@ export interface WalletStats {
   wallets: WalletConfig[];
 }
 
+// ── Invoices ──
+
+export type InvoiceStatus = "draft" | "sent" | "viewed" | "paid" | "overdue" | "cancelled";
+
+export interface Invoice {
+  id: string;
+  merchant_id: string;
+  number: string;
+  customer_name: string;
+  customer_email: string;
+  items: InvoiceItem[];
+  subtotal: string;
+  tax_rate: number;
+  tax_amount: string;
+  total: string;
+  currency: string;
+  chains: ChainId[];
+  status: InvoiceStatus;
+  due_date: string;
+  notes?: string;
+  charge_id?: string;
+  payment_url?: string;
+  sent_at?: string;
+  paid_at?: string;
+  viewed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unit_price: string;
+  amount: string;
+}
+
+export interface CreateInvoiceRequest {
+  customer_name: string;
+  customer_email: string;
+  items: Omit<InvoiceItem, "amount">[];
+  currency: string;
+  chains: ChainId[];
+  tax_rate?: number;
+  due_date: string;
+  notes?: string;
+}
+
+// ── i18n ──
+
+export type Locale = "en" | "es" | "fr" | "de" | "ja" | "zh" | "ko" | "pt" | "ar" | "ru";
+
 // ── API request/response types ──
 
 export interface CreateChargeRequest {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SEOHead } from "@/components/SEOHead";
 import { SocialLinks } from "@/components/SocialLinks";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,10 +66,11 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild><Link to="/pricing">Pricing</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/blog">Blog</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/faq">FAQ</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API Docs</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/docs/security">Security</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/contact">Contact</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/login">Sign in</Link></Button>
+            <LanguageSwitcher />
             <ThemeToggle />
             <Button size="sm" className="bg-gradient-gold text-primary-foreground font-semibold ml-2" asChild>
               <Link to="/signup">Get Started Free <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
@@ -95,10 +97,10 @@ export default function LandingPage() {
                 <Link to="/blog">Blog</Link>
               </Button>
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
-                <Link to="/docs/api">API Docs</Link>
+                <Link to="/faq">FAQ</Link>
               </Button>
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
-                <Link to="/docs/security">Security</Link>
+                <Link to="/docs/api">API Docs</Link>
               </Button>
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
                 <Link to="/contact">Contact</Link>
@@ -512,9 +514,9 @@ export default function LandingPage() {
               <h4 className="text-sm font-semibold mb-3">Company</h4>
               <div className="flex flex-col gap-2 text-xs text-muted-foreground">
                 <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+                <Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
                 <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
                 <Link to="/login" className="hover:text-foreground transition-colors">Sign In</Link>
-                <a href="https://github.com/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
               </div>
             </div>
           </div>
