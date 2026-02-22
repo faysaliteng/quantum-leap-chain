@@ -1,0 +1,623 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── 1. Merchants ──
+model Merchant {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  status     String   @default("active") // active | disabled
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users              User[]
+  charges            Charge[]
+  api_keys           ApiKey[]
+  webhook_endpoints  WebhookEndpoint[]
+  settlement_configs SettlementConfig[]
+  deposit_addresses  DepositAddress[]
+  wallets            WalletConfig[]
+  invoices           Invoice[]
+
+  @@map("merchants")
+}
+
+// ── 2. Users ──
+model User {
+  id                    String   @id @default(cuid())
+  merchant_id           String?
+  email                 String   @unique
+  password              String
+  name                  String
+  role                  String   @default("merchant") // merchant | admin
+  two_factor_secret     String?
+  two_factor_enabled    Boolean  @default(false)
+  email_verify_enabled  Boolean  @default(false)
+  backup_codes          String[] @default([])
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  merchant       Merchant?      @relation(fields: [merchant_id], references: [id])
+  audit_logs     AuditLog[]
+  refresh_tokens RefreshToken[]
+  notifications  Notification[]
+  export_jobs    DataExportJob[]
+
+  @@map("users")
+}
+
+// ── 3. Refresh Tokens ──
+model RefreshToken {
+  id         String   @id @default(cuid())
+  user_id    String
+  token_hash String   @unique
+  family     String
+  expires_at DateTime
+  revoked    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([family])
+  @@map("refresh_tokens")
+}
+
+// ── 4. Charges ──
+model Charge {
+  id              String   @id @default(cuid())
+  merchant_id     String
+  name            String
+  description     String?
+  pricing_type    String   // fixed_price | no_price
+  local_amount    String?
+  local_currency  String?
+  crypto_chain    String?
+  crypto_asset    String?
+  crypto_amount   String?
+  status          String   @default("NEW")
+  hosted_url      String
+  expires_at      DateTime
+  metadata        Json?
+  redirect_url    String?
+  cancel_url      String?
+  idempotency_key String?  @unique
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  merchant          Merchant          @relation(fields: [merchant_id], references: [id])
+  payment_addresses PaymentAddress[]
+  charge_payments   ChargePayment[]
+  sweeps            Sweep[]
+
+  @@index([merchant_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("charges")
+}
+
+// ── 5. Payment Addresses ──
+model PaymentAddress {
+  id        String @id @default(cuid())
+  charge_id String
+  chain     String
+  asset     String
+  address   String
+  amount    String
+
+  charge Charge @relation(fields: [charge_id], references: [id], onDelete: Cascade)
+
+  @@index([charge_id])
+  @@map("payment_addresses")
+}
+
+// ── 6. Charge Payments ──
+model ChargePayment {
+  id                     String   @id @default(cuid())
+  charge_id              String
+  chain                  String
+  asset                  String
+  tx_hash                String
+  amount                 String
+  confirmations          Int      @default(0)
+  required_confirmations Int
+  block_number           Int?
+  block_hash             String?
+  status                 String   @default("detected")
+  created_at             DateTime @default(now())
+
+  charge Charge @relation(fields: [charge_id], references: [id])
+
+  @@unique([tx_hash, charge_id])
+  @@index([charge_id])
+  @@map("charge_payments")
+}
+
+// ── 7. Deposit Addresses ──
+model DepositAddress {
+  id               String   @id @default(cuid())
+  merchant_id      String
+  chain            String
+  address          String   @unique
+  status           String   @default("available")
+  charge_id        String?
+  derivation_index Int?
+  created_at       DateTime @default(now())
+
+  merchant Merchant @relation(fields: [merchant_id], references: [id])
+
+  @@index([merchant_id, chain, status])
+  @@map("deposit_addresses")
+}
+
+// ── 8. Sweeps ──
+model Sweep {
+  id           String   @id @default(cuid())
+  charge_id    String
+  chain        String
+  asset        String
+  from_address String
+  to_address   String
+  amount       String
+  tx_hash      String?
+  status       String   @default("pending")
+  created_at   DateTime @default(now())
+
+  charge Charge @relation(fields: [charge_id], references: [id])
+
+  @@index([charge_id])
+  @@map("sweeps")
+}
+
+// ── 9. API Keys ──
+model ApiKey {
+  id           String    @id @default(cuid())
+  merchant_id  String
+  name         String
+  prefix       String
+  key_hash     String    @unique
+  scopes       String[]
+  last_used_at DateTime?
+  revoked      Boolean   @default(false)
+  created_at   DateTime  @default(now())
+
+  merchant Merchant @relation(fields: [merchant_id], references: [id])
+
+  @@index([merchant_id])
+  @@map("api_keys")
+}
+
+// ── 10. Webhook Endpoints ──
+model WebhookEndpoint {
+  id          String   @id @default(cuid())
+  merchant_id String
+  url         String
+  secret      String
+  events      String[]
+  active      Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  merchant   Merchant          @relation(fields: [merchant_id], references: [id])
+  deliveries WebhookDelivery[]
+
+  @@index([merchant_id])
+  @@map("webhook_endpoints")
+}
+
+// ── 11. Webhook Deliveries ──
+model WebhookDelivery {
+  id            String    @id @default(cuid())
+  webhook_id    String
+  event_type    String
+  event_id      String
+  status_code   Int?
+  latency_ms    Int?
+  attempt       Int       @default(1)
+  max_attempts  Int       @default(5)
+  next_retry_at DateTime?
+  payload       Json?
+  created_at    DateTime  @default(now())
+
+  webhook WebhookEndpoint @relation(fields: [webhook_id], references: [id], onDelete: Cascade)
+
+  @@index([webhook_id])
+  @@map("webhook_deliveries")
+}
+
+// ── 12. Settlement Configs ──
+model SettlementConfig {
+  id                  String @id @default(cuid())
+  merchant_id         String
+  chain               String
+  asset               String
+  address             String
+  sweep_mode          String @default("immediate")
+  min_sweep_threshold String @default("0")
+
+  merchant Merchant @relation(fields: [merchant_id], references: [id])
+
+  @@unique([merchant_id, chain, asset])
+  @@map("settlement_configs")
+}
+
+// ── 13. Chain Configs ──
+model ChainConfig {
+  id                     String  @id @default(cuid())
+  chain                  String  @unique
+  name                   String
+  enabled                Boolean @default(true)
+  confirmation_threshold Int     @default(6)
+
+  rpc_endpoints RpcEndpoint[]
+  asset_configs AssetConfig[]
+
+  @@map("chain_configs")
+}
+
+// ── 14. RPC Endpoints ──
+model RpcEndpoint {
+  id         String @id @default(cuid())
+  chain_id   String
+  url        String
+  priority   Int    @default(0)
+  status     String @default("healthy")
+  latency_ms Int?
+
+  chain ChainConfig @relation(fields: [chain_id], references: [id], onDelete: Cascade)
+
+  @@map("rpc_endpoints")
+}
+
+// ── 15. Asset Configs ──
+model AssetConfig {
+  id               String  @id @default(cuid())
+  chain_id         String
+  symbol           String
+  name             String
+  contract_address String?
+  decimals         Int
+  enabled          Boolean @default(true)
+
+  chain ChainConfig @relation(fields: [chain_id], references: [id], onDelete: Cascade)
+
+  @@unique([chain_id, symbol])
+  @@map("asset_configs")
+}
+
+// ── 16. Watcher Checkpoints ──
+model WatcherCheckpoint {
+  id            String   @id @default(cuid())
+  chain         String   @unique
+  current_block Int
+  latest_block  Int
+  lag           Int
+  last_updated  DateTime @updatedAt
+
+  @@map("watcher_checkpoints")
+}
+
+// ── 17. Audit Log ──
+model AuditLog {
+  id            String   @id @default(cuid())
+  actor_id      String
+  actor_email   String?
+  action        String
+  resource_type String
+  resource_id   String
+  details       Json?
+  ip_address    String?
+  created_at    DateTime @default(now())
+
+  actor User @relation(fields: [actor_id], references: [id])
+
+  @@index([actor_id])
+  @@index([action])
+  @@index([created_at])
+  @@map("audit_logs")
+}
+
+// ── 18. Idempotency Keys ──
+model IdempotencyKey {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  response   Json
+  status     Int
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@map("idempotency_keys")
+}
+
+// ── 19. Wallet Configs ──
+model WalletConfig {
+  id              String    @id @default(cuid())
+  merchant_id     String?
+  label           String
+  type            String    // hot | cold
+  chain           String
+  address         String
+  xpub            String?
+  derivation_path String?
+  balance         String    @default("0")
+  balance_usd     Float     @default(0)
+  status          String    @default("active")
+  last_activity   DateTime?
+  created_at      DateTime  @default(now())
+
+  merchant     Merchant?          @relation(fields: [merchant_id], references: [id])
+  transactions WalletTransaction[]
+
+  @@map("wallet_configs")
+}
+
+// ── 20. Wallet Transactions ──
+model WalletTransaction {
+  id           String   @id @default(cuid())
+  wallet_id    String
+  chain        String
+  asset        String
+  direction    String   // send | receive | withdraw
+  amount       String
+  fee          String?
+  to_address   String
+  from_address String?
+  memo         String?
+  status       String   @default("drafted")
+  tx_hash      String?
+  explorer_url String?
+  created_by   String?
+  approved_by  String?
+  created_at   DateTime @default(now())
+
+  wallet WalletConfig @relation(fields: [wallet_id], references: [id])
+
+  @@index([wallet_id])
+  @@map("wallet_transactions")
+}
+
+// ── 21. Invoices ──
+model Invoice {
+  id             String   @id @default(cuid())
+  merchant_id    String
+  number         String
+  customer_name  String
+  customer_email String
+  items          Json     // InvoiceItem[]
+  subtotal       String
+  tax_rate       Float    @default(0)
+  tax_amount     String   @default("0")
+  total          String
+  currency       String
+  chains         String[]
+  status         String   @default("draft")
+  due_date       DateTime
+  notes          String?
+  charge_id      String?
+  payment_url    String?
+  sent_at        DateTime?
+  paid_at        DateTime?
+  viewed_at      DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  merchant Merchant @relation(fields: [merchant_id], references: [id])
+
+  @@index([merchant_id])
+  @@index([status])
+  @@map("invoices")
+}
+
+// ── 22. Notifications ──
+model Notification {
+  id         String   @id @default(cuid())
+  user_id    String
+  role_scope String   @default("any")
+  type       String   @default("info")
+  category   String   @default("system")
+  title      String
+  body       String
+  data       Json?
+  read_at    DateTime?
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("notifications")
+}
+
+// ── 23. Notification Preferences ──
+model NotificationPreference {
+  id                 String   @id @default(cuid())
+  user_id            String   @unique
+  categories_enabled String[]
+  email_enabled      Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  @@map("notification_preferences")
+}
+
+// ── 24. Security Policies ──
+model SecurityPolicy {
+  id         String   @id @default(cuid())
+  config     Json     // SecurityPolicies JSON
+  updated_by String?
+  updated_at DateTime @updatedAt
+
+  @@map("security_policies")
+}
+
+// ── 25. Admin Roles ──
+model AdminRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  permissions String[]
+  is_system   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  assignments AdminUserRole[]
+
+  @@map("admin_roles")
+}
+
+// ── 26. Admin User Roles ──
+model AdminUserRole {
+  id            String   @id @default(cuid())
+  admin_user_id String
+  admin_email   String
+  role_id       String
+  assigned_at   DateTime @default(now())
+  assigned_by   String?
+
+  role AdminRole @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([admin_user_id])
+  @@map("admin_user_roles")
+}
+
+// ── 27. Team Invites ──
+model TeamInvite {
+  id         String   @id @default(cuid())
+  email      String
+  role_id    String
+  status     String   @default("pending")
+  invited_by String
+  created_at DateTime @default(now())
+  expires_at DateTime
+
+  @@map("team_invites")
+}
+
+// ── 28. Data Export Jobs ──
+model DataExportJob {
+  id                  String   @id @default(cuid())
+  scope               String   // merchant | admin
+  requested_by_user_id String
+  merchant_id         String?
+  kind                String
+  filters             Json     @default("{}")
+  status              String   @default("queued")
+  file_path           String?
+  file_format         String   @default("csv")
+  size_bytes          Int?
+  error_message       String?
+  expires_at          DateTime?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  user User @relation(fields: [requested_by_user_id], references: [id])
+
+  @@index([requested_by_user_id])
+  @@map("data_export_jobs")
+}
+
+// ── 29. CMS Pages ──
+model CMSPage {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  og_image    String?
+  status      String   @default("published")
+  updated_at  DateTime @updatedAt
+
+  @@map("cms_pages")
+}
+
+// ── 30. Announcements ──
+model CMSAnnouncement {
+  id         String    @id @default(cuid())
+  message    String
+  type       String    @default("info")
+  active     Boolean   @default(true)
+  start_date DateTime
+  end_date   DateTime?
+  created_at DateTime  @default(now())
+
+  @@map("cms_announcements")
+}
+
+// ── 31. Blog Posts ──
+model CMSBlogPost {
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  excerpt      String
+  body         String
+  tags         String[]
+  status       String    @default("draft")
+  author       String
+  published_at DateTime?
+  created_at   DateTime  @default(now())
+
+  @@map("cms_blog_posts")
+}
+
+// ── 32. FAQ Entries ──
+model CMSFAQEntry {
+  id         String   @id @default(cuid())
+  question   String
+  answer     String
+  category   String
+  sort_order Int      @default(0)
+  visible    Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  @@map("cms_faq_entries")
+}
+
+// ── 33. CMS Settings ──
+model CMSSettingsRecord {
+  id                  String @id @default(cuid())
+  site_title_template String @default("{page} | Cryptoniumpay")
+  default_og_image    String @default("/og-image.png")
+  social_urls         Json   @default("{}")
+  analytics_id        String @default("")
+  maintenance_mode    Boolean @default(false)
+
+  @@map("cms_settings")
+}
+
+// ── 34. Contact Submissions ──
+model CMSContactSubmission {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  company    String?
+  subject    String
+  message    String
+  status     String   @default("new")
+  notes      String?
+  created_at DateTime @default(now())
+
+  @@map("cms_contact_submissions")
+}
+
+// ── 35. Fee Config ──
+model FeeConfigRecord {
+  id           String @id @default(cuid())
+  rate_percent Float  @default(0.5)
+  min_fee_usd  Float  @default(0)
+  model        String @default("flat")
+
+  @@map("fee_configs")
+}
+
+// ── 36. Merchant Fee Overrides ──
+model MerchantFeeOverride {
+  id           String   @id @default(cuid())
+  merchant_id  String   @unique
+  rate_percent Float
+  created_at   DateTime @default(now())
+
+  @@map("merchant_fee_overrides")
+}
