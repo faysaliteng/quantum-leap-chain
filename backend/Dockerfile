@@ -2,6 +2,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
+RUN npm install @nestjs/websockets @nestjs/platform-socket.io socket.io @nestjs/bullmq @types/qrcode --save
 COPY . .
 RUN npx prisma generate
 RUN npm run build
