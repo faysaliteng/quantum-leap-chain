@@ -115,14 +115,14 @@ export default function MerchantIntelligence() {
 
       {/* KPI Row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Avg Daily Revenue" value={`$${avgDaily.toFixed(0)}`} icon={BarChart3} />
-        <StatCard label="P95 Peak Day" value={`$${p95.toFixed(0)}`} icon={Zap} />
-        <StatCard label="WoW Growth" value={`${growthRate > 0 ? "+" : ""}${growthRate.toFixed(1)}%`} icon={Activity} />
+        <StatCard label={t("intelligence.avgDailyRevenue")} value={`$${avgDaily.toFixed(0)}`} icon={BarChart3} />
+        <StatCard label={t("intelligence.p95Peak")} value={`$${p95.toFixed(0)}`} icon={Zap} />
+        <StatCard label={t("intelligence.wowGrowth")} value={`${growthRate > 0 ? "+" : ""}${growthRate.toFixed(1)}%`} icon={Activity} />
         <Card>
           <CardContent className="pt-6 text-center">
             <div className="mx-auto mb-2">{trendIcon}</div>
             <p className="text-2xl font-bold capitalize">{trend?.direction ?? "—"}</p>
-            <p className="text-xs text-muted-foreground">Trend Direction ({(trend?.strength ?? 0) * 100 | 0}% confidence)</p>
+            <p className="text-xs text-muted-foreground">{t("intelligence.trendDirection")} ({(trend?.strength ?? 0) * 100 | 0}% {t("intelligence.confidence")})</p>
           </CardContent>
         </Card>
       </div>
@@ -131,9 +131,9 @@ export default function MerchantIntelligence() {
       {insights.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />Smart Insights
-              <Badge variant="outline" className="text-xs">{insights.length} detected</Badge>
+          <CardTitle className="text-sm flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />{t("intelligence.smartInsights")}
+              <Badge variant="outline" className="text-xs">{insights.length} {t("intelligence.detected")}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -161,9 +161,9 @@ export default function MerchantIntelligence() {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
-            <LineChart className="h-4 w-4" />Revenue Forecast (7-Day Projection)
+            <LineChart className="h-4 w-4" />{t("intelligence.revenueForecast")}
           </CardTitle>
-          <CardDescription>Actual data with 7-day moving average and algorithmic forecast</CardDescription>
+          <CardDescription>{t("intelligence.forecastDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-72">
@@ -202,7 +202,7 @@ export default function MerchantIntelligence() {
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Charge Status Distribution */}
         <Card>
-          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><PieIcon className="h-4 w-4" />Charge Status Distribution</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><PieIcon className="h-4 w-4" />{t("intelligence.chargeStatus")}</CardTitle></CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -220,7 +220,7 @@ export default function MerchantIntelligence() {
 
         {/* Daily Volume Bar Chart */}
         <Card>
-          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" />Daily Revenue Distribution</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" />{t("intelligence.dailyRevenue")}</CardTitle></CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -240,15 +240,15 @@ export default function MerchantIntelligence() {
       {/* Prediction Confidence */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Prediction Model Confidence</CardTitle>
-          <CardDescription>Based on linear regression R² and data volume</CardDescription>
+          <CardTitle className="text-sm">{t("intelligence.predictionModel")}</CardTitle>
+          <CardDescription>{t("intelligence.predictionDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              { label: "Trend Confidence", value: trend ? `${(trend.strength * 100).toFixed(0)}%` : "—", desc: "R² of linear fit" },
-              { label: "Data Points", value: amounts.length.toString(), desc: "Available for analysis" },
-              { label: "Forecast Horizon", value: "7 days", desc: "Linear extrapolation" },
+              { label: t("intelligence.trendConfidence"), value: trend ? `${(trend.strength * 100).toFixed(0)}%` : "—", desc: t("intelligence.rSquared") },
+              { label: t("intelligence.dataPoints"), value: amounts.length.toString(), desc: t("intelligence.availableForAnalysis") },
+              { label: t("intelligence.forecastHorizon"), value: "7 days", desc: t("intelligence.linearExtrapolation") },
             ].map((m) => (
               <div key={m.label} className="bg-muted/50 rounded-lg p-4 text-center">
                 <p className="text-2xl font-bold font-display">{m.value}</p>

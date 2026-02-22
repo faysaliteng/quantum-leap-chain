@@ -65,7 +65,7 @@ export default function WalletTransactionHistory() {
           <p className="text-sm text-muted-foreground mt-1">{t("txHistory.subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => startExport("wallet_transactions", "csv", { direction: filterDir !== "all" ? filterDir : undefined, status: filterStatus !== "all" ? filterStatus : undefined })} disabled={isExporting}>
-          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? t("charges.exporting") : t("charges.serverExport")}
         </Button>
       </div>
 
@@ -76,26 +76,26 @@ export default function WalletTransactionHistory() {
           <Select value={filterDir} onValueChange={setFilterDir}>
             <SelectTrigger className="w-32 h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Directions</SelectItem>
-              <SelectItem value="send">Send</SelectItem>
-              <SelectItem value="receive">Receive</SelectItem>
-              <SelectItem value="withdraw">Withdraw</SelectItem>
+              <SelectItem value="all">{t("txHistory.allDirections")}</SelectItem>
+              <SelectItem value="send">{t("txHistory.send")}</SelectItem>
+              <SelectItem value="receive">{t("txHistory.receive")}</SelectItem>
+              <SelectItem value="withdraw">{t("txHistory.withdraw")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="broadcasted">Broadcasted</SelectItem>
-              <SelectItem value="pending_signature">Pending Signature</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="all">{t("txHistory.allStatuses")}</SelectItem>
+              <SelectItem value="confirmed">{t("txHistory.confirmed")}</SelectItem>
+              <SelectItem value="broadcasted">{t("txHistory.broadcasted")}</SelectItem>
+              <SelectItem value="pending_signature">{t("txHistory.pendingSignature")}</SelectItem>
+              <SelectItem value="failed">{t("txHistory.failed")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by hash, address, memo…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-9" />
+          <Input placeholder={t("txHistory.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-9" />
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function WalletTransactionHistory() {
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Wallet className="h-10 w-10 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">No transactions found</p>
+          <p className="text-sm">{t("txHistory.noTransactions")}</p>
         </div>
       ) : (
         <div className="space-y-2">

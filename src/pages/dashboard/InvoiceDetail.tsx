@@ -67,7 +67,7 @@ export default function InvoiceDetail() {
   };
 
   if (isLoading) return <PageSkeleton />;
-  if (!inv) return <div className="text-center py-16 text-muted-foreground">Invoice not found</div>;
+  if (!inv) return <div className="text-center py-16 text-muted-foreground">{t("invoiceDetail.notFound")}</div>;
 
   return (
     <div className="space-y-6 max-w-3xl" data-testid="page:dashboard-invoice-detail">
@@ -79,7 +79,7 @@ export default function InvoiceDetail() {
           </Button>
           <div>
             <h1 className="text-lg font-semibold flex items-center gap-2">
-              Invoice {inv.number}
+              {t("invoices.invoice")} {inv.number}
               <Badge className={`${statusStyles[inv.status]} border-0 text-xs capitalize`}>{inv.status}</Badge>
             </h1>
             <p className="text-xs text-muted-foreground">Created {new Date(inv.created_at).toLocaleDateString()}</p>
@@ -88,7 +88,7 @@ export default function InvoiceDetail() {
         <div className="flex gap-2">
           {inv.status === "draft" && (
             <Button size="sm" onClick={() => sendMut.mutate()} disabled={sendMut.isPending}>
-              <Send className="mr-1.5 h-3.5 w-3.5" />Send
+              <Send className="mr-1.5 h-3.5 w-3.5" />{t("invoiceDetail.send")}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
@@ -96,7 +96,7 @@ export default function InvoiceDetail() {
           </Button>
           {inv.status !== "paid" && inv.status !== "cancelled" && (
             <Button variant="outline" size="sm" className="text-destructive" onClick={() => cancelMut.mutate()}>
-              <XCircle className="mr-1.5 h-3.5 w-3.5" />Cancel
+              <XCircle className="mr-1.5 h-3.5 w-3.5" />{t("invoiceDetail.cancel")}
             </Button>
           )}
         </div>
@@ -105,17 +105,17 @@ export default function InvoiceDetail() {
       {/* Customer + Payment Info */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><User className="h-4 w-4" />Customer</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><User className="h-4 w-4" />{t("invoiceDetail.customer")}</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p className="font-semibold">{inv.customer_name}</p>
             <p className="text-muted-foreground flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{inv.customer_email}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" />Payment</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" />{t("invoiceDetail.payment")}</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Due Date</span><span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(inv.due_date).toLocaleDateString()}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Chains</span><span>{inv.chains.map((c) => chainLabels[c] ?? c).join(", ")}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t("table.dueDate")}</span><span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(inv.due_date).toLocaleDateString()}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t("invoiceDetail.chains")}</span><span>{inv.chains.map((c) => chainLabels[c] ?? c).join(", ")}</span></div>
             {inv.payment_url && (
               <div className="flex items-center gap-2 mt-2 p-2 bg-muted/50 rounded">
                 <code className="text-xs font-mono truncate flex-1">{inv.payment_url}</code>
@@ -129,15 +129,15 @@ export default function InvoiceDetail() {
 
       {/* Line Items */}
       <Card>
-        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4" />Items</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4" />{t("invoiceDetail.items")}</CardTitle></CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                <th className="px-4 py-2">Description</th>
-                <th className="px-4 py-2 text-right">Qty</th>
-                <th className="px-4 py-2 text-right">Unit Price</th>
-                <th className="px-4 py-2 text-right">Amount</th>
+                <th className="px-4 py-2">{t("table.description")}</th>
+                <th className="px-4 py-2 text-right">{t("table.qty")}</th>
+                <th className="px-4 py-2 text-right">{t("table.unitPrice")}</th>
+                <th className="px-4 py-2 text-right">{t("table.amount")}</th>
               </tr>
             </thead>
             <tbody>
@@ -152,12 +152,12 @@ export default function InvoiceDetail() {
             </tbody>
           </table>
           <div className="border-t px-4 py-3 space-y-1">
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="font-mono">${parseFloat(inv.subtotal).toFixed(2)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted-foreground">{t("invoiceDetail.subtotal")}</span><span className="font-mono">${parseFloat(inv.subtotal).toFixed(2)}</span></div>
             {inv.tax_rate > 0 && (
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Tax ({inv.tax_rate}%)</span><span className="font-mono">${parseFloat(inv.tax_amount).toFixed(2)}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">{t("createInvoice.tax")} ({inv.tax_rate}%)</span><span className="font-mono">${parseFloat(inv.tax_amount).toFixed(2)}</span></div>
             )}
             <div className="flex justify-between font-semibold text-lg border-t pt-2">
-              <span>Total</span><span className="font-mono font-display">${parseFloat(inv.total).toFixed(2)} {inv.currency}</span>
+              <span>{t("invoiceDetail.total")}</span><span className="font-mono font-display">${parseFloat(inv.total).toFixed(2)} {inv.currency}</span>
             </div>
           </div>
         </CardContent>
@@ -166,7 +166,7 @@ export default function InvoiceDetail() {
       {/* Notes */}
       {inv.notes && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">Notes</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t("invoiceDetail.notes")}</CardTitle></CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{inv.notes}</p>
           </CardContent>
@@ -175,32 +175,32 @@ export default function InvoiceDetail() {
 
       {/* Timeline */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Timeline</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("invoiceDetail.timeline")}</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-3">
               <div className="h-2 w-2 rounded-full bg-muted-foreground" />
-              <span className="text-muted-foreground">Created</span>
+              <span className="text-muted-foreground">{t("invoiceDetail.created")}</span>
               <span className="text-xs ml-auto">{new Date(inv.created_at).toLocaleString()}</span>
             </div>
             {inv.sent_at && (
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-info" />
-                <span className="text-muted-foreground">Sent to customer</span>
+                <span className="text-muted-foreground">{t("invoiceDetail.sentToCustomer")}</span>
                 <span className="text-xs ml-auto">{new Date(inv.sent_at).toLocaleString()}</span>
               </div>
             )}
             {inv.viewed_at && (
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-warning" />
-                <span className="text-muted-foreground">Viewed by customer</span>
+                <span className="text-muted-foreground">{t("invoiceDetail.viewedByCustomer")}</span>
                 <span className="text-xs ml-auto">{new Date(inv.viewed_at).toLocaleString()}</span>
               </div>
             )}
             {inv.paid_at && (
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-success" />
-                <span className="text-success font-medium">Payment received</span>
+                <span className="text-success font-medium">{t("invoiceDetail.paymentReceived")}</span>
                 <span className="text-xs ml-auto">{new Date(inv.paid_at).toLocaleString()}</span>
               </div>
             )}

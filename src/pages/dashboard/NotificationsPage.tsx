@@ -110,14 +110,14 @@ export default function NotificationsPage() {
           <p className="text-sm text-muted-foreground mt-1">{t("notifications.subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => markAllMut.mutate()} disabled={markAllMut.isPending}>
-          <CheckCheck className="mr-1.5 h-4 w-4" />Mark All Read
+          <CheckCheck className="mr-1.5 h-4 w-4" />{t("notifications.markAllRead")}
         </Button>
       </div>
 
       <Tabs defaultValue="inbox">
         <TabsList>
-          <TabsTrigger value="inbox">Inbox ({items.length})</TabsTrigger>
-          <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          <TabsTrigger value="inbox">{t("notifications.inbox")} ({items.length})</TabsTrigger>
+          <TabsTrigger value="preferences">{t("notifications.preferences")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="inbox" className="space-y-4 mt-4">
@@ -140,7 +140,7 @@ export default function NotificationsPage() {
           {items.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <Bell className="h-10 w-10 mx-auto mb-3 opacity-20" />
-              <p className="text-sm">No notifications</p>
+              <p className="text-sm">{t("notifications.noNotifications")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -183,16 +183,16 @@ export default function NotificationsPage() {
         <TabsContent value="preferences" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Notification Preferences</CardTitle>
-              <CardDescription>Choose which notifications you receive</CardDescription>
+              <CardTitle className="text-sm">{t("notifications.prefTitle")}</CardTitle>
+              <CardDescription>{t("notifications.prefDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium">Email Notifications</p>
-                    <p className="text-xs text-muted-foreground">Receive notifications via email</p>
+                    <p className="text-sm font-medium">{t("notifications.emailNotifications")}</p>
+                    <p className="text-xs text-muted-foreground">{t("notifications.emailDesc")}</p>
                   </div>
                 </div>
                 <Switch
@@ -201,7 +201,7 @@ export default function NotificationsPage() {
                 />
               </div>
               <Separator />
-              <p className="text-sm font-medium">Categories</p>
+              <p className="text-sm font-medium">{t("notifications.categories")}</p>
               {categories.map((c) => (
                 <div key={c.key} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

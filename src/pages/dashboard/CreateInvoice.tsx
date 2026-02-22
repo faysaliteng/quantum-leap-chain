@@ -88,15 +88,15 @@ export default function CreateInvoice() {
 
       {/* Customer Info */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Customer Information</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("createInvoice.customerInfo")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Customer Name *</Label>
+              <Label>{t("createInvoice.customerName")} *</Label>
               <Input placeholder="Acme Corp" value={customer.name} onChange={(e) => setCustomer((c) => ({ ...c, name: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label>Customer Email *</Label>
+              <Label>{t("createInvoice.customerEmail")} *</Label>
               <Input type="email" placeholder="billing@acme.com" value={customer.email} onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))} />
             </div>
           </div>
@@ -106,22 +106,22 @@ export default function CreateInvoice() {
       {/* Line Items */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sm">Line Items</CardTitle>
-          <Button variant="outline" size="sm" onClick={addItem}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Add Item</Button>
+          <CardTitle className="text-sm">{t("createInvoice.lineItems")}</CardTitle>
+          <Button variant="outline" size="sm" onClick={addItem}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />{t("createInvoice.addItem")}</Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {items.map((item, i) => (
             <div key={i} className="grid gap-3 sm:grid-cols-[1fr_80px_120px_32px] items-end">
               <div className="space-y-1.5">
-                <Label className="text-xs">Description</Label>
+                <Label className="text-xs">{t("table.description")}</Label>
                 <Input placeholder="Service or product" value={item.description} onChange={(e) => updateItem(i, "description", e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Qty</Label>
+                <Label className="text-xs">{t("table.qty")}</Label>
                 <Input type="number" min={1} value={item.quantity} onChange={(e) => updateItem(i, "quantity", parseInt(e.target.value) || 1)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Unit Price</Label>
+                <Label className="text-xs">{t("table.unitPrice")}</Label>
                 <Input type="number" step="0.01" placeholder="0.00" value={item.unit_price} onChange={(e) => updateItem(i, "unit_price", e.target.value)} />
               </div>
               {items.length > 1 && (
@@ -136,11 +136,11 @@ export default function CreateInvoice() {
 
       {/* Payment Settings */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Payment Settings</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("createInvoice.paymentSettings")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <Label>Currency</Label>
+              <Label>{t("createCharge.currency")}</Label>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -151,17 +151,17 @@ export default function CreateInvoice() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Tax Rate (%)</Label>
+              <Label>{t("createInvoice.taxRate")}</Label>
               <Input type="number" step="0.1" min="0" max="100" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Due Date *</Label>
+              <Label>{t("table.dueDate")} *</Label>
               <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>Accepted Chains *</Label>
+            <Label>{t("createInvoice.acceptedChains")} *</Label>
             <div className="flex flex-wrap gap-3 mt-1">
               {chains.map((c) => (
                 <label key={c.id} className="flex items-center gap-2 cursor-pointer">
@@ -173,7 +173,7 @@ export default function CreateInvoice() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Notes (optional)</Label>
+            <Label>{t("createInvoice.notes")}</Label>
             <Textarea placeholder="Additional notes for the customer..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
           </div>
         </CardContent>
@@ -183,17 +183,17 @@ export default function CreateInvoice() {
       <Card className="border-primary/20">
         <CardContent className="pt-6">
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-mono">${subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span className="font-mono">${taxAmount.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t("createInvoice.subtotal")}</span><span className="font-mono">${subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t("createInvoice.tax")} ({taxRate}%)</span><span className="font-mono">${taxAmount.toFixed(2)}</span></div>
             <div className="border-t pt-2 flex justify-between font-semibold text-lg">
-              <span>Total</span><span className="font-mono font-display">${total.toFixed(2)} {currency}</span>
+              <span>{t("createInvoice.total")}</span><span className="font-mono font-display">${total.toFixed(2)} {currency}</span>
             </div>
           </div>
           <div className="flex gap-3 mt-6">
             <Button onClick={() => createMut.mutate()} disabled={!canSubmit || createMut.isPending} className="bg-gradient-gold text-primary-foreground">
-              <Save className="mr-1.5 h-3.5 w-3.5" />{createMut.isPending ? "Creating..." : "Save as Draft"}
+              <Save className="mr-1.5 h-3.5 w-3.5" />{createMut.isPending ? t("createInvoice.creating") : t("createInvoice.saveAsDraft")}
             </Button>
-            <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
+            <Button variant="outline" onClick={() => navigate(-1)}>{t("common.cancel") || "Cancel"}</Button>
           </div>
         </CardContent>
       </Card>

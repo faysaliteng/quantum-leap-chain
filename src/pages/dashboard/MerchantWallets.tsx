@@ -101,10 +101,10 @@ export default function MerchantWallets() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowConnect(true)}>
-            <Link2 className="mr-1.5 h-4 w-4" />Connect Wallet
+            <Link2 className="mr-1.5 h-4 w-4" />{t("wallets.connectWallet")}
           </Button>
           <Button onClick={() => setShowConnect(true)}>
-            <PlusCircle className="mr-1.5 h-4 w-4" />Add Wallet
+            <PlusCircle className="mr-1.5 h-4 w-4" />{t("wallets.addWallet")}
           </Button>
         </div>
       </div>
@@ -117,16 +117,16 @@ export default function MerchantWallets() {
               <Wallet className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Portfolio Value</p>
+              <p className="text-sm text-muted-foreground">{t("wallets.totalPortfolio")}</p>
               <p className="text-3xl font-display font-bold">${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: "Total Wallets", value: wList.length },
-              { label: "Hot Wallets", value: hotWallets.length, color: "text-success" },
-              { label: "Cold Wallets", value: coldWallets.length, color: "text-info" },
-              { label: "Chains", value: new Set(wList.map((w) => w.chain)).size },
+              { label: t("wallets.totalWallets"), value: wList.length },
+              { label: t("wallets.hotWallets"), value: hotWallets.length, color: "text-success" },
+              { label: t("wallets.coldWallets"), value: coldWallets.length, color: "text-info" },
+              { label: t("wallets.chains"), value: new Set(wList.map((w) => w.chain)).size },
             ].map((s) => (
               <div key={s.label} className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50">
                 <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -141,7 +141,7 @@ export default function MerchantWallets() {
       <Card className="border-primary/20">
         <CardContent className="p-4">
           <div className="flex items-center gap-4 flex-wrap">
-            <p className="text-sm font-medium">Supported Connections:</p>
+            <p className="text-sm font-medium">{t("wallets.supportedConnections")}</p>
             <div className="flex items-center gap-3 flex-wrap">
               {[
                 { icon: <Smartphone className="h-3.5 w-3.5" />, label: "WalletConnect v2" },
@@ -153,7 +153,7 @@ export default function MerchantWallets() {
                   {c.icon}{c.label}
                 </Badge>
               ))}
-              <span className="text-xs text-muted-foreground">+ 300 more wallets</span>
+              <span className="text-xs text-muted-foreground">{t("wallets.moreWallets")}</span>
             </div>
           </div>
         </CardContent>
@@ -162,9 +162,9 @@ export default function MerchantWallets() {
       {/* Wallet Tabs */}
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All ({wList.length})</TabsTrigger>
-          <TabsTrigger value="hot">Hot Wallets ({hotWallets.length})</TabsTrigger>
-          <TabsTrigger value="cold">Cold Storage ({coldWallets.length})</TabsTrigger>
+          <TabsTrigger value="all">{t("wallets.all")} ({wList.length})</TabsTrigger>
+          <TabsTrigger value="hot">{t("wallets.hot")} ({hotWallets.length})</TabsTrigger>
+          <TabsTrigger value="cold">{t("wallets.cold")} ({coldWallets.length})</TabsTrigger>
         </TabsList>
 
         {(["all", "hot", "cold"] as const).map((tab) => {
@@ -223,9 +223,9 @@ export default function MerchantWallets() {
               )) : (
                 <div className="text-center py-16 text-muted-foreground">
                   <Wallet className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No {tab === "hot" ? "hot" : tab === "cold" ? "cold" : ""} wallets connected.</p>
+                  <p className="text-sm">{t("wallets.noWallets")}</p>
                   <Button variant="outline" className="mt-4" onClick={() => setShowConnect(true)}>
-                    <Link2 className="mr-1.5 h-4 w-4" />Connect Your First Wallet
+                    <Link2 className="mr-1.5 h-4 w-4" />{t("wallets.connectFirst")}
                   </Button>
                 </div>
               )}
@@ -240,7 +240,7 @@ export default function MerchantWallets() {
           <div className="flex items-start gap-3">
             <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-semibold text-sm">Enterprise-Grade Wallet Security</p>
+              <p className="font-semibold text-sm">{t("wallets.securityTitle")}</p>
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li className="flex items-center gap-1.5"><Shield className="h-3 w-3" />Private keys encrypted with AES-256-GCM at rest</li>
                 <li className="flex items-center gap-1.5"><Lock className="h-3 w-3" />Hardware wallets: keys never leave the device</li>
@@ -264,7 +264,7 @@ export default function MerchantWallets() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5" />Send / Withdraw
+              <Send className="h-5 w-5" />{t("wallets.sendWithdraw")}
             </DialogTitle>
             <DialogDescription>
               {sendWallet?.type === "cold"
@@ -297,11 +297,11 @@ export default function MerchantWallets() {
               )}
 
               <div className="space-y-2">
-                <Label>Recipient Address</Label>
+                <Label>{t("wallets.recipientAddress")}</Label>
                 <Input placeholder="0x... or bc1..." value={sendTo} onChange={(e) => setSendTo(e.target.value)} className="font-mono text-sm" />
               </div>
               <div className="space-y-2">
-                <Label>Amount</Label>
+                <Label>{t("table.amount")}</Label>
                 <div className="relative">
                   <Input type="number" step="any" placeholder="0.00" value={sendAmount} onChange={(e) => setSendAmount(e.target.value)} className="pr-16" />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1 h-8 text-xs text-primary" onClick={() => setSendAmount(sendWallet.balance)}>
@@ -310,27 +310,27 @@ export default function MerchantWallets() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Memo / Note (optional)</Label>
+                <Label>{t("wallets.memo")}</Label>
                 <Input placeholder="Internal reference…" value={sendMemo} onChange={(e) => setSendMemo(e.target.value)} />
               </div>
 
               {!sendConfirm ? (
                 <Button className="w-full" onClick={() => setSendConfirm(true)} disabled={!sendTo || !sendAmount}>
-                  <ArrowUpRight className="mr-1.5 h-4 w-4" />Review Withdrawal
+                  <ArrowUpRight className="mr-1.5 h-4 w-4" />{t("wallets.reviewWithdrawal")}
                 </Button>
               ) : (
                 <div className="space-y-3">
                   <div className="bg-muted rounded-lg p-3 space-y-2 text-sm">
                     <div className="flex justify-between"><span className="text-muted-foreground">To:</span><code className="font-mono text-xs truncate max-w-[200px]">{sendTo}</code></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Amount:</span><span className="font-bold">{sendAmount}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Network Fee (est.):</span><span>~{estimatedFee}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{t("wallets.networkFee")}:</span><span>~{estimatedFee}</span></div>
                     {sendMemo && <div className="flex justify-between"><span className="text-muted-foreground">Memo:</span><span className="text-xs">{sendMemo}</span></div>}
                     <Separator />
                     <div className="flex justify-between font-semibold"><span>Total:</span><span>{(parseFloat(sendAmount || "0") + estimatedFee).toFixed(6)}</span></div>
                   </div>
                   <div className="bg-warning/10 rounded-lg p-3 flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-                    <p className="text-xs text-muted-foreground">This transaction is irreversible. Verify the recipient address carefully.</p>
+                    <p className="text-xs text-muted-foreground">{t("wallets.irreversible")}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>Back</Button>
@@ -340,7 +340,7 @@ export default function MerchantWallets() {
                         setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
                       }}>
                       <ShieldCheck className="mr-1.5 h-4 w-4" />
-                      {sendWallet.type === "cold" ? "Sign on Device" : "Confirm & Send"}
+                      {sendWallet.type === "cold" ? "Sign on Device" : t("wallets.confirmSend")}
                     </Button>
                   </div>
                 </div>
@@ -355,9 +355,9 @@ export default function MerchantWallets() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5" />Receive {receiveWallet ? chainLabels[receiveWallet.chain] : ""}
+              <Download className="h-5 w-5" />{t("wallets.receive")} {receiveWallet ? chainLabels[receiveWallet.chain] : ""}
             </DialogTitle>
-            <DialogDescription>Share this address or QR code to receive funds</DialogDescription>
+            <DialogDescription>{t("wallets.scanQr")}</DialogDescription>
           </DialogHeader>
           {receiveWallet && (
             <div className="space-y-4">
