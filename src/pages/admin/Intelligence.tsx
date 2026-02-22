@@ -60,20 +60,17 @@ export default function AdminIntelligence() {
   const labels = revenueData.map((d) => d.date);
   const txVolume = revenue?.transaction_volume?.map((d) => d.count) ?? amounts;
 
-  // Analytics
   const trend = amounts.length >= 3 ? detectTrend(amounts) : null;
   const forecastData = amounts.length >= 5 ? forecast(amounts, 7) : [];
   const ma7 = amounts.length >= 7 ? movingAverage(amounts, 7) : [];
   const insights = generateInsights(amounts, txVolume, labels);
   const anomalies = txVolume.length >= 7 ? detectAnomalies(txVolume) : [];
 
-  // Forecast chart
   const forecastChart = [
     ...revenueData.map((d, i) => ({ date: d.date, actual: d.amount, ma7: ma7[i] ?? null, forecast: null as number | null })),
     ...forecastData.map((v, i) => ({ date: `+${i + 1}d`, actual: null as number | null, ma7: null as number | null, forecast: Math.round(v) })),
   ];
 
-  // Merchant scoring
   const merchantScores = (topMerchants ?? []).map((m) => {
     const score = merchantHealthScore({
       volume: parseFloat(m.volume_usd),
@@ -85,7 +82,6 @@ export default function AdminIntelligence() {
     return { ...m, ...score };
   });
 
-  // KPIs
   const totalRev = amounts.reduce((a, b) => a + b, 0);
   const avgDaily = amounts.length > 0 ? totalRev / amounts.length : 0;
   const p95 = amounts.length >= 5 ? percentile(amounts, 95) : 0;
@@ -97,7 +93,6 @@ export default function AdminIntelligence() {
     trend?.direction === "down" ? <TrendingDown className="h-5 w-5 text-destructive" /> :
     <Minus className="h-5 w-5 text-muted-foreground" />;
 
-  // Revenue by chain for pie
   const chainPie = revenue?.revenue_by_chain ?? [];
   const pieColors = ["hsl(var(--primary))", "hsl(var(--success))", "hsl(var(--warning))", "hsl(var(--info))", "hsl(var(--destructive))"];
 
@@ -110,7 +105,7 @@ export default function AdminIntelligence() {
           </div>
           <div>
             <h1 className="text-lg font-semibold">{t("admin.intelligence")}</h1>
-            <p className="text-xs text-muted-foreground">Algorithmic predictions, anomaly detection & merchant scoring</p>
+            <p className="text-xs text-muted-foreground">{t("admin.intelligenceDesc")}</p>
           </div>
         </div>
         <TimeRangeSelector value={range} onChange={setRange} />
@@ -118,15 +113,15 @@ export default function AdminIntelligence() {
 
       {/* KPI Row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Avg Daily Revenue" value={`$${avgDaily.toFixed(0)}`} icon={DollarSign} />
-        <StatCard label="P95 Peak" value={`$${p95.toFixed(0)}`} icon={Zap} />
-        <StatCard label="WoW Growth" value={`${growthRate > 0 ? "+" : ""}${growthRate.toFixed(1)}%`} icon={Activity} />
-        <StatCard label="Anomalies" value={anomalies.length.toString()} icon={AlertTriangle} />
+        <StatCard label={t("admin.avgDailyRevenue")} value={`$${avgDaily.toFixed(0)}`} icon={DollarSign} />
+        <StatCard label={t("admin.p95Peak")} value={`$${p95.toFixed(0)}`} icon={Zap} />
+        <StatCard label={t("admin.wowGrowth")} value={`${growthRate > 0 ? "+" : ""}${growthRate.toFixed(1)}%`} icon={Activity} />
+        <StatCard label={t("admin.anomalies")} value={anomalies.length.toString()} icon={AlertTriangle} />
         <Card>
           <CardContent className="pt-6 text-center">
             <div className="mx-auto mb-2">{trendIcon}</div>
             <p className="text-2xl font-bold capitalize">{trend?.direction ?? "—"}</p>
-            <p className="text-xs text-muted-foreground">Platform Trend</p>
+            <p className="text-xs text-muted-foreground">{t("admin.platformTrend")}</p>
           </CardContent>
         </Card>
       </div>
@@ -136,7 +131,7 @@ export default function AdminIntelligence() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />AI-Powered Insights
+              <Sparkles className="h-4 w-4 text-primary" />{t("admin.aiInsights")}
               <Badge variant="outline" className="text-xs">{insights.length}</Badge>
             </CardTitle>
           </CardHeader>
@@ -162,8 +157,8 @@ export default function AdminIntelligence() {
       {/* Revenue Forecast */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2"><LineChart className="h-4 w-4" />Revenue Forecast</CardTitle>
-          <CardDescription>Historical + 7-day linear projection with moving average</CardDescription>
+          <CardTitle className="text-sm flex items-center gap-2"><LineChart className="h-4 w-4" />{t("admin.revenueForecast")}</CardTitle>
+          <CardDescription>{t("admin.forecastDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-72">
@@ -195,7 +190,7 @@ export default function AdminIntelligence() {
       {/* Charts Row */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-sm">Revenue by Chain</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t("admin.revenueByChain")}</CardTitle></CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -212,7 +207,7 @@ export default function AdminIntelligence() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-sm">Daily Revenue (Last 14 Days)</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t("admin.dailyRevenue14")}</CardTitle></CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -234,9 +229,9 @@ export default function AdminIntelligence() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
-              <Award className="h-4 w-4" />Merchant Health Scores
+              <Award className="h-4 w-4" />{t("admin.merchantHealth")}
             </CardTitle>
-            <CardDescription>Algorithmic scoring based on volume, activity, success rate & loyalty</CardDescription>
+            <CardDescription>{t("admin.merchantHealthDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -247,12 +242,12 @@ export default function AdminIntelligence() {
                       <div className={`text-2xl font-bold font-display ${gradeColors[m.grade]}`}>{m.grade}</div>
                       <div>
                         <p className="font-medium text-sm">{m.name}</p>
-                        <p className="text-xs text-muted-foreground">${parseFloat(m.volume_usd).toLocaleString()} volume · {m.tx_count} transactions</p>
+                        <p className="text-xs text-muted-foreground">${parseFloat(m.volume_usd).toLocaleString()} {t("admin.volume")} · {m.tx_count} {t("admin.transactions")}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-bold">{m.score}/100</p>
-                      <p className="text-xs text-muted-foreground">Health Score</p>
+                      <p className="text-xs text-muted-foreground">{t("admin.healthScore")}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-5 gap-2">

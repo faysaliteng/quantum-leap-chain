@@ -93,12 +93,10 @@ export default function AdminApiSettings() {
   const [newOrigin, setNewOrigin] = useState("");
   const [newHeader, setNewHeader] = useState("");
 
-  // In production this would fetch from admin.apiConfig.get()
-  // For now we use local state with defaults
   const isLoading = false;
 
   const handleSave = () => {
-    toast.success("API configuration saved successfully");
+    toast.success(t("admin.apiSettings") + " — " + t("common.save"));
   };
 
   const update = <K extends keyof ApiConfig>(section: K, values: Partial<ApiConfig[K]>) => {
@@ -114,11 +112,11 @@ export default function AdminApiSettings() {
           </div>
           <div>
             <h1 className="text-lg font-semibold">{t("admin.apiSettings")}</h1>
-            <p className="text-xs text-muted-foreground">Rate limits, CORS, key policies, webhooks & security</p>
+            <p className="text-xs text-muted-foreground">{t("admin.apiDesc")}</p>
           </div>
         </div>
         <Button onClick={handleSave}>
-          <Save className="mr-1.5 h-3.5 w-3.5" />Save All Settings
+          <Save className="mr-1.5 h-3.5 w-3.5" />{t("admin.saveAllSettings")}
         </Button>
       </div>
 
@@ -128,7 +126,7 @@ export default function AdminApiSettings() {
           <div className="flex items-center gap-6 flex-wrap">
             <div className="flex items-center gap-2">
               <Badge className="bg-gradient-gold text-primary-foreground">{config.version}</Badge>
-              <span className="text-sm font-medium">Current API Version</span>
+              <span className="text-sm font-medium">{t("admin.currentApiVersion")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">Strategy: {config.versioning_strategy}</Badge>
@@ -143,27 +141,27 @@ export default function AdminApiSettings() {
 
       <Tabs defaultValue="rate-limits">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="rate-limits"><Zap className="h-3.5 w-3.5 mr-1" />Rate Limits</TabsTrigger>
+          <TabsTrigger value="rate-limits"><Zap className="h-3.5 w-3.5 mr-1" />{t("admin.rateLimitsTab")}</TabsTrigger>
           <TabsTrigger value="cors"><Globe className="h-3.5 w-3.5 mr-1" />CORS</TabsTrigger>
-          <TabsTrigger value="keys"><Key className="h-3.5 w-3.5 mr-1" />Key Policies</TabsTrigger>
+          <TabsTrigger value="keys"><Key className="h-3.5 w-3.5 mr-1" />{t("admin.apiKeyPolicies")}</TabsTrigger>
           <TabsTrigger value="webhooks"><Webhook className="h-3.5 w-3.5 mr-1" />Webhooks</TabsTrigger>
-          <TabsTrigger value="responses"><FileText className="h-3.5 w-3.5 mr-1" />Responses</TabsTrigger>
-          <TabsTrigger value="security"><Shield className="h-3.5 w-3.5 mr-1" />Security</TabsTrigger>
+          <TabsTrigger value="responses"><FileText className="h-3.5 w-3.5 mr-1" />{t("admin.responseSettings")}</TabsTrigger>
+          <TabsTrigger value="security"><Shield className="h-3.5 w-3.5 mr-1" />{t("admin.securitySettings")}</TabsTrigger>
         </TabsList>
 
         {/* Rate Limits */}
         <TabsContent value="rate-limits" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Rate Limiting Configuration</CardTitle>
-              <CardDescription>Requests per minute (RPM) per endpoint category</CardDescription>
+              <CardTitle className="text-sm">{t("admin.rateLimitConfig")}</CardTitle>
+              <CardDescription>{t("admin.rpmDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { key: "public_rpm" as const, label: "Public Endpoints", desc: "Unauthenticated endpoints (health, checkout)", icon: <Globe className="h-4 w-4 text-muted-foreground" /> },
-                { key: "auth_rpm" as const, label: "Auth Endpoints", desc: "Login, signup, password reset", icon: <Lock className="h-4 w-4 text-muted-foreground" /> },
-                { key: "merchant_api_rpm" as const, label: "Merchant API", desc: "Authenticated merchant endpoints", icon: <Key className="h-4 w-4 text-muted-foreground" /> },
-                { key: "webhook_delivery_rpm" as const, label: "Webhook Delivery", desc: "Outbound webhook deliveries", icon: <Webhook className="h-4 w-4 text-muted-foreground" /> },
+                { key: "public_rpm" as const, label: t("admin.publicEndpoints"), desc: t("admin.publicDesc"), icon: <Globe className="h-4 w-4 text-muted-foreground" /> },
+                { key: "auth_rpm" as const, label: t("admin.authEndpoints"), desc: t("admin.authDesc"), icon: <Lock className="h-4 w-4 text-muted-foreground" /> },
+                { key: "merchant_api_rpm" as const, label: t("admin.merchantApi"), desc: t("admin.merchantApiDesc"), icon: <Key className="h-4 w-4 text-muted-foreground" /> },
+                { key: "webhook_delivery_rpm" as const, label: t("admin.webhookDelivery"), desc: t("admin.webhookDeliveryDesc"), icon: <Webhook className="h-4 w-4 text-muted-foreground" /> },
                 { key: "admin_rpm" as const, label: "Admin API", desc: "Admin panel endpoints", icon: <Shield className="h-4 w-4 text-muted-foreground" /> },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between gap-4">
@@ -175,12 +173,7 @@ export default function AdminApiSettings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={config.rate_limits[item.key]}
-                      onChange={(e) => update("rate_limits", { [item.key]: parseInt(e.target.value) || 0 })}
-                      className="w-24 text-right font-mono"
-                    />
+                    <Input type="number" value={config.rate_limits[item.key]} onChange={(e) => update("rate_limits", { [item.key]: parseInt(e.target.value) || 0 })} className="w-24 text-right font-mono" />
                     <span className="text-xs text-muted-foreground w-8">RPM</span>
                   </div>
                 </div>
@@ -193,20 +186,20 @@ export default function AdminApiSettings() {
         <TabsContent value="cors" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">CORS Configuration</CardTitle>
-              <CardDescription>Cross-Origin Resource Sharing settings</CardDescription>
+              <CardTitle className="text-sm">{t("admin.corsConfig")}</CardTitle>
+              <CardDescription>{t("admin.corsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">CORS Enabled</p>
-                  <p className="text-xs text-muted-foreground">Allow cross-origin requests</p>
+                  <p className="text-sm font-medium">{t("admin.corsEnabled")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.allowCrossOrigin")}</p>
                 </div>
                 <Switch checked={config.cors.enabled} onCheckedChange={(v) => update("cors", { enabled: v })} />
               </div>
               <Separator />
               <div className="space-y-2">
-                <Label>Allowed Origins</Label>
+                <Label>{t("admin.allowedOrigins")}</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {config.cors.allowed_origins.map((origin, i) => (
                     <Badge key={i} variant="outline" className="gap-1 font-mono text-xs">
@@ -221,7 +214,7 @@ export default function AdminApiSettings() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Allowed Methods</Label>
+                <Label>{t("admin.allowedMethods")}</Label>
                 <div className="flex flex-wrap gap-2">
                   {["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"].map((m) => (
                     <Button key={m} variant={config.cors.allowed_methods.includes(m) ? "default" : "outline"} size="sm" className={`text-xs h-7 ${config.cors.allowed_methods.includes(m) ? "bg-gradient-gold text-primary-foreground" : ""}`}
@@ -232,7 +225,7 @@ export default function AdminApiSettings() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Allowed Headers</Label>
+                <Label>{t("admin.allowedHeaders")}</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {config.cors.allowed_headers.map((h, i) => (
                     <Badge key={i} variant="outline" className="gap-1 font-mono text-xs">
@@ -248,8 +241,8 @@ export default function AdminApiSettings() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Preflight Cache (Max-Age)</p>
-                  <p className="text-xs text-muted-foreground">How long browsers cache preflight responses</p>
+                  <p className="text-sm font-medium">{t("admin.preflightCache")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.preflightDesc")}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Input type="number" value={config.cors.max_age_seconds} onChange={(e) => update("cors", { max_age_seconds: parseInt(e.target.value) || 0 })} className="w-24 text-right font-mono" />
@@ -264,13 +257,13 @@ export default function AdminApiSettings() {
         <TabsContent value="keys" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">API Key Policies</CardTitle>
-              <CardDescription>Key generation, expiration, and rotation rules</CardDescription>
+              <CardTitle className="text-sm">{t("admin.apiKeyPolicies")}</CardTitle>
+              <CardDescription>{t("admin.apiKeyPoliciesDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { label: "Max Keys per Merchant", key: "max_keys_per_merchant" as const, suffix: "keys" },
-                { label: "Key Expiry", key: "key_expiry_days" as const, suffix: "days" },
+                { label: t("admin.maxKeysPerMerchant"), key: "max_keys_per_merchant" as const, suffix: "keys" },
+                { label: t("admin.keyExpiry"), key: "key_expiry_days" as const, suffix: "days" },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between">
                   <p className="text-sm font-medium">{item.label}</p>
@@ -283,14 +276,14 @@ export default function AdminApiSettings() {
               <Separator />
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Auto Key Rotation</p>
-                  <p className="text-xs text-muted-foreground">Automatically rotate keys on schedule</p>
+                  <p className="text-sm font-medium">{t("admin.autoKeyRotation")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.autoKeyRotationDesc")}</p>
                 </div>
                 <Switch checked={config.key_policies.auto_rotate} onCheckedChange={(v) => update("key_policies", { auto_rotate: v })} />
               </div>
               {config.key_policies.auto_rotate && (
                 <div className="flex items-center justify-between pl-4">
-                  <p className="text-sm text-muted-foreground">Rotation Interval</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.rotationInterval")}</p>
                   <div className="flex items-center gap-2">
                     <Input type="number" value={config.key_policies.rotation_interval_days} onChange={(e) => update("key_policies", { rotation_interval_days: parseInt(e.target.value) || 30 })} className="w-24 text-right font-mono" />
                     <span className="text-xs text-muted-foreground w-8">days</span>
@@ -299,8 +292,8 @@ export default function AdminApiSettings() {
               )}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Require IP Allowlist</p>
-                  <p className="text-xs text-muted-foreground">Force merchants to configure IP allowlists for API keys</p>
+                  <p className="text-sm font-medium">{t("admin.requireIpAllowlist")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.requireIpAllowlistDesc")}</p>
                 </div>
                 <Switch checked={config.key_policies.require_ip_allowlist} onCheckedChange={(v) => update("key_policies", { require_ip_allowlist: v })} />
               </div>
@@ -312,16 +305,16 @@ export default function AdminApiSettings() {
         <TabsContent value="webhooks" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Webhook Delivery Settings</CardTitle>
-              <CardDescription>Retry policies, timeouts, and signature configuration</CardDescription>
+              <CardTitle className="text-sm">{t("admin.webhookSettings")}</CardTitle>
+              <CardDescription>{t("admin.webhookSettingsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { label: "Max Endpoints per Merchant", key: "max_endpoints_per_merchant" as const, suffix: "" },
-                { label: "Max Retry Attempts", key: "max_retry_attempts" as const, suffix: "" },
-                { label: "Retry Backoff Base", key: "retry_backoff_base_ms" as const, suffix: "ms" },
-                { label: "Delivery Timeout", key: "delivery_timeout_ms" as const, suffix: "ms" },
-                { label: "Replay Protection Window", key: "replay_protection_window_seconds" as const, suffix: "sec" },
+                { label: t("admin.maxEndpoints"), key: "max_endpoints_per_merchant" as const, suffix: "" },
+                { label: t("admin.maxRetry"), key: "max_retry_attempts" as const, suffix: "" },
+                { label: t("admin.retryBackoff"), key: "retry_backoff_base_ms" as const, suffix: "ms" },
+                { label: t("admin.deliveryTimeout"), key: "delivery_timeout_ms" as const, suffix: "ms" },
+                { label: t("admin.replayProtection"), key: "replay_protection_window_seconds" as const, suffix: "sec" },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between">
                   <p className="text-sm font-medium">{item.label}</p>
@@ -334,8 +327,8 @@ export default function AdminApiSettings() {
               <Separator />
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Signature Algorithm</p>
-                  <p className="text-xs text-muted-foreground">HMAC algorithm for webhook signatures</p>
+                  <p className="text-sm font-medium">{t("admin.signatureAlgorithm")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.signatureAlgorithmDesc")}</p>
                 </div>
                 <div className="flex gap-2">
                   {(["hmac-sha256", "hmac-sha512"] as const).map((alg) => (
@@ -350,18 +343,9 @@ export default function AdminApiSettings() {
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-xs text-muted-foreground mb-2 font-medium">Webhook Signature Headers</p>
                 <div className="space-y-1 font-mono text-xs">
-                  <div className="flex items-center gap-2">
-                    <code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-signature</code>
-                    <CopyButton value="x-cryptoniumpay-signature" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-timestamp</code>
-                    <CopyButton value="x-cryptoniumpay-timestamp" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-event</code>
-                    <CopyButton value="x-cryptoniumpay-event" />
-                  </div>
+                  <div className="flex items-center gap-2"><code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-signature</code><CopyButton value="x-cryptoniumpay-signature" /></div>
+                  <div className="flex items-center gap-2"><code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-timestamp</code><CopyButton value="x-cryptoniumpay-timestamp" /></div>
+                  <div className="flex items-center gap-2"><code className="bg-muted rounded px-2 py-0.5">x-cryptoniumpay-event</code><CopyButton value="x-cryptoniumpay-event" /></div>
                 </div>
               </div>
             </CardContent>
@@ -372,19 +356,19 @@ export default function AdminApiSettings() {
         <TabsContent value="responses" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Response Configuration</CardTitle>
-              <CardDescription>Pagination, compression, and response formatting</CardDescription>
+              <CardTitle className="text-sm">{t("admin.responseSettings")}</CardTitle>
+              <CardDescription>{t("admin.responseDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Default Page Size</p>
+                <p className="text-sm font-medium">{t("admin.defaultPageSize")}</p>
                 <div className="flex items-center gap-2">
                   <Input type="number" value={config.response_settings.default_page_size} onChange={(e) => update("response_settings", { default_page_size: parseInt(e.target.value) || 10 })} className="w-20 text-right font-mono" />
                   <span className="text-xs text-muted-foreground w-10">items</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Max Page Size</p>
+                <p className="text-sm font-medium">{t("admin.maxPageSize")}</p>
                 <div className="flex items-center gap-2">
                   <Input type="number" value={config.response_settings.max_page_size} onChange={(e) => update("response_settings", { max_page_size: parseInt(e.target.value) || 50 })} className="w-20 text-right font-mono" />
                   <span className="text-xs text-muted-foreground w-10">items</span>
@@ -392,9 +376,9 @@ export default function AdminApiSettings() {
               </div>
               <Separator />
               {[
-                { label: "Include Request ID", desc: "Add X-Request-Id header to all responses", key: "include_request_id" as const },
-                { label: "Response Compression", desc: "Enable gzip/brotli compression", key: "compression_enabled" as const },
-                { label: "Pretty Print (Debug)", desc: "Format JSON responses with indentation", key: "pretty_print_debug" as const },
+                { label: t("admin.includeRequestId"), desc: t("admin.includeRequestIdDesc"), key: "include_request_id" as const },
+                { label: t("admin.compression"), desc: t("admin.compressionDesc"), key: "compression_enabled" as const },
+                { label: t("admin.prettyPrint"), desc: t("admin.prettyPrintDesc"), key: "pretty_print_debug" as const },
               ].map((item) => (
                 <div key={item.key} className="flex items-center justify-between">
                   <div>
@@ -412,19 +396,19 @@ export default function AdminApiSettings() {
         <TabsContent value="security" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">API Security</CardTitle>
-              <CardDescription>TLS, HSTS, CSP, and idempotency settings</CardDescription>
+              <CardTitle className="text-sm">{t("admin.securitySettings")}</CardTitle>
+              <CardDescription>{t("admin.securitySettingsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Require HTTPS</p>
-                  <p className="text-xs text-muted-foreground">Reject all non-TLS connections</p>
+                  <p className="text-sm font-medium">{t("admin.requireHttps")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.requireHttpsDesc")}</p>
                 </div>
                 <Switch checked={config.security.require_https} onCheckedChange={(v) => update("security", { require_https: v })} />
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Minimum TLS Version</p>
+                <p className="text-sm font-medium">{t("admin.tlsVersion")}</p>
                 <div className="flex gap-2">
                   {(["1.2", "1.3"] as const).map((v) => (
                     <Button key={v} variant={config.security.tls_min_version === v ? "default" : "outline"} size="sm"
@@ -438,14 +422,14 @@ export default function AdminApiSettings() {
               <Separator />
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">HSTS</p>
-                  <p className="text-xs text-muted-foreground">HTTP Strict Transport Security</p>
+                  <p className="text-sm font-medium">{t("admin.hsts")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.hstsDesc")}</p>
                 </div>
                 <Switch checked={config.security.hsts_enabled} onCheckedChange={(v) => update("security", { hsts_enabled: v })} />
               </div>
               {config.security.hsts_enabled && (
                 <div className="flex items-center justify-between pl-4">
-                  <p className="text-sm text-muted-foreground">Max Age</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.hstsMaxAge")}</p>
                   <div className="flex items-center gap-2">
                     <Input type="number" value={config.security.hsts_max_age} onChange={(e) => update("security", { hsts_max_age: parseInt(e.target.value) || 0 })} className="w-28 text-right font-mono" />
                     <span className="text-xs text-muted-foreground">sec</span>
@@ -454,14 +438,14 @@ export default function AdminApiSettings() {
               )}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Content Security Policy</p>
-                  <p className="text-xs text-muted-foreground">CSP headers on API responses</p>
+                  <p className="text-sm font-medium">{t("admin.csp")}</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.cspDesc")}</p>
                 </div>
                 <Switch checked={config.security.csp_enabled} onCheckedChange={(v) => update("security", { csp_enabled: v })} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Idempotency Window</p>
+                <p className="text-sm font-medium">{t("admin.idempotencyWindow")}</p>
                 <div className="flex items-center gap-2">
                   <Input type="number" value={config.security.idempotency_window_hours} onChange={(e) => update("security", { idempotency_window_hours: parseInt(e.target.value) || 1 })} className="w-20 text-right font-mono" />
                   <span className="text-xs text-muted-foreground">hours</span>

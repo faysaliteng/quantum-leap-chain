@@ -48,9 +48,9 @@ export default function SocialLinksManager() {
     mutationFn: () => admin.cms.settings.update({ social_urls: urls }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cms-settings"] });
-      toast.success("Social links saved");
+      toast.success(t("cms.settingsSaved"));
     },
-    onError: () => toast.error("Failed to save"),
+    onError: () => toast.error(t("admin.failed")),
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -64,17 +64,16 @@ export default function SocialLinksManager() {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">{t("cms.social")}</h1>
         <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
-          <Save className="mr-1.5 h-3.5 w-3.5" />Save All
+          <Save className="mr-1.5 h-3.5 w-3.5" />{t("common.save")}
         </Button>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Manage social media links shown in the site footer, share bars, and docs pages. Leave a field empty to hide that platform.
+        {t("cms.manageSocialDesc")}
       </p>
 
-      {/* Standard platforms */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Platforms</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.socialUrls")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {defaultPlatforms.map((p) => (
             <div key={p.key} className="flex items-center gap-3">
@@ -97,7 +96,6 @@ export default function SocialLinksManager() {
         </CardContent>
       </Card>
 
-      {/* Custom links */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm">Custom Links</CardTitle>
@@ -161,7 +159,6 @@ export default function SocialLinksManager() {
         </CardContent>
       </Card>
 
-      {/* Preview */}
       <Card>
         <CardHeader><CardTitle className="text-sm">Active Links Preview</CardTitle></CardHeader>
         <CardContent>
@@ -178,7 +175,7 @@ export default function SocialLinksManager() {
                 </a>
               ))}
             {!Object.values(urls).some((v) => v?.trim()) && (
-              <span className="text-sm text-muted-foreground">No active social links</span>
+              <span className="text-sm text-muted-foreground">{t("cms.noRecentActivity")}</span>
             )}
           </div>
         </CardContent>

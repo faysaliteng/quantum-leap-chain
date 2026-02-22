@@ -24,12 +24,12 @@ export default function CMSDashboard() {
   if (isLoading) return <PageSkeleton />;
 
   const cards = [
-    { label: "Pages", value: stats?.total_pages ?? 0, icon: FileText, to: "/admin/cms/pages", color: "text-info" },
-    { label: "Blog Posts", value: stats?.total_posts ?? 0, icon: Newspaper, to: "/admin/cms/blog", color: "text-success" },
-    { label: "Announcements", value: stats?.total_announcements ?? 0, icon: Megaphone, to: "/admin/cms/announcements", color: "text-warning" },
-    { label: "FAQ Entries", value: stats?.total_faqs ?? 0, icon: HelpCircle, to: "/admin/cms/faq", color: "text-primary" },
-    { label: "Contact Inbox", value: stats?.total_contacts ?? 0, icon: Mail, to: "/admin/cms/contacts", color: "text-destructive", badge: stats?.unread_contacts },
-    { label: "Social Links", value: "Manage", icon: Share2, to: "/admin/cms/social", color: "text-muted-foreground" },
+    { label: t("cms.pages"), value: stats?.total_pages ?? 0, icon: FileText, to: "/admin/cms/pages", color: "text-info" },
+    { label: t("cms.blog"), value: stats?.total_posts ?? 0, icon: Newspaper, to: "/admin/cms/blog", color: "text-success" },
+    { label: t("cms.announcements"), value: stats?.total_announcements ?? 0, icon: Megaphone, to: "/admin/cms/announcements", color: "text-warning" },
+    { label: t("cms.faq"), value: stats?.total_faqs ?? 0, icon: HelpCircle, to: "/admin/cms/faq", color: "text-primary" },
+    { label: t("cms.contacts"), value: stats?.total_contacts ?? 0, icon: Mail, to: "/admin/cms/contacts", color: "text-destructive", badge: stats?.unread_contacts },
+    { label: t("cms.social"), value: t("cms.manage"), icon: Share2, to: "/admin/cms/social", color: "text-muted-foreground" },
   ];
 
   return (
@@ -37,7 +37,7 @@ export default function CMSDashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">{t("cms.dashboard")}</h1>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/admin/cms/settings"><Settings className="mr-1.5 h-3.5 w-3.5" />CMS Settings</Link>
+          <Link to="/admin/cms/settings"><Settings className="mr-1.5 h-3.5 w-3.5" />{t("cms.cmsSettingsLink")}</Link>
         </Button>
       </div>
 
@@ -49,7 +49,7 @@ export default function CMSDashboard() {
                 <CardTitle className="text-xs text-muted-foreground uppercase">{c.label}</CardTitle>
                 <div className="flex items-center gap-2">
                   {"badge" in c && c.badge ? (
-                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">{c.badge} new</Badge>
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">{c.badge} {t("cms.unreadNew")}</Badge>
                   ) : null}
                   <c.icon className={`h-4 w-4 ${c.color}`} />
                 </div>
@@ -65,10 +65,10 @@ export default function CMSDashboard() {
       {/* Quick Actions */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "New Blog Post", icon: PlusCircle, to: "/admin/cms/blog", desc: "Write a new article or guide" },
-          { label: "New Announcement", icon: Megaphone, to: "/admin/cms/announcements", desc: "Create a site-wide banner" },
-          { label: "New FAQ", icon: HelpCircle, to: "/admin/cms/faq", desc: "Add a new FAQ entry" },
-          { label: "Manage Social", icon: Share2, to: "/admin/cms/social", desc: "Edit social media links" },
+          { label: t("cms.newBlogPost"), icon: PlusCircle, to: "/admin/cms/blog", desc: t("cms.newBlogDesc") },
+          { label: t("cms.newAnnouncement"), icon: Megaphone, to: "/admin/cms/announcements", desc: t("cms.newAnnouncementDesc") },
+          { label: t("cms.newFaqAction"), icon: HelpCircle, to: "/admin/cms/faq", desc: t("cms.newFaqDesc") },
+          { label: t("cms.manageSocial"), icon: Share2, to: "/admin/cms/social", desc: t("cms.manageSocialDesc") },
         ].map((a) => (
           <Link key={a.label} to={a.to}>
             <Card className="hover:border-primary/30 transition-colors cursor-pointer h-full">
@@ -87,7 +87,7 @@ export default function CMSDashboard() {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            Recent Content Activity
+            {t("cms.recentActivity")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -102,7 +102,7 @@ export default function CMSDashboard() {
                 <span className="text-xs text-muted-foreground">{a.time}</span>
               </div>
             )) : (
-              <div className="px-4 py-8 text-center text-muted-foreground text-sm">No recent activity</div>
+              <div className="px-4 py-8 text-center text-muted-foreground text-sm">{t("cms.noRecentActivity")}</div>
             )}
           </div>
         </CardContent>
