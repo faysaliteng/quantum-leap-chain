@@ -81,7 +81,7 @@ export default function AddressPool() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="page:dashboard-settings-addresses">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Deposit Address Pool</h1>
         <Button size="sm" onClick={() => setShowUpload(true)}>

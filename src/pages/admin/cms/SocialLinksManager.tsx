@@ -58,7 +58,7 @@ export default function SocialLinksManager() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms-social">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Social Media Links</h1>
         <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>

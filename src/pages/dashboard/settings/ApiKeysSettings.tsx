@@ -35,7 +35,7 @@ export default function ApiKeysSettings() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="page:dashboard-settings-api-keys">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">API Keys</h1>
         <Button size="sm" onClick={() => setShowCreate(true)}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />New Key</Button>

@@ -31,7 +31,7 @@ export default function CMSDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Content Management</h1>
         <Button variant="outline" size="sm" asChild>

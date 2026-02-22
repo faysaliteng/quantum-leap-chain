@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notifications } from "@/lib/api-extended";
@@ -35,6 +36,7 @@ const categories: { key: NotificationCategory; label: string; icon: React.ReactN
 
 export default function NotificationsPage() {
   usePageTitle("Notifications");
+  const location = useLocation();
   const qc = useQueryClient();
   const [filterCat, setFilterCat] = useState<string>("all");
 
@@ -99,7 +101,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="space-y-6" data-testid="page:notifications">
+    <div className="space-y-6" data-testid={location.pathname.startsWith("/admin") ? "page:admin-notifications" : "page:dashboard-notifications"}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">Notifications</h1>
