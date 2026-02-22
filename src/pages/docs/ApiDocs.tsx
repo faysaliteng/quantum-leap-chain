@@ -59,7 +59,7 @@ const methodColor: Record<string, string> = {
 
 export default function ApiDocs() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:docs-api">
       <SEOHead title="API Reference" description="Complete REST API reference for Cryptoniumpay. 33 authenticated endpoints across charges, webhooks, settlement, and admin." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">

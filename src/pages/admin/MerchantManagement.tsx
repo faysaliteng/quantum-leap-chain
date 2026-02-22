@@ -18,7 +18,7 @@ export default function MerchantManagement() {
   const filtered = merchants?.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="page:admin-merchants">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Merchants</h1>
         <Input className="max-w-xs h-8 text-sm" placeholder="Search merchants…" value={search} onChange={(e) => setSearch(e.target.value)} maxLength={100} />

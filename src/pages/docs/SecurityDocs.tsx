@@ -32,7 +32,7 @@ const checklist = [
 
 export default function SecurityDocs() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:docs-security">
       <SEOHead title="Security & Threat Model" description="STRIDE-based threat model, authentication flows, webhook signing, and operational hardening for Cryptoniumpay." />
       <DocsNav />
       <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">

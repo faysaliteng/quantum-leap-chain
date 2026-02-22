@@ -76,7 +76,7 @@ export default function CreateInvoice() {
   const canSubmit = customer.name.trim() && customer.email.trim() && items.every((i) => i.description.trim() && parseFloat(i.unit_price) > 0) && dueDate && selectedChains.length > 0;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl" data-testid="page:create-invoice">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />

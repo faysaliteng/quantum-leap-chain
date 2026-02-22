@@ -77,7 +77,7 @@ export default function Reports() {
   const chainColors = Object.values(CHAIN_COLORS);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:dashboard-reports">
       <SEOHead title="Reports" noindex />
       <h1 className="text-lg font-semibold">Reports</h1>
 

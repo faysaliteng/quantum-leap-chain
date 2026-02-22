@@ -5,7 +5,7 @@ import { SEOHead } from "@/components/SEOHead";
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:privacy">
       <SEOHead title="Privacy Policy" description="Privacy Policy for the Cryptoniumpay payment gateway platform. Learn how we handle your data." />
       <div className="container max-w-3xl py-16 space-y-8">
         <Button variant="ghost" size="sm" asChild>

@@ -27,7 +27,7 @@ const tables = [
 
 export default function SchemaDocs() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:docs-schema">
       <SEOHead title="Database Schema" description="PostgreSQL database schema reference with 18 tables for the Cryptoniumpay payment gateway." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">

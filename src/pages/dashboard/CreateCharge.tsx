@@ -66,7 +66,7 @@ export default function CreateCharge() {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-6" data-testid="page:create-charge">
       <h1 className="text-lg font-semibold">Create Charge</h1>
 
       <Card>

@@ -7,7 +7,7 @@ export default function NotFound() {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen items-center justify-center bg-background" data-testid="page:not-found">
       <SEOHead title="Page Not Found" noindex />
       <div className="text-center space-y-4">
         <p className="text-6xl font-bold text-muted-foreground">404</p>

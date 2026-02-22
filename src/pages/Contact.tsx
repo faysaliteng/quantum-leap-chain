@@ -63,7 +63,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" data-testid="page:contact">
       <SEOHead
         title="Contact"
         description="Get in touch with Cryptoniumpay for enterprise partnerships, technical support, or general inquiries. We respond within 24 hours."

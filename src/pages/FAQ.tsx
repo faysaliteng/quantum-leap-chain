@@ -54,7 +54,7 @@ export default function FAQ() {
   }, [search, activeCategory]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:faq">
       <SEOHead title="FAQ — Frequently Asked Questions" description="Get answers to common questions about Cryptoniumpay, crypto payments, fees, security, and integration." />
 
       {/* Header */}

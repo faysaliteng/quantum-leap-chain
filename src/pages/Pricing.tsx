@@ -107,7 +107,7 @@ export default function Pricing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" data-testid="page:pricing">
       <SEOHead
         title="Pricing"
         description="Cryptoniumpay charges a flat 0.5% fee — the lowest in crypto payments. No hidden costs, no KYC, volume discounts available."

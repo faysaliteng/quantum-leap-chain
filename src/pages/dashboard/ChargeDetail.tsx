@@ -25,7 +25,7 @@ export default function ChargeDetail() {
   if (!charge) return <div className="text-muted-foreground">Charge not found</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:charge-detail">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild className="h-7 w-7"><Link to="/dashboard/charges"><ArrowLeft className="h-4 w-4" /></Link></Button>
         <h1 className="text-lg font-semibold">{charge.name}</h1>
