@@ -66,6 +66,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ExportCenter from "./pages/dashboard/ExportCenter";
 import AdminExportCenter from "./pages/admin/ExportCenter";
+import MerchantIntelligence from "./pages/dashboard/Intelligence";
+import AdminIntelligence from "./pages/admin/Intelligence";
+import AdminApiSettings from "./pages/admin/ApiSettings";
 
 import NotFound from "./pages/NotFound";
 import TermsOfService from "./pages/TermsOfService";
@@ -129,6 +132,7 @@ const App = () => (
                 <Route path="invoices/:id" element={<InvoiceDetail />} />
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="exports" element={<ExportCenter />} />
+                <Route path="intelligence" element={<MerchantIntelligence />} />
               </Route>
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
@@ -153,6 +157,8 @@ const App = () => (
                 <Route path="cms/social" element={<SocialLinksManager />} />
                 <Route path="cms/settings" element={<CMSSettings />} />
                 <Route path="exports" element={<AdminExportCenter />} />
+                <Route path="intelligence" element={<AdminIntelligence />} />
+                <Route path="api-settings" element={<AdminApiSettings />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
