@@ -2,19 +2,21 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
+import { useI18n } from "@/lib/i18n";
 
 export default function TermsOfService() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background" data-testid="page:terms">
-      <SEOHead title="Terms of Service" description="Terms of Service for using the Cryptoniumpay payment gateway platform." />
+      <SEOHead title={t("terms.title")} description="Terms of Service for using the Cryptoniumpay payment gateway platform." />
       <div className="container max-w-3xl py-16 space-y-8">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Home</Link>
+          <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("common.backToHome")}</Link>
         </Button>
 
         <div>
-          <h1 className="text-3xl font-display font-bold">Terms of Service</h1>
-          <p className="text-muted-foreground mt-2">Last updated: February 22, 2026</p>
+          <h1 className="text-3xl font-display font-bold">{t("terms.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("terms.lastUpdated")}: February 22, 2026</p>
         </div>
 
         <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">

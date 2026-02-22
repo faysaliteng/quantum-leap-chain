@@ -3,35 +3,37 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 
-const mainNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Charges", url: "/dashboard/charges", icon: Receipt },
-  { title: "New Charge", url: "/dashboard/charges/new", icon: PlusCircle },
-  { title: "Invoices", url: "/dashboard/invoices", icon: FileText },
-  { title: "Reports", url: "/dashboard/reports", icon: BarChart3 },
-  { title: "Wallets", url: "/dashboard/wallets", icon: Wallet },
-  { title: "Transactions", url: "/dashboard/wallets/transactions", icon: History },
-  { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
-  { title: "Exports", url: "/dashboard/exports", icon: FileSpreadsheet },
-  { title: "Intelligence", url: "/dashboard/intelligence", icon: Brain },
-];
-
-const settingsNav = [
-  { title: "Settlement", url: "/dashboard/settings/settlement", icon: Settings },
-  { title: "API Keys", url: "/dashboard/settings/api-keys", icon: Key },
-  { title: "Webhooks", url: "/dashboard/settings/webhooks", icon: Webhook },
-  { title: "Address Pool", url: "/dashboard/settings/addresses", icon: MapPin },
-  { title: "Security", url: "/dashboard/settings/security", icon: ShieldCheck },
-];
-
 export function MerchantSidebar() {
   const { logout, user } = useAuth();
+  const { t } = useI18n();
+
+  const mainNav = [
+    { title: t("sidebar.dashboard"), url: "/dashboard", icon: LayoutDashboard },
+    { title: t("sidebar.charges"), url: "/dashboard/charges", icon: Receipt },
+    { title: t("sidebar.newCharge"), url: "/dashboard/charges/new", icon: PlusCircle },
+    { title: t("sidebar.invoices"), url: "/dashboard/invoices", icon: FileText },
+    { title: t("sidebar.reports"), url: "/dashboard/reports", icon: BarChart3 },
+    { title: t("sidebar.wallets"), url: "/dashboard/wallets", icon: Wallet },
+    { title: t("sidebar.transactions"), url: "/dashboard/wallets/transactions", icon: History },
+    { title: t("sidebar.notifications"), url: "/dashboard/notifications", icon: Bell },
+    { title: t("sidebar.exports"), url: "/dashboard/exports", icon: FileSpreadsheet },
+    { title: t("sidebar.intelligence"), url: "/dashboard/intelligence", icon: Brain },
+  ];
+
+  const settingsNav = [
+    { title: t("sidebar.settlement"), url: "/dashboard/settings/settlement", icon: Settings },
+    { title: t("sidebar.apiKeys"), url: "/dashboard/settings/api-keys", icon: Key },
+    { title: t("sidebar.webhooks"), url: "/dashboard/settings/webhooks", icon: Webhook },
+    { title: t("sidebar.addressPool"), url: "/dashboard/settings/addresses", icon: MapPin },
+    { title: t("sidebar.security"), url: "/dashboard/settings/security", icon: ShieldCheck },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -40,7 +42,7 @@ export function MerchantSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("sidebar.main")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNav.map((item) => (
@@ -57,7 +59,7 @@ export function MerchantSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("sidebar.settings")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {settingsNav.map((item) => (
@@ -77,9 +79,9 @@ export function MerchantSidebar() {
       <SidebarFooter className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout} tooltip="Logout">
+            <SidebarMenuButton onClick={logout} tooltip={t("sidebar.logout")}>
               <LogOut className="h-4 w-4" />
-              <span className="text-xs truncate">{user?.email ?? "Logout"}</span>
+              <span className="text-xs truncate">{user?.email ?? t("sidebar.logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

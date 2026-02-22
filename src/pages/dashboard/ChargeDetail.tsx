@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 
 export default function ChargeDetail() {
   const { id } = useParams<{ id: string }>();
   usePageTitle(`Charge ${id?.slice(0, 8) ?? ""}`);
+  const { t } = useI18n();
   const { data: charge, isLoading } = useQuery({ queryKey: ["charge", id], queryFn: () => chargesApi.get(id!), enabled: !!id });
   const { data: txs } = useQuery({ queryKey: ["charge-txs", id], queryFn: () => chargesApi.getTransactions(id!), enabled: !!id });
 
@@ -22,7 +24,7 @@ export default function ChargeDetail() {
       <div className="grid gap-4 lg:grid-cols-2"><Skeleton className="h-60" /><Skeleton className="h-60" /></div>
     </div>
   );
-  if (!charge) return <div className="text-muted-foreground">Charge not found</div>;
+  if (!charge) return <div className="text-muted-foreground">{t("chargeDetail.notFound")}</div>;
 
   return (
     <div className="space-y-6" data-testid="page:dashboard-charge-detail">
@@ -31,26 +33,26 @@ export default function ChargeDetail() {
         <h1 className="text-lg font-semibold">{charge.name}</h1>
         <StatusBadge status={charge.status} />
         <Button variant="outline" size="sm" className="ml-auto h-7 text-xs" asChild>
-          <a href={charge.hosted_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-1 h-3 w-3" />Checkout</a>
+          <a href={charge.hosted_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="mr-1 h-3 w-3" />{t("chargeDetail.checkout")}</a>
         </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-sm">Details</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t("chargeDetail.details")}</CardTitle></CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <Row label="Charge ID" value={charge.id} mono copy />
-            <Row label="Description" value={charge.description || "—"} />
-            <Row label="Type" value={charge.pricing_type} />
-            {charge.local_price && <Row label="Price" value={`${charge.local_price.amount} ${charge.local_price.currency}`} />}
-            <Row label="Created" value={new Date(charge.created_at).toLocaleString()} />
-            <Row label="Expires" value={new Date(charge.expires_at).toLocaleString()} />
-            {charge.metadata && <Row label="Metadata" value={JSON.stringify(charge.metadata)} mono />}
+            <Row label={t("chargeDetail.chargeId")} value={charge.id} mono copy />
+            <Row label={t("table.description")} value={charge.description || "—"} />
+            <Row label={t("chargeDetail.type")} value={charge.pricing_type} />
+            {charge.local_price && <Row label={t("chargeDetail.price")} value={`${charge.local_price.amount} ${charge.local_price.currency}`} />}
+            <Row label={t("table.created")} value={new Date(charge.created_at).toLocaleString()} />
+            <Row label={t("table.expires")} value={new Date(charge.expires_at).toLocaleString()} />
+            {charge.metadata && <Row label={t("chargeDetail.metadata")} value={JSON.stringify(charge.metadata)} mono />}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-sm">Payment Addresses</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">{t("chargeDetail.paymentAddresses")}</CardTitle></CardHeader>
           <CardContent className="space-y-3 text-sm">
             {Object.entries(charge.addresses || {}).length > 0 ? Object.entries(charge.addresses).map(([key, addr]) => (
               <div key={key} className="flex items-center justify-between gap-2">
@@ -63,23 +65,23 @@ export default function ChargeDetail() {
                   <CopyButton value={addr.address} />
                 </div>
               </div>
-            )) : <p className="text-muted-foreground">No addresses assigned</p>}
+            )) : <p className="text-muted-foreground">{t("chargeDetail.noAddresses")}</p>}
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-sm">Transactions</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("chargeDetail.transactions")}</CardTitle></CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wide">
-                <th className="px-4 py-2">TX Hash</th>
-                <th className="px-4 py-2">Chain</th>
-                <th className="px-4 py-2">Asset</th>
-                <th className="px-4 py-2">Amount</th>
-                <th className="px-4 py-2">Confirmations</th>
-                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">{t("chargeDetail.txHash")}</th>
+                <th className="px-4 py-2">{t("table.chain")}</th>
+                <th className="px-4 py-2">{t("table.asset")}</th>
+                <th className="px-4 py-2">{t("table.amount")}</th>
+                <th className="px-4 py-2">{t("table.confirmations")}</th>
+                <th className="px-4 py-2">{t("table.status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -92,7 +94,7 @@ export default function ChargeDetail() {
                   <td className="px-4 py-2"><span className={tx.confirmations >= tx.required_confirmations ? "text-success" : ""}>{tx.confirmations}/{tx.required_confirmations}</span></td>
                   <td className="px-4 py-2"><Badge variant="outline" className="text-xs">{tx.status}</Badge></td>
                 </tr>
-              )) : <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">No transactions yet — waiting for payment</td></tr>}
+              )) : <tr><td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">{t("chargeDetail.noTransactions")}</td></tr>}
             </tbody>
           </table>
         </CardContent>
