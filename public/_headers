@@ -5,4 +5,4 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
   X-XSS-Protection: 1; mode=block
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.coingecko.com https://assets.coingecko.com https://coin-images.coingecko.com; connect-src 'self' https://api.coingecko.com https://*.yourdomain.com; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.coingecko.com https://assets.coingecko.com https://coin-images.coingecko.com; connect-src 'self' https://api.coingecko.com https://cryptoniumpay-api-gateway.mailg.workers.dev; frame-ancestors 'none'
