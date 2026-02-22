@@ -2,15 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DocsNav } from "@/components/DocsNav";
 import { SEOHead } from "@/components/SEOHead";
 import { ShareBar } from "@/components/ShareBar";
+import { useI18n } from "@/lib/i18n";
 
 export default function ArchitectureDocs() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background" data-testid="page:docs-architecture">
-      <SEOHead title="Architecture" description="System architecture, deployment options, and key flows for the Cryptoniumpay payment gateway." />
+      <SEOHead title={t("docs.architecture")} description="System architecture, deployment options, and key flows for the Cryptoniumpay payment gateway." />
       <DocsNav />
       <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-display font-bold">Architecture</h1>
+          <h1 className="text-2xl font-display font-bold">{t("docs.architecture")}</h1>
           <ShareBar title="Cryptoniumpay Architecture" />
         </div>
 

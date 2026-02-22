@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,8 @@ import {
 } from "lucide-react";
 
 export default function CMSDashboard() {
-  usePageTitle("Content Management");
+  const { t } = useI18n();
+  usePageTitle(t("cms.dashboard"));
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["cms-stats"],
@@ -33,7 +35,7 @@ export default function CMSDashboard() {
   return (
     <div className="space-y-6" data-testid="page:admin-cms">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Content Management</h1>
+        <h1 className="text-lg font-semibold">{t("cms.dashboard")}</h1>
         <Button variant="outline" size="sm" asChild>
           <Link to="/admin/cms/settings"><Settings className="mr-1.5 h-3.5 w-3.5" />CMS Settings</Link>
         </Button>

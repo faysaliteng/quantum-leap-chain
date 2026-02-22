@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocsNav } from "@/components/DocsNav";
 import { SEOHead } from "@/components/SEOHead";
 import { ShareBar } from "@/components/ShareBar";
+import { useI18n } from "@/lib/i18n";
 
 const endpoints = [
   { method: "POST", path: "/v1/auth/login", desc: "Authenticate and receive JWT", auth: false },
@@ -58,13 +59,14 @@ const methodColor: Record<string, string> = {
 };
 
 export default function ApiDocs() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background" data-testid="page:docs-api">
-      <SEOHead title="API Reference" description="Complete REST API reference for Cryptoniumpay. 33 authenticated endpoints across charges, webhooks, settlement, and admin." />
+      <SEOHead title={t("docs.apiReference")} description="Complete REST API reference for Cryptoniumpay. 33 authenticated endpoints across charges, webhooks, settlement, and admin." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-display font-bold">API Reference</h1>
+          <h1 className="text-2xl font-display font-bold">{t("docs.apiReference")}</h1>
           <ShareBar title="Cryptoniumpay API Reference" />
         </div>
 

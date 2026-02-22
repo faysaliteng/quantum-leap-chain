@@ -35,8 +35,8 @@ function exportCSV(data: Charge[]) {
 }
 
 export default function ChargesList() {
-  usePageTitle("Charges");
   const { t } = useI18n();
+  usePageTitle(t("charges.title"));
   const navigate = useNavigate();
   const [filters, setFilters] = useState<ListChargesParams>({ page: 1, per_page: 25 });
   const [activeStatus, setActiveStatus] = useState<ChargeStatus | undefined>();

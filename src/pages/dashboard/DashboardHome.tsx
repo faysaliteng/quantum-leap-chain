@@ -19,8 +19,8 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function DashboardHome() {
-  usePageTitle("Dashboard");
   const { t } = useI18n();
+  usePageTitle(t("dashboard.title"));
   const [range, setRange] = useState<TimeRange>("1M");
 
   const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: dashboard.stats });

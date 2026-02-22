@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,8 @@ import { PlusCircle, Trash2, Megaphone, Eye } from "lucide-react";
 import type { Announcement } from "@/lib/types";
 
 export default function AnnouncementManager() {
-  usePageTitle("Announcements");
+  const { t } = useI18n();
+  usePageTitle(t("cms.announcements"));
   const qc = useQueryClient();
 
   const [message, setMessage] = useState("");
@@ -51,7 +53,7 @@ export default function AnnouncementManager() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-cms-announcements">
-      <h1 className="text-lg font-semibold">Announcement Banners</h1>
+      <h1 className="text-lg font-semibold">{t("cms.announcements")}</h1>
 
       {/* Create Form */}
       <Card>

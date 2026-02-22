@@ -274,6 +274,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "table.latency": "Latency",
     "table.time": "Time",
     // Charge Detail
+    "chargeDetail.title": "Charge",
     "chargeDetail.details": "Details",
     "chargeDetail.chargeId": "Charge ID",
     "chargeDetail.type": "Type",
@@ -800,6 +801,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "table.customer": "Cliente",
     "table.address": "Dirección",
     // Charge Detail
+    "chargeDetail.title": "Cargo",
     "chargeDetail.details": "Detalles",
     "chargeDetail.chargeId": "ID del Cargo",
     "chargeDetail.type": "Tipo",

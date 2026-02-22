@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,8 @@ import { toast } from "sonner";
 import { Globe, Eye, EyeOff } from "lucide-react";
 
 export default function PageManager() {
-  usePageTitle("Page Manager");
+  const { t } = useI18n();
+  usePageTitle(t("cms.pages"));
   const qc = useQueryClient();
 
   const { data: pages, isLoading } = useQuery({
@@ -28,7 +30,7 @@ export default function PageManager() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-cms-pages">
-      <h1 className="text-lg font-semibold">Page Manager</h1>
+      <h1 className="text-lg font-semibold">{t("cms.pages")}</h1>
       <p className="text-sm text-muted-foreground">Manage SEO metadata and visibility for all site pages.</p>
 
       <div className="grid gap-4">
