@@ -2,14 +2,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DocsNav } from "@/components/DocsNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SEOHead } from "@/components/SEOHead";
+import { ShareBar } from "@/components/ShareBar";
 
 export default function SingularityCoinDocs() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="SingularityCoin Protocol" description="Layer-1 blockchain protocol specification: HotStuff BFT consensus, post-quantum signatures, and Rust monorepo architecture." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
         <div>
-          <h1 className="text-2xl font-display font-bold">SingularityCoin — Layer-1 Protocol Specification</h1>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h1 className="text-2xl font-display font-bold">SingularityCoin — Layer-1 Protocol Specification</h1>
+            <ShareBar title="SingularityCoin Protocol Spec" />
+          </div>
           <p className="text-muted-foreground mt-2">Post-quantum secure, HotStuff PoS consensus, 1-3s finality, self-hosted on commodity VMs</p>
         </div>
 

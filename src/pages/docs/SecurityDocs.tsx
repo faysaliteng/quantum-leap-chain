@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DocsNav } from "@/components/DocsNav";
+import { SEOHead } from "@/components/SEOHead";
+import { ShareBar } from "@/components/ShareBar";
 
 const threats = [
   { category: "Spoofing", threat: "Attacker impersonates merchant via stolen API key", severity: "High", mitigation: "Hashed API keys, scoped permissions, key rotation, rate limiting, IP allowlists" },
@@ -31,9 +33,13 @@ const checklist = [
 export default function SecurityDocs() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Security & Threat Model" description="STRIDE-based threat model, authentication flows, webhook signing, and operational hardening for Cryptoniumpay." />
       <DocsNav />
       <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
-        <h1 className="text-2xl font-display font-bold">Security & Threat Model</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-display font-bold">Security & Threat Model</h1>
+          <ShareBar title="Cryptoniumpay Security Docs" />
+        </div>
 
         <Card>
           <CardHeader><CardTitle className="text-sm">STRIDE Threat Model</CardTitle></CardHeader>

@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DocsNav } from "@/components/DocsNav";
+import { SEOHead } from "@/components/SEOHead";
+import { ShareBar } from "@/components/ShareBar";
 
 const tables = [
   { name: "users", cols: "id, email, password_hash, role, merchant_id?, totp_secret?, created_at, updated_at", indexes: "UNIQUE(email)" },
@@ -26,9 +28,13 @@ const tables = [
 export default function SchemaDocs() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Database Schema" description="PostgreSQL database schema reference with 18 tables for the Cryptoniumpay payment gateway." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
-        <h1 className="text-2xl font-display font-bold">Database Schema</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-display font-bold">Database Schema</h1>
+          <ShareBar title="Cryptoniumpay Database Schema" />
+        </div>
         <p className="text-sm text-muted-foreground">PostgreSQL schema with {tables.length} tables. All timestamps are UTC. UUIDs for primary keys unless noted.</p>
 
         <div className="space-y-4">

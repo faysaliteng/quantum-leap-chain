@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/lib/auth";
 import { ArrowLeft, Eye, EyeOff, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ export default function Signup() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background relative">
+      <SEOHead title="Create Account" description="Sign up for Cryptoniumpay. Start accepting crypto payments with 0.5% flat fee." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
         <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Home</Link>
       </Button>

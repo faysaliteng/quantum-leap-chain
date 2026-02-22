@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocsNav } from "@/components/DocsNav";
+import { SEOHead } from "@/components/SEOHead";
+import { ShareBar } from "@/components/ShareBar";
 
 const endpoints = [
   { method: "POST", path: "/v1/auth/login", desc: "Authenticate and receive JWT", auth: false },
@@ -58,9 +60,13 @@ const methodColor: Record<string, string> = {
 export default function ApiDocs() {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="API Reference" description="Complete REST API reference for Cryptoniumpay. 33 authenticated endpoints across charges, webhooks, settlement, and admin." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
-        <h1 className="text-2xl font-display font-bold">API Reference</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-display font-bold">API Reference</h1>
+          <ShareBar title="Cryptoniumpay API Reference" />
+        </div>
 
         <Tabs defaultValue="endpoints">
           <TabsList>
