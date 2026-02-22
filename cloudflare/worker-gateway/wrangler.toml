@@ -1,0 +1,13 @@
+# Cloudflare Worker — API Gateway for Cryptoniumpay
+# Proxies requests from Cloudflare to the VPS backend
+
+name = "cryptoniumpay-api-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+BACKEND_ORIGIN = "https://api.yourdomain.com"
+
+# Optional: Custom domain routing
+# [routes]
+# { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
