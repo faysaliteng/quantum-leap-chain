@@ -4,14 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, DollarSign, Clock, CheckCircle, TrendingUp } from "lucide-react";
+import { PlusCircle, DollarSign, Clock, CheckCircle, TrendingUp, RefreshCw } from "lucide-react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function DashboardHome() {
   usePageTitle("Dashboard");
-  const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["dashboard-stats"], queryFn: dashboard.stats });
-  const { data: recent, isLoading: chargesLoading } = useQuery({ queryKey: ["charges-recent"], queryFn: () => chargesApi.list({ per_page: 10 }) });
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: dashboard.stats });
+  const { data: recent, isLoading: chargesLoading, isError: chargesError, refetch: refetchCharges } = useQuery({ queryKey: ["charges-recent"], queryFn: () => chargesApi.list({ per_page: 10 }) });
 
   const cards = [
     { label: "Total Charges", value: stats?.total_charges ?? "—", icon: DollarSign },
@@ -22,6 +22,12 @@ export default function DashboardHome() {
 
   if (statsLoading && chargesLoading) return <PageSkeleton />;
 
+  if (statsError && chargesError) return (
+    <div className="text-center py-16 space-y-3">
+      <p className="text-muted-foreground">Failed to load dashboard data</p>
+      <Button variant="outline" size="sm" onClick={() => { refetchStats(); refetchCharges(); }}><RefreshCw className="mr-1.5 h-3.5 w-3.5" />Retry</Button>
+    </div>
+  );
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
