@@ -6,6 +6,7 @@ import type {
   WebhookEndpoint, WebhookDelivery, CreateWebhookRequest, SettlementConfig, DepositAddress,
   AddressPoolUpload, AddressPoolStats, Sweep, Merchant, ChainConfig, AssetConfig,
   SystemHealth, DashboardStats, AdminStats, AuditLogEntry, WatcherCheckpoint,
+  FeeConfig, MerchantFeeOverride, RevenueStats, TopMerchant,
 } from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -110,6 +111,17 @@ export const admin = {
   assets: {
     list: () => http.get<AssetConfig[]>("/v1/admin/assets").then((r) => r.data),
     toggle: (chain: string, symbol: string, enabled: boolean) => http.patch(`/v1/admin/assets/${chain}/${symbol}`, { enabled }),
+  },
+  fees: {
+    getConfig: () => http.get<FeeConfig>("/v1/admin/fees").then((r) => r.data),
+    updateConfig: (data: Partial<FeeConfig>) => http.put("/v1/admin/fees", data),
+    listOverrides: () => http.get<MerchantFeeOverride[]>("/v1/admin/fees/overrides").then((r) => r.data),
+    setOverride: (data: { merchant_id: string; rate_percent: number }) => http.post("/v1/admin/fees/overrides", data),
+    removeOverride: (merchantId: string) => http.delete(`/v1/admin/fees/overrides/${merchantId}`),
+  },
+  revenue: {
+    stats: () => http.get<RevenueStats>("/v1/admin/revenue").then((r) => r.data),
+    topMerchants: () => http.get<TopMerchant[]>("/v1/admin/revenue/top-merchants").then((r) => r.data),
   },
   health: () => http.get<SystemHealth>("/v1/admin/health").then((r) => r.data),
   auditLog: (params?: { actor?: string; action?: string; from?: string; to?: string; page?: number }) =>

@@ -29,6 +29,8 @@ import MerchantManagement from "./pages/admin/MerchantManagement";
 import ChainConfig from "./pages/admin/ChainConfig";
 import SystemMonitoring from "./pages/admin/SystemMonitoring";
 import AuditLog from "./pages/admin/AuditLog";
+import FeeManagement from "./pages/admin/FeeManagement";
+import RevenueDashboard from "./pages/admin/RevenueDashboard";
 
 import CheckoutPage from "./pages/checkout/CheckoutPage";
 import ArchitectureDocs from "./pages/docs/ArchitectureDocs";
@@ -78,6 +80,8 @@ const App = () => (
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
                 <Route index element={<AdminHome />} />
+                <Route path="revenue" element={<RevenueDashboard />} />
+                <Route path="fees" element={<FeeManagement />} />
                 <Route path="merchants" element={<MerchantManagement />} />
                 <Route path="chains" element={<ChainConfig />} />
                 <Route path="monitoring" element={<SystemMonitoring />} />
