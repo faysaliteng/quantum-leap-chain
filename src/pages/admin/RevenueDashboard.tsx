@@ -9,7 +9,8 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import { StatCard } from "@/components/StatCard";
 import { TimeRangeSelector, type TimeRange } from "@/components/TimeRangeSelector";
 import { CHAIN_COLORS } from "@/lib/constants";
-import { DollarSign, TrendingUp, Receipt, Users } from "lucide-react";
+import { DollarSign, TrendingUp, Receipt, Users, FileDown } from "lucide-react";
+import { useExport } from "@/hooks/use-export";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
@@ -18,6 +19,7 @@ import {
 export default function RevenueDashboard() {
   usePageTitle("Revenue");
   const [range, setRange] = useState<TimeRange>("1M");
+  const { startExport, isExporting } = useExport({ scope: "admin" });
 
   const { data: revenue, isLoading } = useQuery({
     queryKey: ["admin-revenue"],
@@ -42,9 +44,14 @@ export default function RevenueDashboard() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-revenue">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold">Platform Revenue</h1>
-        <TimeRangeSelector value={range} onChange={setRange} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => startExport("revenue", "csv")} disabled={isExporting}>
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+          </Button>
+          <TimeRangeSelector value={range} onChange={setRange} />
+        </div>
       </div>
 
       {/* KPI Cards */}

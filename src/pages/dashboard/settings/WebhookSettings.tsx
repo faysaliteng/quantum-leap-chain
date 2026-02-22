@@ -10,7 +10,8 @@ import { CopyButton } from "@/components/CopyButton";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { PlusCircle, Trash2, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { PlusCircle, Trash2, Send, ChevronDown, ChevronUp, FileDown } from "lucide-react";
+import { useExport } from "@/hooks/use-export";
 import type { WebhookEventType, WebhookDelivery } from "@/lib/types";
 
 const ALL_EVENTS: WebhookEventType[] = [
@@ -27,6 +28,7 @@ export default function WebhookSettings() {
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState<WebhookEventType[]>([...ALL_EVENTS]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { startExport, isExporting } = useExport({ scope: "merchant" });
 
   const createMut = useMutation({ mutationFn: () => webhooks.create({ url, events }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["webhooks"] }); setShowCreate(false); } });
   const deleteMut = useMutation({ mutationFn: (id: string) => webhooks.delete(id), onSuccess: () => qc.invalidateQueries({ queryKey: ["webhooks"] }) });
@@ -38,7 +40,12 @@ export default function WebhookSettings() {
     <div className="space-y-4" data-testid="page:dashboard-settings-webhooks">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Webhooks</h1>
-        <Button size="sm" onClick={() => setShowCreate(true)}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Add Endpoint</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => startExport("webhook_deliveries", "csv")} disabled={isExporting}>
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export Deliveries"}
+          </Button>
+          <Button size="sm" onClick={() => setShowCreate(true)}><PlusCircle className="mr-1.5 h-3.5 w-3.5" />Add Endpoint</Button>
+        </div>
       </div>
 
       <div className="space-y-3">

@@ -11,8 +11,9 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import { CopyButton } from "@/components/CopyButton";
 import {
   ArrowUpRight, ArrowDownLeft, ArrowRightLeft, ExternalLink, Clock,
-  Filter, Search, Wallet, CheckCircle, Loader2, XCircle, FileSignature, Shield,
+  Filter, Search, Wallet, CheckCircle, Loader2, XCircle, FileSignature, Shield, FileDown,
 } from "lucide-react";
+import { useExport } from "@/hooks/use-export";
 import type { WalletTxDirection, WalletTxStatus } from "@/lib/types-extended";
 
 const directionConfig: Record<WalletTxDirection, { icon: React.ReactNode; label: string; color: string }> = {
@@ -36,6 +37,7 @@ export default function AdminWalletTransactions() {
   const [filterDir, setFilterDir] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const { startExport, isExporting } = useExport({ scope: "admin" });
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-wallet-tx", filterDir, filterStatus],
@@ -55,9 +57,14 @@ export default function AdminWalletTransactions() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-wallet-transactions">
-      <div>
-        <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Wallet Audit Trail</h1>
-        <p className="text-xs text-muted-foreground mt-1">All platform wallet transactions — full audit view</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Wallet Audit Trail</h1>
+          <p className="text-xs text-muted-foreground mt-1">All platform wallet transactions — full audit view</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => startExport("wallet_transactions", "csv", { direction: filterDir !== "all" ? filterDir : undefined, status: filterStatus !== "all" ? filterStatus : undefined })} disabled={isExporting}>
+          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+        </Button>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
