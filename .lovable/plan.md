@@ -1,210 +1,296 @@
 
+# Cryptoniumpay Enterprise Backend Completion Plan
 
-# Enterprise Upgrade Plan: Advanced SEO, Social Links, Admin CMS, and Enhanced Dashboards
+## Audit Summary
 
-This plan transforms Cryptoniumpay into a $100B-grade platform with three major pillars: (1) Super Advanced SEO for rapid Google indexing, (2) Social media presence integration, and (3) Enterprise CMS admin panel with dramatically enhanced merchant and admin dashboards inspired by the reference screenshots.
+### What exists and works
+- 62+ frontend routes with `data-testid` attributes across 59 page files
+- Backend skeleton with 15+ NestJS modules, 36 Prisma models, Dockerfile, Docker Compose (dev + prod)
+- Cloudflare Worker gateway (basic proxy)
+- Frontend API client with 55+ endpoint calls across `api-client.ts` and `api-extended.ts`
+- CI workflow with frontend build, lint, type check, E2E, and log-grep gates
 
----
+### Critical gaps found
 
-## 1. Super Advanced SEO (Google Ranking in 2 Days)
-
-### 1A. Structured Data / JSON-LD Schema
-- Add `Organization`, `WebApplication`, `FAQPage`, and `SoftwareApplication` JSON-LD schemas directly in `index.html`
-- Add `BreadcrumbList` schema dynamically per route
-
-### 1B. Enhanced Meta Tags
-- Update `index.html` with comprehensive Open Graph tags (og:image, og:url, og:site_name, og:locale)
-- Add Twitter Card meta tags (twitter:site, twitter:creator, twitter:image)
-- Add `application-name`, `theme-color`, `apple-mobile-web-app-title` meta tags
-- Add canonical URL meta tag
-
-### 1C. Dynamic SEO Component
-- Create `src/components/SEOHead.tsx` using `useEffect` to dynamically set `<title>`, `<meta description>`, and OG tags per page
-- Integrate into all 25+ routes so every page has unique title/description
-
-### 1D. Sitemap & Robots Enhancement
-- Create `public/sitemap.xml` listing all public routes with `lastmod`, `changefreq`, `priority`
-- Update `public/robots.txt` to reference the sitemap URL
-- Add `<link rel="sitemap">` in `index.html`
-
-### 1E. Performance SEO
-- Add `dns-prefetch` and `preconnect` for Google Fonts, CoinGecko API
-- Add `manifest.json` (PWA manifest) for better mobile indexing
-- Ensure all images have `alt` attributes and `loading="lazy"`
+| Gap | Impact |
+|-----|--------|
+| No `/v1/security/*` controller (merchant-side 2FA/password/sessions) | Frontend calls 8 endpoints with no backend match |
+| Routes manifest missing 3 routes: `dashboard-intelligence`, `admin-intelligence`, `admin-api-settings` | E2E coverage incomplete |
+| All backend DTOs accept `any` -- no validation | Security violation (no unknown field rejection) |
+| Worker gateway has no HMAC auth, no edge rate limiting, no request size limits | Backend entrypoint unsecured |
+| No Prometheus metrics endpoint | No observability |
+| No WebSocket support for notifications | Real-time notifications broken |
+| 12+ `// TODO` in critical paths (TOTP verify, email send, PDF) | Core features non-functional |
+| E2E tests don't assert `data-testid`, no button smoke tests | QA incomplete |
+| No `docs/VERIFICATION-MATRIX.md` | No route-to-API traceability |
 
 ---
 
-## 2. Social Media Integration
+## Phase 0 -- Repo Audit Fixes
 
-### 2A. Footer Social Links
-- Add Twitter/X, GitHub, Discord, Telegram, LinkedIn icons to the landing page footer
-- Make social URLs configurable constants in a new `src/lib/constants.ts` file
+1. **Update `e2e/routes.manifest.ts`** to add 3 missing routes:
+   - `{ key: "dashboard-intelligence", path: "/dashboard/intelligence" }`
+   - `{ key: "admin-intelligence", path: "/admin/intelligence" }`
+   - `{ key: "admin-api-settings", path: "/admin/api-settings" }`
+   - Update total count to 65
 
-### 2B. Social Meta Tags
-- OG image placeholder meta tag for social sharing
-- Twitter card large image support
-
-### 2C. Share Buttons on Docs Pages
-- Add "Share on Twitter" and "Copy Link" buttons to docs pages
+2. **Create `docs/VERIFICATION-MATRIX.md`** with complete mapping:
+   - Every route -> its `data-testid` -> API endpoints it calls -> backend controller -> E2E test status
 
 ---
 
-## 3. Admin CMS - Enterprise Content Management System
+## Phase 1 -- Backend Completion
 
-### 3A. New Admin CMS Pages (6 new routes)
+### 1a. Create missing Security controller (`backend/src/security/`)
 
-**`/admin/cms` - CMS Dashboard**
-- Content overview: total pages, blog posts, announcements, FAQs
-- Recent content activity feed
-- Quick action buttons (new post, new announcement, new FAQ)
+New files:
+- `backend/src/security/security.module.ts`
+- `backend/src/security/security.controller.ts` -- handles all `/v1/security/*` endpoints
+- `backend/src/security/security.service.ts` -- implements 2FA setup/enable/disable, backup codes, session management, password change, email verification toggle
 
-**`/admin/cms/pages` - Page Manager**
-- List all site pages (landing, docs, etc.) with SEO status indicators
-- Edit SEO metadata per page (title, description, OG image, canonical)
-- Toggle page publish/unpublish status
+Endpoints to implement (matching `api-client.ts` lines 63-73):
+- `GET /v1/security/settings`
+- `POST /v1/security/2fa/setup`
+- `POST /v1/security/2fa/enable`
+- `POST /v1/security/2fa/disable`
+- `PUT /v1/security/email-verification`
+- `POST /v1/security/backup-codes`
+- `DELETE /v1/security/sessions/:id`
+- `DELETE /v1/security/sessions`
+- `PUT /v1/security/password`
 
-**`/admin/cms/announcements` - Announcement Banner Manager**
-- Create/edit/delete site-wide announcement banners
-- Set banner type (info, warning, promo), start/end dates, target audience
-- Live preview of banner appearance
+Register in `app.module.ts`.
 
-**`/admin/cms/blog` - Blog Post Manager**
-- CRUD for blog/news posts with title, excerpt, body (markdown), tags, author
-- Publish/draft/schedule status management
-- SEO fields per post
+### 1b. Add DTO validation classes with class-validator
 
-**`/admin/cms/faq` - FAQ Manager**
-- CRUD for FAQ entries with question/answer pairs
-- Category grouping and sort order
-- Toggle visibility
+Create DTOs for every controller (reject unknown fields):
+- `backend/src/auth/dto/login.dto.ts` -- `IsEmail`, `IsString`, `MinLength`
+- `backend/src/auth/dto/signup.dto.ts` -- name, email, password validation
+- `backend/src/charges/dto/create-charge.dto.ts` -- full charge validation
+- `backend/src/invoices/dto/create-invoice.dto.ts`
+- `backend/src/api-keys/dto/create-api-key.dto.ts`
+- `backend/src/webhooks/dto/create-webhook.dto.ts`
+- Plus DTOs for settlement, addresses, wallets, admin operations
 
-**`/admin/cms/settings` - CMS Settings**
-- Global SEO defaults (site title template, default OG image URL, social URLs)
-- Analytics snippet management (Google Analytics ID, etc.)
-- Maintenance mode toggle
+Update `main.ts` ValidationPipe to include `forbidNonWhitelisted: true`.
 
-### 3B. API Client Extensions
-- Add `admin.cms` namespace with endpoints for pages, announcements, blog, faq, settings
-- New TypeScript types: `CMSPage`, `Announcement`, `BlogPost`, `FAQEntry`, `CMSSettings`
+### 1c. Implement TOTP verification (replace all TODO comments)
 
-### 3C. Admin Sidebar Update
-- Add "Content" group to admin sidebar with CMS sub-navigation (Content, Pages, Blog, Announcements, FAQ, CMS Settings)
+In `auth.service.ts` and `security.service.ts`:
+- Use `otplib` authenticator to generate secrets and verify TOTP codes
+- Generate QR code data URL with `qrcode` package
+- Implement backup code verification with argon2id
 
----
+### 1d. Add Prometheus metrics endpoint
 
-## 4. Enhanced Admin Dashboard (Inspired by Reference Screenshots)
+New files:
+- `backend/src/metrics/metrics.module.ts`
+- `backend/src/metrics/metrics.controller.ts` -- `GET /metrics` (Prometheus text format)
+- `backend/src/metrics/metrics.interceptor.ts` -- counts requests, latency histograms
 
-### 4A. Admin Home Overhaul (`/admin`)
-- **Top crypto ticker bar** showing live prices with percentage changes (like CryptonPay reference image-2)
-- **6 KPI stat cards** with icons: Total Transactions, Completed, Processing, Rejected, Failed, Flagged (instead of current 3 cards)
-- **Total Crypto Holdings** section with stacked colored bar showing asset distribution (BTC, ETH, USDC, USDT percentages)
-- **Transaction Volume Chart** with 1D/1W/1M toggle using Recharts AreaChart
-- **Quick action buttons** in header: Add User, Create Transaction, New Invoice, Manage API Keys
-- **Recent Activity Feed** with real-time entries
+### 1e. Add `/v1/health/system` admin-only endpoint
 
-### 4B. Revenue Dashboard Overhaul (`/admin/revenue`)
-- **Multiple chart types**: Revenue AreaChart + Transaction Volume BarChart side by side
-- **Donut/Pie chart** for revenue by chain/asset breakdown
-- **Revenue by period** tabs: Today, This Week, This Month, All Time
-- **Revenue comparison** with previous period percentage deltas
+Extend health controller:
+- Basic `/v1/health` (public) -- status, version, uptime
+- `/v1/health/system` (admin only) -- DB connection, Redis ping, queue stats, memory usage, watcher lag
 
----
+### 1f. Audit logging with before/after diff
 
-## 5. Enhanced Merchant Dashboard (Inspired by Reference Screenshots)
+Update admin service to capture diffs:
+- On merchant toggle, fee update, chain update, CMS changes
+- Store `{ before: {...}, after: {...} }` in audit log `details` field
 
-### 5A. Merchant Dashboard Home Overhaul (`/dashboard`)
-- **6 KPI cards** (up from 4): Total Charges, Pending, Confirmed Today, Volume USD, Total Payments Received, Success Rate
-- **Wallet Balance Overview** card showing crypto holdings breakdown with colored progress bars per asset
-- **Transaction Volume Chart** with time range selector (1D, 7D, 1M, 3M, 1Y)
-- **Recent Transactions table** enhanced with more columns and inline status filters
-- **Quick Actions bar**: New Charge, View API Keys, Export Reports, Webhook Status
+### 1g. Refresh token rotation with reuse detection
 
-### 5B. Enhanced Charges List
-- Add inline search/filter bar at the top
-- Add date range picker alongside status filters
-- Show charge amounts with chain icons
+In auth service:
+- On token refresh, issue new refresh token in same family
+- If a revoked token in a family is reused, revoke ALL tokens in that family (reuse detection)
+- Add `POST /v1/auth/refresh` endpoint
 
-### 5C. Enhanced Reports Page
-- Add visual charts (volume by day, revenue by asset pie chart)
-- Add summary KPI cards at top before export form
+### 1h. Maintenance mode + IP allowlist enforcement
+
+Create middleware:
+- `backend/src/common/maintenance.guard.ts`
+- Reads security policies from cache/DB
+- Returns 503 if maintenance mode is on (unless bypass IP)
+- Returns 403 if IP allowlist enabled and IP not in list
 
 ---
 
-## 6. New Shared Components
+## Phase 2 -- Cloudflare Workers Gateway (Enterprise)
 
-- `src/components/SEOHead.tsx` - Dynamic meta tag manager
-- `src/components/AnnouncementBanner.tsx` - Site-wide dismissible banner
-- `src/components/SocialLinks.tsx` - Reusable social icon links
-- `src/components/StatCard.tsx` - Enhanced stat card with trend indicator and sparkline
-- `src/components/AssetDistributionBar.tsx` - Colored stacked bar for crypto holdings
-- `src/components/TimeRangeSelector.tsx` - 1D/7D/1M/3M/1Y toggle tabs
-- `src/components/QuickActions.tsx` - Action button bar for dashboards
+Replace `cloudflare/worker-gateway/src/index.ts` with enterprise version:
+
+Features:
+- **HMAC edge signature**: Worker signs requests with `X-Edge-Signature` header using timestamp + HMAC-SHA256 with shared secret
+- **Edge rate limiting**: Lightweight per-IP rate limit using `globalThis` Map (or KV if available) -- 100 req/min default
+- **Request size limits**: Reject bodies > 10MB (configurable)
+- **CORS handling**: Proper origin validation
+- **Streaming support**: Pass through `Transfer-Encoding: chunked` for export downloads
+- **Maintenance mode**: Read from KV or env var, return 503 at edge before hitting origin
+
+New file: `backend/src/common/edge-signature.guard.ts`
+- Validates `X-Edge-Signature` header on origin
+- Rejects requests without valid edge signature (when `EDGE_SECRET` is set)
+
+Update `wrangler.toml`:
+- Add `EDGE_SECRET` secret binding
+- Add KV namespace binding for rate limiting (optional)
+
+Move files to `infra/cloudflare-worker/` (cleaner structure).
+
+---
+
+## Phase 3 -- VM / Docker Deployment
+
+### 3a. Restructure `infra/docker/`
+
+- `infra/docker/docker-compose.dev.yml` -- Postgres, Redis, API (with hot reload volume mount)
+- `infra/docker/docker-compose.prod.yml` -- Postgres, Redis, API, Worker (watcher), Nginx, Certbot
+- Keep existing files but add:
+  - Memory limits tuned for 2GB droplet
+  - Health checks for all services
+  - Log driver configuration
+  - Volume mounts for exports + logs
+
+### 3b. Add systemd unit examples
+
+- `infra/systemd/cryptoniumpay-api.service`
+- `infra/systemd/cryptoniumpay-worker.service`
+
+### 3c. Origin-side edge signature validation
+
+Backend validates that requests come through the Cloudflare Worker (when configured):
+- If `EDGE_SECRET` env var is set, reject requests without valid `X-Edge-Signature`
+- Allows direct access in dev mode (no `EDGE_SECRET`)
+
+---
+
+## Phase 4 -- QA / E2E
+
+### 4a. Rewrite `e2e/smoke.spec.ts`
+
+- Visit ALL 65 routes (including dynamic routes with test IDs)
+- Assert `data-testid="page:<key>"` exists on every page
+- Capture console errors and fail if any
+- Take desktop (1280x720) and mobile (375x812) screenshots for every route
+- Upload all screenshots as CI artifacts
+
+### 4b. Add button smoke tests (`e2e/buttons.spec.ts`)
+
+Test major CTAs:
+- Login form submit (with invalid creds, verify error shown)
+- Signup form submit
+- Create charge button click
+- Create invoice button click
+- Open wallet connect panel
+- Create API key
+- Create webhook
+- Admin toggle merchant
+- Edit fee config
+- CMS publish
+- Export download
+
+### 4c. Update CI workflow
+
+Add:
+- Backend build check (`cd backend && npm ci && npx tsc --noEmit`)
+- Docker Compose startup test (build + health check)
+- Log-grep gate on docker logs (`backend.log`)
+- E2E artifacts upload (screenshots, report)
+
+---
+
+## Phase 5 -- Documentation
+
+### 5a. `docs/VERIFICATION-MATRIX.md`
+
+Complete table mapping all 65 routes to:
+- `data-testid`
+- Frontend API calls made
+- Backend endpoint(s)
+- E2E test coverage status
+
+### 5b. Update `DEPLOYMENT.md`
+
+Add Cloudflare Worker gateway deployment section:
+- `wrangler secret put EDGE_SECRET`
+- `wrangler secret put BACKEND_ORIGIN`
+- `wrangler deploy`
+- Verify with `curl https://api.yourdomain.com/api/v1/health`
+
+Add Cloudflare Pages frontend deployment:
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variable: `VITE_API_BASE_URL=https://api.yourdomain.com/api`
+
+### 5c. Update `docs/RUNBOOK.md`
+
+Add sections for:
+- Edge signature rotation
+- Worker gateway debugging
+- Rate limit tuning
+
+### 5d. Update `docs/SECURITY.md`
+
+Add sections for:
+- Edge signature HMAC flow
+- Maintenance mode enforcement (edge + origin)
+- IP allowlist enforcement chain
 
 ---
 
 ## Technical Details
 
-### New Files to Create (18 files)
-```text
-src/lib/constants.ts
-src/components/SEOHead.tsx
-src/components/AnnouncementBanner.tsx
-src/components/SocialLinks.tsx
-src/components/StatCard.tsx
-src/components/AssetDistributionBar.tsx
-src/components/TimeRangeSelector.tsx
-src/components/QuickActions.tsx
-src/pages/admin/cms/CMSDashboard.tsx
-src/pages/admin/cms/PageManager.tsx
-src/pages/admin/cms/AnnouncementManager.tsx
-src/pages/admin/cms/BlogManager.tsx
-src/pages/admin/cms/FAQManager.tsx
-src/pages/admin/cms/CMSSettings.tsx
-public/sitemap.xml
-public/manifest.json
+### Files to create (new):
+```
+backend/src/security/security.module.ts
+backend/src/security/security.controller.ts
+backend/src/security/security.service.ts
+backend/src/auth/dto/login.dto.ts
+backend/src/auth/dto/signup.dto.ts
+backend/src/charges/dto/create-charge.dto.ts
+backend/src/invoices/dto/create-invoice.dto.ts
+backend/src/api-keys/dto/create-api-key.dto.ts
+backend/src/webhooks/dto/create-webhook.dto.ts
+backend/src/common/edge-signature.guard.ts
+backend/src/common/maintenance.guard.ts
+backend/src/metrics/metrics.module.ts
+backend/src/metrics/metrics.controller.ts
+backend/src/metrics/metrics.interceptor.ts
+infra/systemd/cryptoniumpay-api.service
+infra/systemd/cryptoniumpay-worker.service
+e2e/buttons.spec.ts
+docs/VERIFICATION-MATRIX.md
 ```
 
-### Files to Modify (10 files)
-```text
-index.html                          - JSON-LD, meta tags, manifest link, preconnect
-public/robots.txt                   - Add sitemap reference
-src/App.tsx                         - Add 6 new CMS admin routes
-src/components/AdminSidebar.tsx     - Add Content group with CMS nav items
-src/lib/types.ts                    - Add CMS types (CMSPage, BlogPost, etc.)
-src/lib/api-client.ts               - Add admin.cms API namespace
-src/pages/LandingPage.tsx           - Social links in footer, announcement banner
-src/pages/admin/AdminHome.tsx       - Complete overhaul with 6 KPIs, charts, ticker
-src/pages/dashboard/DashboardHome.tsx - Enhanced with 6 KPIs, charts, wallet view
-src/pages/admin/RevenueDashboard.tsx - Enhanced with multi-chart layout
+### Files to modify:
+```
+backend/src/app.module.ts          -- register SecurityModule, MetricsModule
+backend/src/main.ts                -- add forbidNonWhitelisted to ValidationPipe
+backend/src/auth/auth.service.ts   -- implement TOTP, refresh rotation
+backend/src/auth/auth.controller.ts -- add /refresh endpoint, use DTOs
+backend/src/admin/admin.controller.ts -- use DTOs
+backend/src/admin/admin.service.ts -- add audit diffs
+backend/src/health/health.controller.ts -- add /system endpoint
+backend/src/charges/charges.controller.ts -- use DTOs
+backend/src/invoices/invoices.controller.ts -- use DTOs
+backend/src/webhooks/webhooks.controller.ts -- use DTOs
+cloudflare/worker-gateway/src/index.ts -- enterprise gateway rewrite
+cloudflare/worker-gateway/wrangler.toml -- add secrets
+e2e/routes.manifest.ts -- add 3 missing routes
+e2e/smoke.spec.ts -- full rewrite with data-testid assertions
+.github/workflows/ci.yml -- add backend CI + docker test
+DEPLOYMENT.md -- add CF Worker + Pages sections
+docs/RUNBOOK.md -- add edge/worker sections
+docs/SECURITY.md -- add edge signature docs
 ```
 
-### New Route Map
-```text
-/admin/cms                  -> CMSDashboard
-/admin/cms/pages            -> PageManager
-/admin/cms/announcements    -> AnnouncementManager
-/admin/cms/blog             -> BlogManager
-/admin/cms/faq              -> FAQManager
-/admin/cms/settings         -> CMSSettings
-```
-
-### New TypeScript Types
-```text
-CMSPage { id, slug, title, description, og_image, status, updated_at }
-Announcement { id, message, type, active, start_date, end_date, created_at }
-BlogPost { id, title, slug, excerpt, body, tags, status, author, published_at, created_at }
-FAQEntry { id, question, answer, category, sort_order, visible, created_at }
-CMSSettings { site_title_template, default_og_image, social_urls, analytics_id, maintenance_mode }
-```
-
-### Implementation Order
-1. Constants + SEO infrastructure (constants.ts, SEOHead, sitemap, manifest, index.html)
-2. Shared UI components (StatCard, AssetDistributionBar, TimeRangeSelector, QuickActions, SocialLinks)
-3. Landing page updates (footer socials, announcement banner, SEO head)
-4. CMS types + API client extensions
-5. Admin CMS pages (all 6 routes)
-6. Admin sidebar + App.tsx route registration
-7. Admin dashboard overhaul
-8. Merchant dashboard overhaul
-9. Revenue dashboard enhancement
-
+### Execution order:
+1. Phase 0: Fix route manifest, create verification matrix
+2. Phase 1a-1c: Security controller + DTOs + TOTP (highest priority -- fixes broken frontend)
+3. Phase 1d-1h: Metrics, health, audit, refresh rotation, maintenance mode
+4. Phase 2: Cloudflare Worker gateway enterprise rewrite
+5. Phase 3: Docker/systemd updates
+6. Phase 4: E2E rewrite + button tests + CI update
+7. Phase 5: Documentation updates
