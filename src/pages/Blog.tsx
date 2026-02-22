@@ -108,7 +108,7 @@ export default function Blog() {
   const rest = filtered.filter((a) => !(active === "All" && a.featured));
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" data-testid="page:blog">
       <SEOHead
         title="Blog"
         description="Crypto payment guides, integration tutorials, industry news, and product updates from the Cryptoniumpay team."

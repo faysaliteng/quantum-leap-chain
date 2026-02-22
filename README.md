@@ -22,26 +22,34 @@
 ## 🚀 For Merchants
 
 - **Instant Setup** — Create account, get API key, start accepting payments. No company verification.
-- **40+ Routes** — Landing, auth, dashboard, admin, CMS, checkout, docs, pricing, blog, contact
+- **52 Routes** — Landing, auth, dashboard, admin, CMS, checkout, docs, pricing, blog, contact, notifications, security
 - **50+ API Endpoints** — Fully typed Axios client across 20+ namespaces
 - **Charge Management** — Create, list, search, filter by status/date, export (CSV/JSON)
-- **Hosted Checkout** — Public pay links with QR codes, countdown timer
-- **Wallet Management** — Connect settlement & refund wallets with multi-chain support
+- **Invoice Management** — Create, send, track, PDF download with full lifecycle
+- **Hosted Checkout** — Public pay links with QR codes, countdown timer, multi-chain selector
+- **Wallet Management** — WalletConnect v2, Ledger, Trezor, Keystone USB, manual import. Send/receive/withdraw with hardware signing for cold wallets.
+- **Wallet Transaction History** — Full send/receive/withdraw audit trail with explorer links, status timeline, cursor pagination
 - **Settlement** — Per-chain settlement addresses, sweep modes
-- **API Keys** — Scoped (read/write/admin), masked display
+- **API Keys** — Scoped (read/write/admin), masked display, rotation tracking
 - **Webhooks** — HMAC-signed, test delivery, delivery logs
 - **Reports** — Date-range exports with visual charts (volume by day, revenue by asset pie chart)
 - **Dashboard** — 6 KPI cards, wallet balance overview, transaction volume charts, quick actions
+- **Notification Center** — Real-time bell icon with unread badge, notification drawer, preferences management
+- **Security Settings** — 2FA (TOTP), backup codes, email verification, session management, password change
 
 ## 🛡️ For Admins (Platform Owner)
 
 - **Revenue Dashboard** — KPI cards, daily revenue + transaction volume charts, revenue by chain donut chart, top merchants
 - **Fee Management** — Global fee rate, per-merchant overrides, min fee threshold
 - **Merchant Management** — Enable/disable merchants, view details
-- **Wallet Management** — Hot wallet & cold wallet connect, XPUB monitoring, balance tracking, lock/unlock
-- **System Monitoring** — Watcher lag, RPC health, webhook queue depth, 6 KPI cards
+- **Wallet Management** — Hot wallet & cold wallet connect via WalletConnect v2 + hardware wallets, XPUB monitoring, balance tracking, lock/unlock, send/withdraw with audit notes
+- **Wallet Transaction Audit** — Full platform-wide wallet transaction history with filtering by wallet, direction, status, date range
+- **System Monitoring** — Watcher lag, RPC health, webhook queue depth, uptime, 6 KPI cards
 - **Chain Config** — Enable/disable chains and assets, RPC management
 - **Audit Log** — Append-only, filterable, expandable JSON details
+- **Security Policies** — Centralized password policy, session policy, access control (maintenance mode, IP allowlist, geo blocking), rate limiting
+- **Role & Permission Management** — Fine-grained RBAC with 20 permissions, role CRUD, team invites, permission matrix
+- **Notification Center** — Admin-scoped notifications with preferences
 
 ### 📝 Enterprise CMS
 
@@ -51,21 +59,25 @@
 - **Announcement Manager** — Site-wide banners with live preview (info/warning/promo types)
 - **FAQ Manager** — Category-grouped entries with visibility toggle and sort order
 - **Contact Inbox** — View/manage contact form submissions, add notes, reply via email, archive
-- **Social Links Manager** — Manage all social platform URLs with live preview
+- **Social Links Manager** — Manage all social platform URLs (8 default + custom) with live preview
 - **CMS Settings** — Global SEO defaults, social URLs, Google Analytics ID, maintenance mode
 
 ### 💰 Wallet Architecture
 
+- **WalletConnect v2** — Trust Wallet, MetaMask, Rainbow, Coinbase, Phantom, OKX + 300 more
+- **Hardware Wallets** — Ledger USB, Trezor USB, Keystone QR, GridPlus Lattice
 - **Hot Wallets** — Online wallets for automated payment processing and sweeps
-- **Cold Wallets** — Watch-only (XPUB) wallets for secure cold storage and settlement
+- **Cold Wallets** — Watch-only (XPUB) wallets with hardware signing for withdrawals
 - **Non-Custodial** — Private keys NEVER stored on the server; only addresses/XPUBs registered
 - **Multi-Chain** — BTC, ETH, Arbitrum, Optimism, Polygon supported
+- **Enterprise Security** — AES-256-GCM encryption, HSM storage, multi-sig support, withdrawal limits, 2FA-required private key exports
 
 ## 🌐 Public Pages
 
-- **Landing Page** — Hero, pricing comparison, features, trust stats, developer resources, social footer
+- **Landing Page** — Hero, pricing comparison, features, trust stats, developer resources, social footer, live crypto ticker
 - **Pricing** — 0.5% flat fee comparison table vs competitors, volume discount tiers, interactive fee calculator
 - **Blog** — Article listings with category filters, featured posts, social CTA
+- **FAQ** — Category-grouped expandable entries
 - **Contact** — Zod-validated form with subject selector, enterprise email, office address, response time
 - **Terms of Service** & **Privacy Policy**
 
@@ -79,13 +91,14 @@
 
 ## 🔐 Security
 
-- Non-custodial (XPUB-only on server)
-- Isolated signer service (separate Docker network)
-- HMAC-SHA256 webhook signatures with replay protection
-- argon2id password and API key hashing
-- JWT with refresh token rotation
-- Redis-backed rate limiting
-- Strict CSP, HSTS, and security headers
+- **Authentication** — JWT with refresh token rotation, 3-step MFA (password → email OTP → TOTP 2FA)
+- **Authorization** — Role-based access control (merchant/admin) with fine-grained permissions (20 permission types)
+- **Non-custodial** — XPUB-only on server, isolated signer service
+- **Webhook Security** — HMAC-SHA256 signatures with timestamp-based replay protection
+- **Password Hashing** — argon2id for passwords and API key hashing
+- **Admin Security Policies** — Centralized password rules, session limits, IP allowlisting, geo blocking, rate limits
+- **Infrastructure** — Redis-backed rate limiting, strict CSP, HSTS, security headers
+- **Wallet Security** — AES-256-GCM, HSM, hardware signing, multi-sig, withdrawal limits
 
 ## ⚙️ Zero External Dependencies
 
@@ -105,14 +118,15 @@
 | **State** | TanStack React Query |
 | **Charts** | Recharts (Area, Bar, Pie/Donut) |
 | **QR Codes** | qrcode.react |
-| **Routing** | React Router v6 (40+ routes) |
+| **Routing** | React Router v6 (52 routes) |
 | **Validation** | Zod |
 | **HTTP Client** | Axios (typed, 50+ endpoints) |
 | **Animations** | Framer Motion |
+| **i18n** | 10 languages (en, es, fr, de, ja, zh, ko, pt, ar RTL, ru) |
 | **Backend** | NestJS + Prisma + BullMQ |
 | **Database** | PostgreSQL 16 |
 | **Cache/Queue** | Redis 7 + BullMQ |
-| **CI** | GitHub Actions (lint, typecheck, test, build) |
+| **CI** | GitHub Actions (lint, typecheck, test, build, log grep gate) |
 
 ---
 
@@ -121,43 +135,60 @@
 ```
 cryptoniumpay/
 ├── src/
-│   ├── components/               # 25+ custom + 45 shadcn/ui components
+│   ├── components/               # 30+ custom + 45 shadcn/ui components
 │   │   ├── SEOHead.tsx           # Dynamic meta tag manager
+│   │   ├── NotificationBell.tsx  # Real-time notification bell + drawer
+│   │   ├── WalletConnectPanel.tsx # WalletConnect v2 + hardware wallet dialog
 │   │   ├── SocialLinks.tsx       # Social media icon links
 │   │   ├── AnnouncementBanner.tsx # Dismissible site-wide banner
 │   │   ├── StatCard.tsx          # KPI card with trend indicator
 │   │   ├── AssetDistributionBar.tsx # Crypto holdings bar
 │   │   ├── TimeRangeSelector.tsx # 1D/7D/1M/3M/1Y toggle
 │   │   ├── QuickActions.tsx      # Dashboard action buttons
+│   │   ├── MerchantSidebar.tsx   # Merchant dashboard navigation
+│   │   ├── AdminSidebar.tsx      # Admin panel navigation
 │   │   └── ShareBar.tsx          # Share on X + copy link
-│   ├── layouts/                  # Dashboard + Admin layouts
+│   ├── layouts/                  # Dashboard + Admin layouts with notification bell
 │   ├── pages/
 │   │   ├── LandingPage.tsx       # Public homepage with pricing + socials
 │   │   ├── Pricing.tsx           # Fee comparison + calculator
 │   │   ├── Blog.tsx              # Article listings + categories
+│   │   ├── FAQ.tsx               # Expandable FAQ sections
 │   │   ├── Contact.tsx           # Contact form + office info
-│   │   ├── Login.tsx / Signup.tsx # Auth pages
-│   │   ├── dashboard/            # Merchant dashboard (10 pages)
-│   │   │   └── MerchantWallets.tsx # Merchant wallet management
-│   │   ├── admin/                # Admin panel (8 pages + 8 CMS pages)
-│   │   │   ├── WalletManagement.tsx # Hot/cold wallet admin
-│   │   │   └── cms/              # Content management system
-│   │   ├── checkout/             # Public checkout
+│   │   ├── Login.tsx / Signup.tsx # Auth pages with 3-step MFA
+│   │   ├── dashboard/            # Merchant dashboard (15 pages)
+│   │   │   ├── DashboardHome.tsx # 6 KPIs, charts, wallet overview
+│   │   │   ├── MerchantWallets.tsx # Full wallet management
+│   │   │   ├── WalletTransactionHistory.tsx # Tx history with filters
+│   │   │   ├── NotificationsPage.tsx # Notification center + preferences
+│   │   │   ├── InvoicesList.tsx  # Invoice management
+│   │   │   └── settings/        # Settlement, API Keys, Webhooks, Addresses, Security
+│   │   ├── admin/                # Admin panel (16 pages)
+│   │   │   ├── AdminHome.tsx     # System overview with live ticker
+│   │   │   ├── WalletManagement.tsx # Platform wallet admin
+│   │   │   ├── WalletTransactions.tsx # Wallet tx audit view
+│   │   │   ├── SecurityPolicies.tsx # Password/session/access/rate policies
+│   │   │   ├── RoleManagement.tsx # RBAC roles + team invites
+│   │   │   └── cms/              # 8 CMS pages
+│   │   ├── checkout/             # Public checkout with QR + countdown
 │   │   └── docs/                 # Built-in documentation (5 pages)
 │   ├── lib/
 │   │   ├── api-client.ts         # Typed Axios client (50+ endpoints)
+│   │   ├── api-extended.ts       # Notifications, security policies, wallet tx, roles API
 │   │   ├── auth.tsx              # AuthProvider + useAuth hook
-│   │   ├── types.ts              # Full TypeScript types (wallets, CMS, fees, revenue)
+│   │   ├── types.ts              # Core TypeScript types
+│   │   ├── types-extended.ts     # Notification, security policy, role types
+│   │   ├── i18n.tsx              # Internationalization (10 languages)
 │   │   └── constants.ts          # Social URLs, SEO defaults, chain colors
 │   └── hooks/                    # Custom React hooks
 ├── docs/                         # Internal ops docs (backend spec, security, runbook)
-├── e2e/                          # Playwright smoke tests
+├── e2e/                          # Playwright smoke tests (route manifest + specs)
 ├── public/
 │   ├── sitemap.xml               # SEO sitemap
 │   ├── manifest.json             # PWA manifest
 │   ├── robots.txt                # Enhanced with sitemap reference
 │   └── _headers                  # Security headers
-└── .github/workflows/            # CI pipeline
+└── .github/workflows/            # CI pipeline with log grep gate
 ```
 
 ---
@@ -167,59 +198,76 @@ cryptoniumpay/
 | Document | Description |
 |----------|-------------|
 | [**DEVELOPER.md**](./DEVELOPER.md) | Frontend reference: routes, components, types |
-| [**docs/BACKEND-SPEC.md**](./docs/BACKEND-SPEC.md) | NestJS backend specification |
-| [**docs/API.md**](./docs/API.md) | REST API reference |
-| [**docs/SECURITY.md**](./docs/SECURITY.md) | STRIDE threat model, auth flows |
-| [**docs/RUNBOOK.md**](./docs/RUNBOOK.md) | Ops: secret rotation, scaling, incidents |
+| [**docs/BACKEND-SPEC.md**](./docs/BACKEND-SPEC.md) | NestJS backend specification (18 Prisma models) |
+| [**docs/API.md**](./docs/API.md) | REST API reference (50+ endpoints) |
+| [**docs/SECURITY.md**](./docs/SECURITY.md) | STRIDE threat model, auth flows, wallet security |
+| [**docs/RUNBOOK.md**](./docs/RUNBOOK.md) | Ops: secret rotation, scaling, incidents, CI failures |
 | [**DEPLOYMENT.md**](./DEPLOYMENT.md) | Deployment guide (Cloudflare + VM) |
 
 ---
 
-## 🗺️ Route Map
+## 🗺️ Route Map (52 Routes)
 
-### Public Routes
+### Public Routes (12)
 | Route | Page |
 |-------|------|
-| `/` | Landing page with pricing, comparison, socials |
-| `/pricing` | Fee comparison table, volume tiers, fee calculator |
+| `/` | Landing page with pricing, comparison, live crypto ticker, socials |
+| `/pricing` | Fee comparison table, volume tiers, interactive fee calculator |
 | `/blog` | Article listings with category filters |
+| `/faq` | FAQ with expandable category-grouped entries |
 | `/contact` | Contact form with enterprise info |
-| `/login` | Login |
-| `/signup` | Signup with password validation |
-| `/pay/:chargeId` | Public checkout |
+| `/login` | Login with 3-step MFA support |
+| `/signup` | Signup with Zod password validation |
+| `/verify-email` | Email OTP verification step |
+| `/verify-2fa` | TOTP 2FA verification step |
+| `/pay/:chargeId` | Public checkout with QR code + countdown |
 | `/terms` | Terms of Service |
 | `/privacy` | Privacy Policy |
+
+### Documentation Routes (5)
+| Route | Page |
+|-------|------|
 | `/docs/api` | API reference |
-| `/docs/security` | Security docs |
-| `/docs/architecture` | Architecture docs |
+| `/docs/security` | Security documentation |
+| `/docs/architecture` | Architecture overview |
 | `/docs/schema` | Database schema |
 | `/docs/singularitycoin` | SingularityCoin protocol |
 
-### Merchant Dashboard (Protected)
+### Merchant Dashboard (15, Protected)
 | Route | Page |
 |-------|------|
-| `/dashboard` | Home with 6 KPIs, charts, wallet overview |
+| `/dashboard` | Home with 6 KPIs, charts, wallet overview, quick actions |
 | `/dashboard/charges` | Charges list with search, filters, date range |
 | `/dashboard/charges/new` | Create charge |
 | `/dashboard/charges/:id` | Charge detail |
+| `/dashboard/invoices` | Invoice list with status filters |
+| `/dashboard/invoices/new` | Create invoice |
+| `/dashboard/invoices/:id` | Invoice detail |
 | `/dashboard/reports` | Reports with charts + CSV/JSON export |
-| `/dashboard/wallets` | Merchant wallet management (settlement + refund) |
+| `/dashboard/wallets` | Wallet management (WalletConnect + hardware + send/receive) |
+| `/dashboard/wallets/transactions` | Wallet transaction history with filters |
+| `/dashboard/notifications` | Notification center + preferences |
 | `/dashboard/settings/settlement` | Settlement config |
 | `/dashboard/settings/api-keys` | API key management |
 | `/dashboard/settings/webhooks` | Webhook management |
 | `/dashboard/settings/addresses` | Address pool |
+| `/dashboard/settings/security` | Security settings (2FA, sessions, password) |
 
-### Admin Panel (Protected, role=admin)
+### Admin Panel (16, Protected, role=admin)
 | Route | Page |
 |-------|------|
-| `/admin` | System overview with ticker, 6 KPIs, charts |
+| `/admin` | System overview with live ticker, 6 KPIs, charts |
 | `/admin/revenue` | Revenue dashboard with multi-chart layout |
-| `/admin/fees` | Fee management |
+| `/admin/fees` | Fee management (global + per-merchant overrides) |
 | `/admin/merchants` | Merchant management |
 | `/admin/chains` | Chain & asset configuration |
-| `/admin/wallets` | Hot/cold wallet management (connect, lock, remove) |
-| `/admin/monitoring` | System monitoring |
+| `/admin/wallets` | Platform wallet management (connect, send, lock) |
+| `/admin/wallets/transactions` | Wallet transaction audit view |
+| `/admin/monitoring` | System monitoring (watchers, RPC, webhooks) |
 | `/admin/audit-log` | Audit log |
+| `/admin/security-policies` | Security policies (password, session, access, rate limits) |
+| `/admin/roles` | Role & permission management + team invites |
+| `/admin/notifications` | Admin notification center |
 | `/admin/cms` | CMS dashboard |
 | `/admin/cms/pages` | Page manager |
 | `/admin/cms/blog` | Blog post manager |
@@ -228,6 +276,11 @@ cryptoniumpay/
 | `/admin/cms/contacts` | Contact form submissions inbox |
 | `/admin/cms/social` | Social media links manager |
 | `/admin/cms/settings` | CMS settings |
+
+### Error Routes (1)
+| Route | Page |
+|-------|------|
+| `*` | 404 Not Found |
 
 ---
 
@@ -239,6 +292,24 @@ npx tsc --noEmit        # Type check
 npx eslint src/         # Lint
 npx playwright test     # E2E smoke tests
 ```
+
+---
+
+## 📊 Platform Metrics
+
+| Metric | Count |
+|--------|-------|
+| Routes | 52 |
+| Source files | 95+ |
+| Custom components | 30+ |
+| shadcn/ui primitives | 45 |
+| API endpoints | 50+ |
+| TypeScript interfaces | 50+ |
+| Documentation files | 6 |
+| Languages (i18n) | 10 |
+| Wallet connect methods | WalletConnect v2 + Ledger + Trezor + Keystone + GridPlus + Manual |
+| Admin permissions | 20 fine-grained RBAC permissions |
+| External SaaS deps | 0 |
 
 ---
 

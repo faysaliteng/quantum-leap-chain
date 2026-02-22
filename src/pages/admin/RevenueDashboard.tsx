@@ -41,7 +41,7 @@ export default function RevenueDashboard() {
   const chainColors = Object.values(CHAIN_COLORS);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-revenue">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Platform Revenue</h1>
         <TimeRangeSelector value={range} onChange={setRange} />

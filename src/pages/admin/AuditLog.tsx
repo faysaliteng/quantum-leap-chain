@@ -19,7 +19,7 @@ export default function AuditLog() {
   const { data, isLoading } = useQuery({ queryKey: ["audit-log", page, search], queryFn: () => admin.auditLog({ page, action: search || undefined }) });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="page:admin-audit-log">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Audit Log</h1>
         <Input className="max-w-xs h-8 text-sm" placeholder="Filter by action…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} maxLength={100} />

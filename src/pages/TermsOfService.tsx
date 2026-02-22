@@ -5,7 +5,7 @@ import { SEOHead } from "@/components/SEOHead";
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:terms">
       <SEOHead title="Terms of Service" description="Terms of Service for using the Cryptoniumpay payment gateway platform." />
       <div className="container max-w-3xl py-16 space-y-8">
         <Button variant="ghost" size="sm" asChild>

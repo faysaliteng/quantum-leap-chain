@@ -35,7 +35,7 @@ export default function AdminHome() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-home">
       {/* Live Crypto Ticker */}
       <Card className="overflow-hidden">
         <CardContent className="p-4">

@@ -84,7 +84,7 @@ export default function AdminWalletManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-wallets">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-lg font-semibold">Wallet Management</h1>

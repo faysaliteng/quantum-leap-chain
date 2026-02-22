@@ -61,7 +61,7 @@ export default function FeeManagement() {
   if (configLoading && overridesLoading) return <PageSkeleton />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-fees">
       <h1 className="text-lg font-semibold">Fee Management</h1>
 
       {/* Global Fee Configuration */}

@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   const isExpired = charge.status === "EXPIRED";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4" data-testid="page:checkout">
       <SEOHead title={`Pay ${charge.name}`} description="Complete your crypto payment securely." noindex />
       <Card className="w-full max-w-md border-border/50">
         <CardContent className="pt-6 space-y-6">

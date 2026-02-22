@@ -17,7 +17,7 @@ export default function ChainConfig() {
   if (chainsLoading && assetsLoading) return <PageSkeleton />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-chains">
       <h1 className="text-lg font-semibold">Chains & Assets</h1>
 
       <div className="space-y-4">

@@ -13,7 +13,7 @@ export default function SystemMonitoring() {
   if (!health) return <p className="text-muted-foreground">Unable to fetch system health</p>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-monitoring">
       <h1 className="text-lg font-semibold">System Monitoring</h1>
 
       <Card>

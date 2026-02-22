@@ -43,7 +43,7 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:dashboard-home">
       {/* Header + Quick Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-lg font-semibold">Dashboard</h1>

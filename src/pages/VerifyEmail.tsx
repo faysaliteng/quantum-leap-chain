@@ -69,7 +69,7 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background relative">
+    <div className="flex min-h-screen items-center justify-center bg-background relative" data-testid="page:verify-email">
       <SEOHead title="Verify Email" description="Enter the verification code sent to your email." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
         <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Login</Link>

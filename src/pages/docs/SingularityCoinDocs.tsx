@@ -7,7 +7,7 @@ import { ShareBar } from "@/components/ShareBar";
 
 export default function SingularityCoinDocs() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:docs-singularitycoin">
       <SEOHead title="SingularityCoin Protocol" description="Layer-1 blockchain protocol specification: HotStuff BFT consensus, post-quantum signatures, and Rust monorepo architecture." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">

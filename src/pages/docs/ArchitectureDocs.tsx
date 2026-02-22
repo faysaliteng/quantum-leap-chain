@@ -5,7 +5,7 @@ import { ShareBar } from "@/components/ShareBar";
 
 export default function ArchitectureDocs() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-testid="page:docs-architecture">
       <SEOHead title="Architecture" description="System architecture, deployment options, and key flows for the Cryptoniumpay payment gateway." />
       <DocsNav />
       <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">

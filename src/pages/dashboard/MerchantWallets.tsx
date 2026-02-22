@@ -90,7 +90,7 @@ export default function MerchantWallets() {
   const estimatedFee = sendWallet?.chain === "btc" ? 0.00005 : 0.001;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:dashboard-wallets">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>

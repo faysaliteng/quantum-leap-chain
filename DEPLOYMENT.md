@@ -441,6 +441,16 @@ NODE_ENV=production
 # ── Domain ──
 DOMAIN=yourdomain.com
 ACME_EMAIL=admin@yourdomain.com
+
+# ── Security Policies ──
+SECURITY_POLICY_CACHE_TTL_MS=60000
+RATE_LIMIT_REDIS_PREFIX=rl:
+
+# ── Notifications ──
+NOTIFICATION_POLL_INTERVAL_MS=30000
+
+# ── Testing (leave empty in production) ──
+TEST_SEED_SECRET=
 ENVEOF
 ```
 
