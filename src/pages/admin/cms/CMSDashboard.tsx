@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   FileText, PlusCircle, Megaphone, HelpCircle, Newspaper, Settings,
-  ArrowRight, Activity,
+  ArrowRight, Activity, Mail, Share2,
 } from "lucide-react";
 
 export default function CMSDashboard() {
@@ -22,10 +22,12 @@ export default function CMSDashboard() {
   if (isLoading) return <PageSkeleton />;
 
   const cards = [
-    { label: "Pages", value: stats?.total_pages ?? 0, icon: FileText, to: "/admin/cms/pages", color: "text-[hsl(var(--info))]" },
-    { label: "Blog Posts", value: stats?.total_posts ?? 0, icon: Newspaper, to: "/admin/cms/blog", color: "text-[hsl(var(--success))]" },
-    { label: "Announcements", value: stats?.total_announcements ?? 0, icon: Megaphone, to: "/admin/cms/announcements", color: "text-[hsl(var(--warning))]" },
+    { label: "Pages", value: stats?.total_pages ?? 0, icon: FileText, to: "/admin/cms/pages", color: "text-info" },
+    { label: "Blog Posts", value: stats?.total_posts ?? 0, icon: Newspaper, to: "/admin/cms/blog", color: "text-success" },
+    { label: "Announcements", value: stats?.total_announcements ?? 0, icon: Megaphone, to: "/admin/cms/announcements", color: "text-warning" },
     { label: "FAQ Entries", value: stats?.total_faqs ?? 0, icon: HelpCircle, to: "/admin/cms/faq", color: "text-primary" },
+    { label: "Contact Inbox", value: stats?.total_contacts ?? 0, icon: Mail, to: "/admin/cms/contacts", color: "text-destructive", badge: stats?.unread_contacts },
+    { label: "Social Links", value: "Manage", icon: Share2, to: "/admin/cms/social", color: "text-muted-foreground" },
   ];
 
   return (
@@ -37,13 +39,18 @@ export default function CMSDashboard() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <Link key={c.label} to={c.to}>
             <Card className="hover:border-primary/30 transition-colors cursor-pointer">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs text-muted-foreground uppercase">{c.label}</CardTitle>
-                <c.icon className={`h-4 w-4 ${c.color}`} />
+                <div className="flex items-center gap-2">
+                  {"badge" in c && c.badge ? (
+                    <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">{c.badge} new</Badge>
+                  ) : null}
+                  <c.icon className={`h-4 w-4 ${c.color}`} />
+                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">{c.value}</p>
@@ -54,11 +61,12 @@ export default function CMSDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "New Blog Post", icon: PlusCircle, to: "/admin/cms/blog", desc: "Create a new blog post or news article" },
-          { label: "New Announcement", icon: Megaphone, to: "/admin/cms/announcements", desc: "Create a site-wide announcement banner" },
+          { label: "New Blog Post", icon: PlusCircle, to: "/admin/cms/blog", desc: "Write a new article or guide" },
+          { label: "New Announcement", icon: Megaphone, to: "/admin/cms/announcements", desc: "Create a site-wide banner" },
           { label: "New FAQ", icon: HelpCircle, to: "/admin/cms/faq", desc: "Add a new FAQ entry" },
+          { label: "Manage Social", icon: Share2, to: "/admin/cms/social", desc: "Edit social media links" },
         ].map((a) => (
           <Link key={a.label} to={a.to}>
             <Card className="hover:border-primary/30 transition-colors cursor-pointer h-full">

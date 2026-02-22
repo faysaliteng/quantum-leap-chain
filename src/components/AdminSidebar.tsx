@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, Users, Link2, Activity, FileText, LogOut, Shield,
   Percent, DollarSign, Newspaper, Megaphone, HelpCircle, Settings, FileEdit,
+  Mail, Share2,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -26,6 +27,8 @@ const cmsNav = [
   { title: "Blog Posts", url: "/admin/cms/blog", icon: Newspaper },
   { title: "Announcements", url: "/admin/cms/announcements", icon: Megaphone },
   { title: "FAQ", url: "/admin/cms/faq", icon: HelpCircle },
+  { title: "Contact Inbox", url: "/admin/cms/contacts", icon: Mail },
+  { title: "Social Links", url: "/admin/cms/social", icon: Share2 },
   { title: "CMS Settings", url: "/admin/cms/settings", icon: Settings },
 ];
 
