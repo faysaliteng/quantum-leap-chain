@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  const hashOptions = {
-    type: argon2.argon2id as const,
+  const hashOptions: argon2.Options & { raw?: false } = {
+    type: argon2.argon2id,
     memoryCost: 65536,
     timeCost: 3,
     parallelism: 4,
