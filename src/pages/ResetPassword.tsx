@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
+import { useI18n } from "@/lib/i18n";
 import { auth as authApi } from "@/lib/api-client";
 import { ArrowLeft, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ function getPasswordStrength(password: string): { score: number; label: string; 
 }
 
 export default function ResetPassword() {
+  const { t } = useI18n();
   const [params] = useSearchParams();
   const token = params.get("token") || "";
   const [password, setPassword] = useState("");
@@ -59,8 +61,8 @@ export default function ResetPassword() {
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6 text-center space-y-4">
             <XCircle className="h-12 w-12 text-destructive mx-auto" />
-            <p className="text-sm text-muted-foreground">Invalid reset link. No token provided.</p>
-            <Button asChild><Link to="/forgot-password">Request New Link</Link></Button>
+            <p className="text-sm text-muted-foreground">{t("auth.invalidResetLink")}</p>
+            <Button asChild><Link to="/forgot-password">{t("auth.requestNewLink")}</Link></Button>
           </CardContent>
         </Card>
       </div>
@@ -71,7 +73,7 @@ export default function ResetPassword() {
     <div className="flex min-h-screen items-center justify-center bg-background relative" data-testid="page:reset-password">
       <SEOHead title="Reset Password" description="Set a new password for your Cryptoniumpay account." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
-        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Login</Link>
+        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("auth.backToLogin")}</Link>
       </Button>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
@@ -82,10 +84,10 @@ export default function ResetPassword() {
             <CryptoniumpayLogo size="lg" showText={false} />
           </div>
           <CardTitle className="text-xl font-display">
-            {success ? "Password Reset" : "Set New Password"}
+            {success ? t("auth.resetSuccess") : t("auth.setNewPassword")}
           </CardTitle>
           <CardDescription>
-            {success ? "Your password has been updated successfully." : "Enter your new password below."}
+            {success ? t("auth.resetSuccessDesc") : t("auth.setNewPasswordDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -96,15 +98,15 @@ export default function ResetPassword() {
                   <CheckCircle className="h-8 w-8 text-success" />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">All sessions have been revoked. Please sign in with your new password.</p>
+              <p className="text-sm text-muted-foreground">{t("auth.sessionsRevoked")}</p>
               <Button asChild className="w-full bg-gradient-gold text-primary-foreground font-semibold">
-                <Link to="/login">Sign In</Link>
+                <Link to="/login">{t("auth.signIn")}</Link>
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="password">{t("auth.newPassword")}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -113,7 +115,7 @@ export default function ResetPassword() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     autoFocus
-                    placeholder="Min. 12 characters"
+                    placeholder={t("auth.minChars")}
                     minLength={12}
                     maxLength={128}
                   />
@@ -130,34 +132,34 @@ export default function ResetPassword() {
                 {password && (
                   <div className="space-y-1">
                     <Progress value={strength.score} className="h-1.5" />
-                    <p className="text-xs text-muted-foreground">Strength: <span className="font-medium">{strength.label}</span></p>
+                    <p className="text-xs text-muted-foreground">{t("auth.strength")}: <span className="font-medium">{strength.label}</span></p>
                   </div>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm">Confirm Password</Label>
+                <Label htmlFor="confirm">{t("auth.confirmPassword")}</Label>
                 <Input
                   id="confirm"
                   type="password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   required
-                  placeholder="Re-enter your password"
+                  placeholder={t("auth.reenterPassword")}
                 />
-                {mismatch && <p className="text-xs text-destructive">Passwords do not match</p>}
+                {mismatch && <p className="text-xs text-destructive">{t("auth.passwordsNoMatch")}</p>}
               </div>
               <div className="text-xs text-muted-foreground space-y-0.5">
-                <p>Password requirements:</p>
+                <p>{t("auth.passwordRequirements")}</p>
                 <ul className="list-disc list-inside space-y-0.5">
-                  <li className={password.length >= 12 ? "text-success" : ""}>At least 12 characters</li>
-                  <li className={/[A-Z]/.test(password) ? "text-success" : ""}>One uppercase letter</li>
-                  <li className={/[0-9]/.test(password) ? "text-success" : ""}>One number</li>
-                  <li className={/[^A-Za-z0-9]/.test(password) ? "text-success" : ""}>One special character</li>
+                  <li className={password.length >= 12 ? "text-success" : ""}>{t("auth.req12chars")}</li>
+                  <li className={/[A-Z]/.test(password) ? "text-success" : ""}>{t("auth.reqUppercase")}</li>
+                  <li className={/[0-9]/.test(password) ? "text-success" : ""}>{t("auth.reqNumber")}</li>
+                  <li className={/[^A-Za-z0-9]/.test(password) ? "text-success" : ""}>{t("auth.reqSpecial")}</li>
                 </ul>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full bg-gradient-gold text-primary-foreground font-semibold" disabled={loading || !valid}>
-                {loading ? "Resetting…" : "Reset Password"}
+                {loading ? t("auth.resetting") : t("auth.resetPassword")}
               </Button>
             </form>
           )}

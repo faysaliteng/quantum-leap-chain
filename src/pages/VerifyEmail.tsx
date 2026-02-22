@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { auth as authApi } from "@/lib/api-client";
 import { ArrowLeft, Mail, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { useToast } from "@/hooks/use-toast";
 
 export default function VerifyEmail() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -72,7 +74,7 @@ export default function VerifyEmail() {
     <div className="flex min-h-screen items-center justify-center bg-background relative" data-testid="page:verify-email">
       <SEOHead title="Verify Email" description="Enter the verification code sent to your email." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
-        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Login</Link>
+        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("auth.backToLogin")}</Link>
       </Button>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
@@ -85,9 +87,9 @@ export default function VerifyEmail() {
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
             <Mail className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-xl font-display">Check your email</CardTitle>
+          <CardTitle className="text-xl font-display">{t("auth.checkYourEmail")}</CardTitle>
           <CardDescription>
-            We sent a 6-digit code to <span className="font-medium text-foreground">{email || "your email"}</span>
+            {t("auth.sentCodeTo")} <span className="font-medium text-foreground">{email || t("auth.yourEmail")}</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -112,7 +114,7 @@ export default function VerifyEmail() {
             className="w-full bg-gradient-gold text-primary-foreground font-semibold"
             disabled={loading || code.length !== 6}
           >
-            {loading ? "Verifying…" : "Verify Email"}
+            {loading ? t("auth.verifying") : t("auth.verifyEmail")}
           </Button>
           <div className="text-center">
             <Button
@@ -123,7 +125,7 @@ export default function VerifyEmail() {
               className="text-muted-foreground hover:text-foreground"
             >
               <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${resending ? "animate-spin" : ""}`} />
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+              {resendCooldown > 0 ? `${t("auth.resendIn")} ${resendCooldown}s` : t("auth.resendCode")}
             </Button>
           </div>
         </CardContent>
