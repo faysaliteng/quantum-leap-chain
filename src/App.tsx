@@ -38,6 +38,8 @@ import BlogManager from "./pages/admin/cms/BlogManager";
 import AnnouncementManager from "./pages/admin/cms/AnnouncementManager";
 import FAQManager from "./pages/admin/cms/FAQManager";
 import CMSSettings from "./pages/admin/cms/CMSSettings";
+import ContactSubmissions from "./pages/admin/cms/ContactSubmissions";
+import SocialLinksManager from "./pages/admin/cms/SocialLinksManager";
 
 import CheckoutPage from "./pages/checkout/CheckoutPage";
 import ArchitectureDocs from "./pages/docs/ArchitectureDocs";
@@ -108,6 +110,8 @@ const App = () => (
                 <Route path="cms/blog" element={<BlogManager />} />
                 <Route path="cms/announcements" element={<AnnouncementManager />} />
                 <Route path="cms/faq" element={<FAQManager />} />
+                <Route path="cms/contacts" element={<ContactSubmissions />} />
+                <Route path="cms/social" element={<SocialLinksManager />} />
                 <Route path="cms/settings" element={<CMSSettings />} />
               </Route>
 

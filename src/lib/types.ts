@@ -317,11 +317,25 @@ export interface CMSSettings {
   maintenance_mode: boolean;
 }
 
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  company?: string;
+  subject: string;
+  message: string;
+  status: "new" | "read" | "replied" | "archived";
+  created_at: string;
+  notes?: string;
+}
+
 export interface CMSStats {
   total_pages: number;
   total_posts: number;
   total_announcements: number;
   total_faqs: number;
+  total_contacts: number;
+  unread_contacts: number;
   recent_activity: { id: string; type: string; title: string; action: string; time: string }[];
 }
 

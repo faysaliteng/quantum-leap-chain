@@ -7,7 +7,7 @@ import type {
   AddressPoolUpload, AddressPoolStats, Sweep, Merchant, ChainConfig, AssetConfig,
   SystemHealth, DashboardStats, AdminStats, AuditLogEntry,
   FeeConfig, MerchantFeeOverride, RevenueStats, TopMerchant,
-  CMSPage, Announcement, BlogPost, FAQEntry, CMSSettings, CMSStats,
+  CMSPage, Announcement, BlogPost, FAQEntry, CMSSettings, CMSStats, ContactSubmission,
 } from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -156,6 +156,11 @@ export const admin = {
     settings: {
       get: () => http.get<CMSSettings>("/v1/admin/cms/settings").then((r) => r.data),
       update: (data: Partial<CMSSettings>) => http.put("/v1/admin/cms/settings", data),
+    },
+    contacts: {
+      list: () => http.get<ContactSubmission[]>("/v1/admin/cms/contacts").then((r) => r.data),
+      update: (id: string, data: Partial<ContactSubmission>) => http.put(`/v1/admin/cms/contacts/${id}`, data),
+      delete: (id: string) => http.delete(`/v1/admin/cms/contacts/${id}`),
     },
   },
 };
