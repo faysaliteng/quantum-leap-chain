@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
+import { useI18n } from "@/lib/i18n";
 import { auth as authApi } from "@/lib/api-client";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 
 export default function ForgotPassword() {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function ForgotPassword() {
     <div className="flex min-h-screen items-center justify-center bg-background relative" data-testid="page:forgot-password">
       <SEOHead title="Forgot Password" description="Reset your Cryptoniumpay account password." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
-        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Login</Link>
+        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("auth.backToLogin")}</Link>
       </Button>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
@@ -42,12 +44,10 @@ export default function ForgotPassword() {
             <CryptoniumpayLogo size="lg" showText={false} />
           </div>
           <CardTitle className="text-xl font-display">
-            {submitted ? "Check Your Email" : "Forgot Password"}
+            {submitted ? t("auth.checkEmail") : t("auth.forgotTitle")}
           </CardTitle>
           <CardDescription>
-            {submitted
-              ? "If an account with that email exists, we've sent password reset instructions."
-              : "Enter your email address and we'll send you a link to reset your password."}
+            {submitted ? t("auth.checkEmailDesc") : t("auth.forgotDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -63,17 +63,17 @@ export default function ForgotPassword() {
               </p>
               <div className="flex flex-col gap-2">
                 <Button variant="outline" onClick={() => setSubmitted(false)} className="w-full">
-                  <Mail className="mr-1.5 h-4 w-4" />Try Another Email
+                  <Mail className="mr-1.5 h-4 w-4" />{t("auth.tryAnotherEmail")}
                 </Button>
                 <Button asChild className="w-full">
-                  <Link to="/login">Return to Login</Link>
+                  <Link to="/login">{t("auth.returnToLogin")}</Link>
                 </Button>
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t("auth.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -86,11 +86,11 @@ export default function ForgotPassword() {
                 />
               </div>
               <Button type="submit" className="w-full bg-gradient-gold text-primary-foreground font-semibold" disabled={loading}>
-                {loading ? "Sending…" : "Send Reset Link"}
+                {loading ? t("auth.sending") : t("auth.sendResetLink")}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
-                Remember your password?{" "}
-                <Link to="/login" className="text-primary hover:underline font-medium">Sign in</Link>
+                {t("auth.rememberPassword")}{" "}
+                <Link to="/login" className="text-primary hover:underline font-medium">{t("auth.signIn")}</Link>
               </p>
             </form>
           )}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { ArrowLeft, Eye, EyeOff, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ const passwordChecks = [
 
 export default function Signup() {
   const { login } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -71,7 +73,7 @@ export default function Signup() {
     <div className="flex min-h-screen items-center justify-center bg-background relative" data-testid="page:signup">
       <SEOHead title="Create Account" description="Sign up for Cryptoniumpay. Start accepting crypto payments with 0.5% flat fee." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
-        <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Home</Link>
+        <Link to="/"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("auth.backToHome")}</Link>
       </Button>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
@@ -81,23 +83,23 @@ export default function Signup() {
           <div className="flex justify-center mb-3">
             <CryptoniumpayLogo size="lg" showText={false} />
           </div>
-          <CardTitle className="text-xl font-display">Create your account</CardTitle>
-          <CardDescription>Start accepting crypto payments today</CardDescription>
+          <CardTitle className="text-xl font-display">{t("auth.createAccount")}</CardTitle>
+          <CardDescription>{t("auth.createAccountDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{t("auth.fullName")}</Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoFocus placeholder="Jane Doe" />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-email">Email</Label>
+              <Label htmlFor="signup-email">{t("auth.email")}</Label>
               <Input id="signup-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="merchant@example.com" />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signup-password">Password</Label>
+              <Label htmlFor="signup-password">{t("auth.password")}</Label>
               <div className="relative">
                 <Input id="signup-password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className="pr-10" />
                 <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-10 w-10 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
@@ -120,17 +122,17 @@ export default function Signup() {
               {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Label htmlFor="confirm-password">{t("auth.confirmPassword")}</Label>
               <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder="••••••••" />
               {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
             </div>
             {formError && <p className="text-sm text-destructive">{formError}</p>}
             <Button type="submit" className="w-full bg-gradient-gold text-primary-foreground font-semibold" disabled={loading}>
-              {loading ? "Creating account…" : "Create account"}
+              {loading ? t("auth.creating") : t("auth.createBtn")}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline font-medium">Log in</Link>
+              {t("auth.haveAccount")}{" "}
+              <Link to="/login" className="text-primary hover:underline font-medium">{t("auth.logIn")}</Link>
             </p>
           </form>
         </CardContent>
