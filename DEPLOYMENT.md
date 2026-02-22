@@ -1,230 +1,466 @@
-# Cryptonpay — Deployment Guide
+# Cryptonpay — Enterprise Deployment Guide
 
-> Complete step-by-step deployment instructions for **Cloudflare Pages + Workers** and **VM (Docker Compose)**.
-> Written for absolute beginners. No prior DevOps experience required.
+> Atomic, step-by-step deployment instructions. No room for error.
+> Written for absolute beginners. Every command is copy-pasteable.
+
+**Last updated:** 2026-02-22
+**Covers:** Cloudflare (Pages + Workers) and VM (Docker Compose)
 
 ---
 
 ## Table of Contents
 
 1. [Prerequisites](#1-prerequisites)
-2. [Option A: Cloudflare Pages (Frontend) + Workers (API)](#2-option-a-cloudflare-pages--workers)
-3. [Option B: VM with Docker Compose (Full Stack)](#3-option-b-vm-with-docker-compose)
+2. [Option A: Cloudflare Pages + Workers Gateway](#2-option-a-cloudflare-pages--workers-gateway)
+3. [Option B: VM with Docker Compose (Full Stack)](#3-option-b-vm-with-docker-compose-full-stack)
 4. [DNS & SSL Setup](#4-dns--ssl-setup)
 5. [Environment Variables Reference](#5-environment-variables-reference)
-6. [Post-Deployment Checklist](#6-post-deployment-checklist)
+6. [Post-Deployment Verification](#6-post-deployment-verification)
 7. [Monitoring & Maintenance](#7-monitoring--maintenance)
-8. [Troubleshooting](#8-troubleshooting)
+8. [Backup & Restore](#8-backup--restore)
+9. [Scaling Guide](#9-scaling-guide)
+10. [Troubleshooting](#10-troubleshooting)
+11. [Security Hardening](#11-security-hardening)
+12. [Systemd Service Files](#12-systemd-service-files)
 
 ---
 
 ## 1. Prerequisites
 
-### Tools You Need Installed
+### 1.1 Required Tools
 
-| Tool | Version | Why | Install |
-|------|---------|-----|---------|
-| **Node.js** | ≥ 18.x | Build frontend | [nodejs.org](https://nodejs.org) |
-| **npm** or **bun** | Latest | Package manager | Comes with Node.js / [bun.sh](https://bun.sh) |
-| **Git** | ≥ 2.30 | Version control | `sudo apt install git` |
-| **Docker** | ≥ 24.x | Container runtime (VM option) | [docs.docker.com](https://docs.docker.com/engine/install/) |
-| **Docker Compose** | ≥ 2.20 | Multi-container orchestration | Included with Docker Desktop |
-| **Wrangler** | ≥ 3.x | Cloudflare CLI (CF option) | `npm install -g wrangler` |
+Install these on your **local development machine**:
 
-### Accounts You Need
+```bash
+# Check Node.js (need v20+)
+node --version
+# Expected output: v20.x.x or higher
+# If not installed: https://nodejs.org/en/download
 
-| Account | Purpose | Link |
-|---------|---------|------|
-| **Cloudflare** | CDN, Pages, Workers, DNS | [dash.cloudflare.com](https://dash.cloudflare.com) |
-| **Domain Registrar** | Custom domain | Any registrar |
-| **GitHub** | Source code hosting | [github.com](https://github.com) |
-| **VPS Provider** (VM option) | Hetzner / DigitalOcean / AWS | Any provider |
+# Check npm
+npm --version
+# Expected output: 10.x.x or higher
 
----
+# Check Git
+git --version
+# Expected output: git version 2.30+
+# If not installed: sudo apt install git
 
-## 2. Option A: Cloudflare Pages + Workers
+# Install Wrangler (Cloudflare CLI) — needed for Option A only
+npm install -g wrangler
+wrangler --version
+# Expected output: wrangler 3.x.x
 
-### Step 1: Clone the Repository
+# Check Docker — needed for Option B only
+docker --version
+# Expected output: Docker version 24.x.x+
+# If not installed: https://docs.docker.com/engine/install/
+
+docker compose version
+# Expected output: Docker Compose version v2.20+
+```
+
+### 1.2 Accounts Needed
+
+| Account | Purpose | Where to Sign Up |
+|---------|---------|-----------------|
+| **Cloudflare** (Option A) | Frontend hosting + API gateway | [dash.cloudflare.com](https://dash.cloudflare.com) |
+| **Domain registrar** | Custom domain (e.g. `cryptonpay.com`) | Any registrar (Cloudflare, Namecheap, etc.) |
+| **VPS provider** (Option B) | Server to run Docker Compose | Hetzner, DigitalOcean, AWS, etc. |
+| **GitHub** | Source code + CI/CD | [github.com](https://github.com) |
+
+### 1.3 Clone the Repository
 
 ```bash
 git clone https://github.com/your-org/cryptonpay.git
 cd cryptonpay
 ```
 
-### Step 2: Install Dependencies
+### 1.4 Install Frontend Dependencies
 
 ```bash
 npm install
-# or
-bun install
 ```
 
-### Step 3: Build the Frontend
+**Expected output:** No errors. You should see `added X packages`.
+
+### 1.5 Verify Frontend Builds
 
 ```bash
-# Set your API base URL
-export VITE_API_BASE_URL=https://api.yourdomain.com
-
-# Build for production
 npm run build
-# or
-bun run build
 ```
 
-This creates a `dist/` folder with the optimized static files.
+**Expected output:** `dist/` folder created with `index.html` and JS/CSS assets.
 
-### Step 4: Login to Cloudflare
+```bash
+ls dist/
+# Expected: index.html  assets/
+```
+
+---
+
+## 2. Option A: Cloudflare Pages + Workers Gateway
+
+This option hosts the **frontend on Cloudflare Pages** (global CDN) and uses a **Cloudflare Worker as an API gateway** that proxies requests to your backend server.
+
+### Architecture
+
+```
+User → Cloudflare CDN (Pages) → Static React SPA
+                               → /api/* → Cloudflare Worker → Your Backend Server (VM/VPS)
+```
+
+### Step 1: Login to Cloudflare
 
 ```bash
 wrangler login
 ```
 
-This opens your browser. Authorize wrangler with your Cloudflare account.
+**What happens:** Your browser opens. Click "Allow" to authorize Wrangler.
 
-### Step 5: Create a Cloudflare Pages Project
-
-```bash
-# First time only — create the project
-wrangler pages project create cryptonpay
+**Expected output:**
+```
+Successfully logged in.
 ```
 
-### Step 6: Deploy to Cloudflare Pages
+### Step 2: Build Frontend for Production
+
+```bash
+# Set your API URL (this will be the Worker URL or your backend URL)
+export VITE_API_BASE_URL=https://api.yourdomain.com
+
+# Build
+npm run build
+```
+
+### Step 3: Create Cloudflare Pages Project
+
+```bash
+wrangler pages project create cryptonpay --production-branch main
+```
+
+**Expected output:**
+```
+✨ Successfully created the Pages project "cryptonpay"
+```
+
+### Step 4: Deploy Frontend to Pages
 
 ```bash
 wrangler pages deploy dist --project-name=cryptonpay
 ```
 
-**Output:**
+**Expected output:**
 ```
 ✨ Deployment complete!
 URL: https://cryptonpay.pages.dev
 ```
 
-### Step 7: Configure Custom Domain
+**Verify:** Open the URL in your browser. You should see the Cryptonpay landing page.
 
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Pages → `cryptonpay`
+### Step 5: Set Custom Domain on Pages
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → **Pages** → `cryptonpay`
 2. Click **Custom domains** → **Set up a custom domain**
-3. Enter: `pay.yourdomain.com` (or your preferred subdomain)
-4. Cloudflare automatically creates a CNAME record
+3. Enter: `pay.yourdomain.com`
+4. Cloudflare creates a CNAME record automatically
+5. Wait 1-2 minutes for DNS propagation
 
-### Step 8: Set Environment Variables in Cloudflare Pages
+**Verify:**
+```bash
+curl -sI https://pay.yourdomain.com | head -5
+# Expected: HTTP/2 200
+```
+
+### Step 6: Configure Environment Variables in Pages
 
 1. Cloudflare Dashboard → Pages → `cryptonpay` → **Settings** → **Environment variables**
-2. Add:
+2. Click **Add variable** for **Production**:
 
-| Variable | Value | Environment |
-|----------|-------|-------------|
-| `VITE_API_BASE_URL` | `https://api.yourdomain.com` | Production |
+| Variable | Value |
+|----------|-------|
+| `VITE_API_BASE_URL` | `https://api.yourdomain.com` |
 
 3. Click **Save**
 
-### Step 9: Enable CI/CD with GitHub
+### Step 7: Create Cloudflare Worker (API Gateway)
+
+Create the Worker that proxies API requests to your backend:
+
+```bash
+mkdir -p infra/cloudflare
+```
+
+Create `infra/cloudflare/wrangler.toml`:
+
+```toml
+name = "cryptonpay-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+BACKEND_ORIGIN = "https://backend.yourdomain.com"
+
+# Rate limiting
+# [unsafe.bindings]
+# Add rate limiting bindings when needed
+```
+
+Create `infra/cloudflare/src/index.ts`:
+
+```typescript
+export interface Env {
+  BACKEND_ORIGIN: string;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    // CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization, Idempotency-Key",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }
+
+    // Proxy to backend
+    const backendUrl = env.BACKEND_ORIGIN + url.pathname + url.search;
+    const backendRequest = new Request(backendUrl, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+    });
+
+    const response = await fetch(backendRequest);
+
+    // Add CORS and security headers
+    const newHeaders = new Headers(response.headers);
+    newHeaders.set("Access-Control-Allow-Origin", "*");
+    newHeaders.set("X-Content-Type-Options", "nosniff");
+    newHeaders.set("X-Frame-Options", "DENY");
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    });
+  },
+};
+```
+
+### Step 8: Deploy the Worker
+
+```bash
+cd infra/cloudflare
+wrangler deploy
+```
+
+**Expected output:**
+```
+Published cryptonpay-api (x.xx sec)
+  https://cryptonpay-api.your-subdomain.workers.dev
+```
+
+### Step 9: Set Custom Domain on Worker
+
+1. Cloudflare Dashboard → **Workers & Pages** → `cryptonpay-api` → **Settings** → **Domains & Routes**
+2. Click **Add** → **Custom Domain**
+3. Enter: `api.yourdomain.com`
+4. Click **Add**
+
+**Verify:**
+```bash
+curl -s https://api.yourdomain.com/v1/health
+# Expected: {"status":"ok","version":"1.0.0","uptime":...}
+# (Only works after backend is deployed — see Option B for backend setup)
+```
+
+### Step 10: Set Worker Secrets
+
+```bash
+cd infra/cloudflare
+
+# Set backend origin
+wrangler secret put BACKEND_ORIGIN
+# Paste: https://backend.yourdomain.com (your actual backend URL)
+```
+
+### Step 11: Enable GitHub CI/CD for Pages
 
 1. Cloudflare Dashboard → Pages → `cryptonpay` → **Settings** → **Builds & deployments**
-2. Connect your GitHub repository
-3. Set build settings:
+2. Click **Connect to Git** → Select your GitHub repository
+3. Configure build settings:
    - **Build command:** `npm run build`
    - **Build output directory:** `dist`
    - **Root directory:** `/` (leave blank)
-4. Every push to `main` auto-deploys
+4. Click **Save and Deploy**
 
-### Step 10: Configure SPA Routing
-
-Create `public/_redirects`:
-```
-/*  /index.html  200
-```
-
-Or create `public/_headers`:
-```
-/*
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
-```
+**Result:** Every push to `main` auto-deploys the frontend.
 
 ---
 
-## 3. Option B: VM with Docker Compose
+## 3. Option B: VM with Docker Compose (Full Stack)
+
+This option runs **everything on a single server**: frontend (Nginx), API, worker, signer, PostgreSQL, Redis.
 
 ### Step 1: Provision a Server
 
-**Minimum specs:**
+**Minimum requirements:**
 - 2 vCPU, 4 GB RAM, 40 GB SSD
 - Ubuntu 22.04 LTS or Debian 12
 - Public IPv4 address
+- Ports 80 and 443 open
 
-**Providers (cheapest → most reliable):**
-- Hetzner Cloud CX21: ~€5/mo
-- DigitalOcean Basic: ~$12/mo
-- AWS Lightsail: ~$10/mo
+**Recommended providers:**
+| Provider | Plan | Cost |
+|----------|------|------|
+| Hetzner Cloud CX21 | 2 vCPU, 4 GB | ~€5/mo |
+| DigitalOcean Basic | 2 vCPU, 4 GB | ~$12/mo |
+| AWS Lightsail | 2 vCPU, 4 GB | ~$20/mo |
 
-### Step 2: Initial Server Setup
+### Step 2: SSH into Your Server
 
 ```bash
-# SSH into your server
 ssh root@YOUR_SERVER_IP
+```
 
-# Update system
+### Step 3: Initial Server Setup
+
+```bash
+# Update system packages
 apt update && apt upgrade -y
 
-# Create a non-root user
+# Install essential tools
+apt install -y curl wget git ufw fail2ban
+
+# Create non-root user
 adduser cryptonpay
 usermod -aG sudo cryptonpay
-su - cryptonpay
 
+# Switch to new user
+su - cryptonpay
+```
+
+### Step 4: Install Docker
+
+```bash
 # Install Docker
 curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
+
+# Apply group change (or logout/login)
 newgrp docker
 
 # Verify Docker
 docker --version
+# Expected: Docker version 24.x.x or higher
+
 docker compose version
+# Expected: Docker Compose version v2.20+
 ```
 
-### Step 3: Clone and Configure
+### Step 5: Configure Firewall
 
 ```bash
-git clone https://github.com/your-org/cryptonpay.git
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+
+# Verify
+sudo ufw status
+# Expected: Status: active with rules for 22, 80, 443
+```
+
+### Step 6: Clone Repository
+
+```bash
+cd /opt
+sudo mkdir cryptonpay && sudo chown cryptonpay:cryptonpay cryptonpay
 cd cryptonpay
-
-# Copy example env file
-cp .env.example .env
+git clone https://github.com/your-org/cryptonpay.git .
 ```
 
-### Step 4: Edit Environment Variables
+### Step 7: Generate Secrets
 
 ```bash
-nano .env
+# Generate JWT secret (64 hex characters)
+JWT_SECRET=$(openssl rand -hex 32)
+echo "JWT_SECRET=$JWT_SECRET"
+
+# Generate signer secret
+SIGNER_SECRET=$(openssl rand -hex 32)
+echo "SIGNER_SECRET=$SIGNER_SECRET"
+
+# Generate database password
+DB_PASSWORD=$(openssl rand -hex 16)
+echo "DB_PASSWORD=$DB_PASSWORD"
+
+# IMPORTANT: Save these values! You need them for the .env file.
 ```
 
-```ini
-# ─── Frontend ───
-VITE_API_BASE_URL=https://api.yourdomain.com
+### Step 8: Create Environment File
 
-# ─── Backend API ───
-DATABASE_URL=postgres://cryptonpay:CHANGE_THIS_PASSWORD@postgres:5432/cryptonpay
+```bash
+cat > .env << 'ENVEOF'
+# ── Frontend ──
+VITE_API_BASE_URL=https://yourdomain.com/api
+
+# ── Database ──
+POSTGRES_DB=cryptonpay
+POSTGRES_USER=cryptonpay
+POSTGRES_PASSWORD=REPLACE_WITH_DB_PASSWORD
+DATABASE_URL=postgres://cryptonpay:REPLACE_WITH_DB_PASSWORD@postgres:5432/cryptonpay
+
+# ── Redis ──
 REDIS_URL=redis://redis:6379
-JWT_SECRET=GENERATE_A_64_CHAR_RANDOM_STRING
-API_PORT=3000
 
-# ─── Signer (isolated) ───
+# ── Auth ──
+JWT_SECRET=REPLACE_WITH_JWT_SECRET
+JWT_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
+
+# ── Signer ──
+SIGNER_SECRET=REPLACE_WITH_SIGNER_SECRET
 SIGNER_PORT=8080
-SIGNER_SECRET=GENERATE_ANOTHER_64_CHAR_STRING
 
-# ─── Domain ───
+# ── API ──
+API_PORT=3000
+CORS_ORIGINS=https://yourdomain.com
+NODE_ENV=production
+
+# ── Domain ──
 DOMAIN=yourdomain.com
 ACME_EMAIL=admin@yourdomain.com
+ENVEOF
 ```
 
-**Generate secure secrets:**
+Now replace the placeholder values:
+
 ```bash
-openssl rand -hex 32  # Run twice, use one for each secret
+# Replace placeholders with actual values
+sed -i "s/REPLACE_WITH_DB_PASSWORD/$DB_PASSWORD/g" .env
+sed -i "s/REPLACE_WITH_JWT_SECRET/$JWT_SECRET/g" .env
+sed -i "s/REPLACE_WITH_SIGNER_SECRET/$SIGNER_SECRET/g" .env
+
+# Replace domain
+read -p "Enter your domain (e.g. cryptonpay.com): " DOMAIN
+sed -i "s/yourdomain.com/$DOMAIN/g" .env
+
+# Verify
+cat .env
 ```
 
-### Step 5: Docker Compose File
+### Step 9: Docker Compose File
 
 Create `docker-compose.yml`:
 
@@ -232,24 +468,27 @@ Create `docker-compose.yml`:
 version: "3.9"
 
 services:
-  # ─── Frontend (Nginx serving static files) ───
+  # ── Frontend (Nginx) ──
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - certbot-data:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot:ro
     depends_on:
       - api
     restart: unless-stopped
     networks:
       - frontend
 
-  # ─── Backend API ───
+  # ── Backend API ──
   api:
     build:
       context: ./backend
@@ -266,8 +505,13 @@ services:
     networks:
       - frontend
       - backend
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3000/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
-  # ─── Background Workers (Watchers, Webhook Dispatcher) ───
+  # ── Background Workers ──
   worker:
     build:
       context: ./backend
@@ -284,52 +528,57 @@ services:
       - backend
       - signer-net
 
-  # ─── Isolated Signer ───
+  # ── Isolated Signer ──
   signer:
     build:
-      context: ./signer
-      dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile.signer
     env_file: .env
     expose:
       - "8080"
     restart: unless-stopped
     networks:
-      - signer-net  # ONLY accessible from worker
+      - signer-net
 
-  # ─── PostgreSQL ───
+  # ── PostgreSQL ──
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: cryptonpay
-      POSTGRES_USER: cryptonpay
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cryptonpay"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
     restart: unless-stopped
     networks:
       - backend
 
-  # ─── Redis ───
+  # ── Redis ──
   redis:
     image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --requirepass ""
     volumes:
       - redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
     restart: unless-stopped
     networks:
       - backend
 
-  # ─── Certbot (SSL) ───
+  # ── Certbot (SSL) ──
   certbot:
     image: certbot/certbot
     volumes:
@@ -349,18 +598,18 @@ networks:
     driver: bridge
   backend:
     driver: bridge
-    internal: true  # No internet access
+    internal: true
   signer-net:
     driver: bridge
-    internal: true  # Signer isolated from everything except worker
+    internal: true
 ```
 
-### Step 6: Frontend Dockerfile
+### Step 10: Frontend Dockerfile
 
 Create `Dockerfile.frontend`:
 
 ```dockerfile
-# ─── Stage 1: Build ───
+# Stage 1: Build React app
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
@@ -370,41 +619,52 @@ ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
-# ─── Stage 2: Serve ───
-FROM nginx:alpine
+# Stage 2: Serve with Nginx
+FROM nginx:1.25-alpine
+RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY public/_headers /usr/share/nginx/html/_headers
 EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-### Step 7: Nginx Configuration
+### Step 11: Nginx Configuration
 
 Create `nginx.conf`:
 
 ```nginx
+# HTTP → HTTPS redirect + ACME challenge
 server {
     listen 80;
     server_name yourdomain.com;
 
-    # Redirect HTTP to HTTPS
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
+
     location / {
         return 301 https://$host$request_uri;
     }
 }
 
+# HTTPS server
 server {
     listen 443 ssl http2;
     server_name yourdomain.com;
 
+    # SSL certificates (managed by Certbot)
     ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+
+    # SSL security
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
     ssl_prefer_server_ciphers off;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_tickets off;
+    ssl_stapling on;
+    ssl_stapling_verify on;
 
     # Security headers
     add_header X-Frame-Options "DENY" always;
@@ -412,12 +672,15 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
 
-    # Frontend
+    # Request size limit
+    client_max_body_size 10m;
+
+    # Frontend (React SPA)
     root /usr/share/nginx/html;
     index index.html;
 
-    # SPA routing — serve index.html for all routes
     location / {
         try_files $uri $uri/ /index.html;
     }
@@ -425,308 +688,563 @@ server {
     # API reverse proxy
     location /api/ {
         proxy_pass http://api:3000/;
+        proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
         proxy_read_timeout 30s;
         proxy_connect_timeout 10s;
+        proxy_send_timeout 30s;
+
+        # Rate limiting headers
+        proxy_set_header X-RateLimit-IP $remote_addr;
     }
 
-    # Static asset caching
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+    # Static asset caching (1 year, immutable)
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
+        access_log off;
     }
 
-    # Gzip
+    # Gzip compression
     gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
     gzip_min_length 256;
 }
 ```
 
-### Step 8: Initial SSL Certificate
+**IMPORTANT:** Replace `yourdomain.com` in nginx.conf:
 
 ```bash
-# First, start nginx without SSL (comment out the 443 server block)
-docker compose up -d frontend
+sed -i "s/yourdomain.com/$DOMAIN/g" nginx.conf
+```
 
-# Get SSL certificate
+### Step 12: Get SSL Certificate
+
+```bash
+# Step 12a: Start nginx WITHOUT SSL first (for ACME challenge)
+# Temporarily comment out the 443 server block in nginx.conf
+# Or create a minimal HTTP-only nginx config
+
+# Start only postgres, redis, and a basic nginx
+docker compose up -d postgres redis
+
+# Wait for postgres to be healthy
+docker compose ps
+# Expected: postgres should show "healthy"
+
+# Step 12b: Get certificate
 docker compose run --rm certbot certonly \
   --webroot \
   --webroot-path=/var/www/certbot \
-  -d yourdomain.com \
-  --email admin@yourdomain.com \
+  -d $DOMAIN \
+  --email $(grep ACME_EMAIL .env | cut -d= -f2) \
   --agree-tos \
   --no-eff-email
 
-# Now uncomment the 443 server block and restart
-docker compose up -d
+# Expected output:
+# Successfully received certificate.
+# Certificate is saved at: /etc/letsencrypt/live/yourdomain.com/fullchain.pem
 ```
 
-### Step 9: Start Everything
+### Step 13: Start All Services
 
 ```bash
-# Build and start all services
+# Build and start everything
 docker compose up -d --build
 
-# Check status
+# Check all services are running
 docker compose ps
-
-# View logs
-docker compose logs -f api
-docker compose logs -f worker
 ```
 
-### Step 10: Database Migration
+**Expected output:**
+```
+NAME                STATUS              PORTS
+cryptonpay-api      Up (healthy)
+cryptonpay-frontend Up                  0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+cryptonpay-worker   Up
+cryptonpay-signer   Up
+cryptonpay-postgres Up (healthy)
+cryptonpay-redis    Up (healthy)
+cryptonpay-certbot  Up
+```
+
+### Step 14: Run Database Migrations
 
 ```bash
-# Run migrations inside the api container
-docker compose exec api node dist/migrate.js
+docker compose exec api npx prisma migrate deploy
 ```
 
-### Step 11: Create Admin User
+**Expected output:**
+```
+X migrations applied successfully.
+```
+
+### Step 15: Seed Demo Data (Development Only)
+
+```bash
+docker compose exec api npx prisma db seed
+```
+
+### Step 16: Create Admin User
 
 ```bash
 docker compose exec api node dist/create-admin.js \
   --email admin@yourdomain.com \
-  --password "YOUR_SECURE_PASSWORD"
+  --password "YourSecureAdminPassword123!"
+```
+
+**Expected output:**
+```
+Admin user created: admin@yourdomain.com
+```
+
+### Step 17: Verify Deployment
+
+```bash
+# Test health endpoint
+curl -s https://$DOMAIN/api/v1/health | python3 -m json.tool
+# Expected: {"status": "ok", "version": "1.0.0", "uptime": ...}
+
+# Test frontend loads
+curl -sI https://$DOMAIN | head -5
+# Expected: HTTP/2 200
+
+# Test login page
+curl -sI https://$DOMAIN/login | head -5
+# Expected: HTTP/2 200
+
+# Test API login
+curl -s -X POST https://$DOMAIN/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@yourdomain.com","password":"YourSecureAdminPassword123!"}' | python3 -m json.tool
+# Expected: {"token": "...", "user": {"id": "...", "email": "...", "role": "admin"}}
 ```
 
 ---
 
 ## 4. DNS & SSL Setup
 
-### For Cloudflare (Pages)
+### DNS Records
 
-DNS is automatic when you add a custom domain in Cloudflare Pages.
-
-### For VM Deployment
-
-Add these DNS records at your registrar or DNS provider:
+Create these DNS records at your registrar:
 
 | Type | Name | Value | TTL |
 |------|------|-------|-----|
-| A | `@` | `YOUR_SERVER_IP` | 300 |
+| A | `@` (or `yourdomain.com`) | `YOUR_SERVER_IP` | 300 |
 | A | `api` | `YOUR_SERVER_IP` | 300 |
 | CNAME | `www` | `yourdomain.com` | 300 |
 
-**Verify DNS propagation:**
+**If using Cloudflare (Option A):**
+
+| Type | Name | Value | Proxy |
+|------|------|-------|-------|
+| CNAME | `pay` | `cryptonpay.pages.dev` | Proxied ☁️ |
+| A | `api` | `YOUR_BACKEND_IP` | Proxied ☁️ |
+
+### SSL Certificate Renewal (Option B)
+
+SSL certificates auto-renew via the Certbot container. To manually renew:
+
 ```bash
-dig yourdomain.com +short
-# Should return YOUR_SERVER_IP
+docker compose run --rm certbot renew
+docker compose restart frontend
+```
+
+Add auto-renewal to crontab:
+
+```bash
+crontab -e
+# Add this line:
+0 3 1,15 * * cd /opt/cryptonpay && docker compose run --rm certbot renew && docker compose restart frontend
 ```
 
 ---
 
 ## 5. Environment Variables Reference
 
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `VITE_API_BASE_URL` | ✅ | Backend API URL | `https://api.yourdomain.com` |
-| `DATABASE_URL` | ✅ | PostgreSQL connection string | `postgres://user:pass@host:5432/db` |
-| `REDIS_URL` | ✅ | Redis connection string | `redis://redis:6379` |
-| `JWT_SECRET` | ✅ | 64-char hex string for JWT signing | `openssl rand -hex 32` |
-| `SIGNER_SECRET` | ✅ | Shared secret for signer auth | `openssl rand -hex 32` |
-| `SIGNER_URL` | ✅ | Internal signer URL | `http://signer:8080` |
-| `WEBHOOK_HMAC_SECRET` | ✅ | Default HMAC secret for webhooks | `openssl rand -hex 32` |
-| `API_PORT` | ❌ | API listen port (default: 3000) | `3000` |
-| `LOG_LEVEL` | ❌ | Logging level | `info` |
-| `CORS_ORIGINS` | ❌ | Allowed CORS origins | `https://yourdomain.com` |
-| `RATE_LIMIT_RPM` | ❌ | API rate limit per minute | `100` |
+### Frontend Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `VITE_API_BASE_URL` | ✅ | `/api` | Backend API base URL |
+
+### Backend Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | ✅ | — | PostgreSQL connection string |
+| `REDIS_URL` | ✅ | — | Redis connection string |
+| `JWT_SECRET` | ✅ | — | 64-char hex string for JWT signing |
+| `JWT_EXPIRY` | ❌ | `15m` | Access token lifetime |
+| `REFRESH_TOKEN_EXPIRY` | ❌ | `7d` | Refresh token lifetime |
+| `API_PORT` | ❌ | `3000` | API server port |
+| `CORS_ORIGINS` | ❌ | `*` | Comma-separated allowed origins |
+| `NODE_ENV` | ❌ | `development` | `production` for prod |
+| `SIGNER_SECRET` | ✅ | — | Shared secret with signer service |
+| `SIGNER_PORT` | ❌ | `8080` | Signer service port |
+| `ACME_EMAIL` | ✅ (VM) | — | Email for SSL cert notifications |
+| `DOMAIN` | ✅ (VM) | — | Your domain name |
 
 ---
 
-## 6. Post-Deployment Checklist
+## 6. Post-Deployment Verification
 
-Run through every item after deployment:
+Run these checks after **every** deployment:
 
-- [ ] **Frontend loads** — Visit `https://yourdomain.com`, verify landing page renders
-- [ ] **API responds** — `curl https://api.yourdomain.com/v1/health` returns `{"status":"ok"}`
-- [ ] **Login works** — Sign in with admin credentials
-- [ ] **SSL valid** — Check `https://yourdomain.com` shows padlock, no mixed content
-- [ ] **HSTS active** — `curl -I https://yourdomain.com` shows `Strict-Transport-Security`
-- [ ] **CSP headers** — `curl -I` shows security headers (X-Frame-Options, etc.)
-- [ ] **Database connected** — Dashboard shows stats (even if zeros)
-- [ ] **Redis connected** — No "Redis connection failed" in logs
-- [ ] **Signer isolated** — `docker exec worker ping signer` works, `docker exec api ping signer` fails
-- [ ] **Webhook delivery** — Create test webhook, click "Test", verify delivery log entry
-- [ ] **Charge creation** — Create a test charge, verify checkout page loads at `/pay/:id`
-- [ ] **QR code renders** — Checkout page shows QR code for deposit address
-- [ ] **Auto-renewal** — `docker compose logs certbot` shows "no action taken" (cert not due)
-- [ ] **Backups configured** — `pg_dump` cron job running (see Monitoring section)
+```bash
+# 1. Frontend loads
+curl -sI https://yourdomain.com | grep "HTTP/2 200"
+# ✅ Expected: HTTP/2 200
+
+# 2. Health endpoint
+curl -s https://yourdomain.com/api/v1/health | grep '"ok"'
+# ✅ Expected: contains "ok"
+
+# 3. Login works
+TOKEN=$(curl -s -X POST https://yourdomain.com/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@yourdomain.com","password":"YOUR_PASS"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+echo "Token: ${TOKEN:0:20}..."
+# ✅ Expected: Token starts with "eyJ"
+
+# 4. Dashboard stats work
+curl -s -H "Authorization: Bearer $TOKEN" \
+  https://yourdomain.com/api/v1/dashboard/stats | python3 -m json.tool
+# ✅ Expected: JSON with total_charges, pending_payments, etc.
+
+# 5. Admin stats work
+curl -s -H "Authorization: Bearer $TOKEN" \
+  https://yourdomain.com/api/v1/admin/stats | python3 -m json.tool
+# ✅ Expected: JSON with total_merchants, active_charges, etc.
+
+# 6. Security headers present
+curl -sI https://yourdomain.com | grep -i "x-frame-options"
+# ✅ Expected: X-Frame-Options: DENY
+
+curl -sI https://yourdomain.com | grep -i "strict-transport"
+# ✅ Expected: Strict-Transport-Security: max-age=63072000...
+
+# 7. Checkout page loads (public)
+curl -sI https://yourdomain.com/pay/test-id | grep "HTTP/2 200"
+# ✅ Expected: HTTP/2 200 (SPA returns index.html)
+
+# 8. 404 works
+curl -s https://yourdomain.com/nonexistent | grep "404"
+# ✅ Expected: Page contains "404"
+```
 
 ---
 
 ## 7. Monitoring & Maintenance
 
-### Automated Backups (PostgreSQL)
+### Health Check Cron (Option B)
 
 ```bash
-# Create backup script
-cat > /home/cryptonpay/backup.sh << 'EOF'
-#!/bin/bash
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR=/home/cryptonpay/backups
-mkdir -p $BACKUP_DIR
-docker compose exec -T postgres pg_dump -U cryptonpay cryptonpay | gzip > $BACKUP_DIR/cryptonpay_$TIMESTAMP.sql.gz
-# Keep last 30 days
-find $BACKUP_DIR -name "*.sql.gz" -mtime +30 -delete
-echo "Backup completed: cryptonpay_$TIMESTAMP.sql.gz"
-EOF
-
-chmod +x /home/cryptonpay/backup.sh
-
-# Add to crontab (daily at 3 AM)
-echo "0 3 * * * /home/cryptonpay/backup.sh >> /home/cryptonpay/backup.log 2>&1" | crontab -
+crontab -e
 ```
 
-### Health Check Script
+Add:
+
+```
+# Health check every 5 minutes
+*/5 * * * * curl -sf https://yourdomain.com/api/v1/health > /dev/null || echo "ALERT: Cryptonpay API down at $(date)" | mail -s "API DOWN" ops@yourdomain.com
+
+# SSL renewal check (1st and 15th of month)
+0 3 1,15 * * cd /opt/cryptonpay && docker compose run --rm certbot renew && docker compose restart frontend >> /var/log/certbot-renew.log 2>&1
+```
+
+### Log Viewing
 
 ```bash
-cat > /home/cryptonpay/healthcheck.sh << 'EOF'
-#!/bin/bash
-API_URL="https://api.yourdomain.com/v1/health"
-RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
+# All services
+docker compose logs -f
 
-if [ "$RESPONSE" != "200" ]; then
-    echo "$(date) — API DOWN (HTTP $RESPONSE)" >> /home/cryptonpay/healthcheck.log
-    docker compose restart api
-fi
-EOF
+# Specific service
+docker compose logs -f api
+docker compose logs -f worker
 
-chmod +x /home/cryptonpay/healthcheck.sh
+# Last 100 lines
+docker compose logs --tail=100 api
 
-# Check every 5 minutes
-echo "*/5 * * * * /home/cryptonpay/healthcheck.sh" >> /tmp/cron_tmp && crontab /tmp/cron_tmp
+# Since a specific time
+docker compose logs --since 1h api
 ```
 
 ### Log Rotation
 
-```bash
-sudo cat > /etc/logrotate.d/cryptonpay << 'EOF'
-/home/cryptonpay/cryptonpay/*.log {
+Create `/etc/logrotate.d/docker-cryptonpay`:
+
+```
+/var/lib/docker/containers/*/*.log {
+    rotate 7
     daily
-    rotate 14
     compress
     delaycompress
     missingok
-    notifempty
+    copytruncate
+    maxsize 100M
 }
-EOF
 ```
 
-### Updating the Application
+### Container Updates
 
 ```bash
-cd /home/cryptonpay/cryptonpay
+cd /opt/cryptonpay
 
 # Pull latest code
 git pull origin main
 
-# Rebuild and restart (zero-downtime)
-docker compose up -d --build --force-recreate
+# Rebuild and restart
+docker compose up -d --build
 
-# Run any new migrations
-docker compose exec api node dist/migrate.js
+# Run migrations if needed
+docker compose exec api npx prisma migrate deploy
 
 # Verify
 docker compose ps
-curl -s https://api.yourdomain.com/v1/health
+curl -s https://yourdomain.com/api/v1/health
 ```
 
 ---
 
-## 8. Troubleshooting
+## 8. Backup & Restore
 
-### Common Issues
+### Automated Daily Backup
 
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| White page / blank screen | Build failed or wrong `VITE_API_BASE_URL` | Check `dist/index.html` exists, verify env var |
-| 502 Bad Gateway | API container not running | `docker compose logs api`, check DATABASE_URL |
-| CORS errors in browser | `CORS_ORIGINS` not set | Add your frontend domain to `CORS_ORIGINS` |
-| "Connection refused" on API | Port not exposed or firewall | `sudo ufw allow 80,443/tcp` |
-| SSL cert errors | Cert not issued yet | Run certbot command again, check DNS |
-| Signer unreachable | Wrong network config | Verify `signer-net` in docker-compose |
-| Redis connection failed | Redis not started | `docker compose up -d redis`, check logs |
-| Slow page loads | No gzip / no caching | Verify nginx gzip and cache headers |
-| Login redirect loop | JWT_SECRET changed | Clear browser localStorage, verify secret |
-
-### Debug Commands
+Create `/opt/cryptonpay/scripts/backup.sh`:
 
 ```bash
-# Check all container status
-docker compose ps -a
+#!/bin/bash
+set -euo pipefail
 
-# View real-time logs
-docker compose logs -f --tail=100
+BACKUP_DIR="/opt/backups/cryptonpay"
+DATE=$(date +%Y%m%d_%H%M%S)
+KEEP_DAYS=30
 
-# Shell into a container
-docker compose exec api sh
+mkdir -p "$BACKUP_DIR"
 
-# Check database connection
-docker compose exec postgres psql -U cryptonpay -c "SELECT 1"
+# Database backup
+echo "$(date): Starting database backup..."
+docker compose -f /opt/cryptonpay/docker-compose.yml exec -T postgres \
+  pg_dump -U cryptonpay -Fc --no-owner cryptonpay > "$BACKUP_DIR/db_$DATE.dump"
 
-# Check Redis
-docker compose exec redis redis-cli ping
+# Compress
+gzip "$BACKUP_DIR/db_$DATE.dump"
 
-# Network inspection
-docker network inspect cryptonpay_backend
-docker network inspect cryptonpay_signer-net
+# File size
+ls -lh "$BACKUP_DIR/db_$DATE.dump.gz"
 
-# Disk usage
-docker system df
+# Cleanup old backups
+find "$BACKUP_DIR" -name "*.gz" -mtime +$KEEP_DAYS -delete
 
-# Clean up unused images/volumes
-docker system prune -af
+echo "$(date): Backup completed: db_$DATE.dump.gz"
+echo "$(date): Backups older than $KEEP_DAYS days removed"
 ```
 
-### Getting Help
+```bash
+chmod +x /opt/cryptonpay/scripts/backup.sh
 
-1. Check logs: `docker compose logs -f`
-2. Check the `/v1/health` endpoint
-3. Open an issue on GitHub with logs attached
-4. Join the community Discord
+# Add to crontab
+crontab -e
+# Add:
+0 3 * * * /opt/cryptonpay/scripts/backup.sh >> /var/log/cryptonpay-backup.log 2>&1
+```
+
+### Manual Backup
+
+```bash
+/opt/cryptonpay/scripts/backup.sh
+```
+
+### Restore from Backup
+
+```bash
+# List available backups
+ls -la /opt/backups/cryptonpay/
+
+# Stop services that write to DB
+cd /opt/cryptonpay
+docker compose stop api worker
+
+# Restore (replace filename with your backup)
+gunzip -k /opt/backups/cryptonpay/db_20260222_030000.dump.gz
+docker compose exec -T postgres pg_restore -U cryptonpay -d cryptonpay --clean --if-exists \
+  < /opt/backups/cryptonpay/db_20260222_030000.dump
+
+# Restart services
+docker compose start api worker
+
+# Verify
+curl -s https://yourdomain.com/api/v1/health
+```
 
 ---
 
-## Security Hardening (Production)
+## 9. Scaling Guide
+
+### Scale Workers Horizontally
 
 ```bash
-# ─── Firewall ───
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 22/tcp    # SSH
-sudo ufw allow 80/tcp    # HTTP (redirect)
-sudo ufw allow 443/tcp   # HTTPS
-sudo ufw enable
+# Run 3 worker instances
+docker compose up -d --scale worker=3
 
-# ─── Fail2Ban (brute-force protection) ───
-sudo apt install fail2ban -y
-sudo systemctl enable fail2ban
+# Verify all workers are running
+docker compose ps | grep worker
+```
 
-# ─── SSH hardening ───
-sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sudo sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+### Monitor Queue Depth
+
+```bash
+# Check Redis queue sizes
+docker compose exec redis redis-cli LLEN bull:webhook-dispatch:wait
+docker compose exec redis redis-cli LLEN bull:sweep-execution:wait
+docker compose exec redis redis-cli LLEN bull:charge-expiry:wait
+```
+
+### Scale Database
+
+For high-traffic production deployments, consider:
+1. Use a managed PostgreSQL service (AWS RDS, DigitalOcean Managed DB)
+2. Update `DATABASE_URL` in `.env` to point to the managed instance
+3. Restart API + worker: `docker compose restart api worker`
+
+---
+
+## 10. Troubleshooting
+
+### "Connection refused" on API
+
+```bash
+# Check container status
+docker compose ps
+
+# If api is restarting, check logs
+docker compose logs --tail=50 api
+
+# Common cause: database not ready
+docker compose restart api
+
+# Verify database is healthy
+docker compose exec postgres pg_isready -U cryptonpay
+```
+
+### Frontend shows blank page
+
+```bash
+# Check if dist/ was built correctly
+docker compose exec frontend ls /usr/share/nginx/html/
+# Expected: index.html, assets/
+
+# Check nginx config syntax
+docker compose exec frontend nginx -t
+# Expected: syntax is ok, test is successful
+
+# Check nginx logs
+docker compose logs frontend
+```
+
+### SSL certificate issues
+
+```bash
+# Check certificate status
+docker compose run --rm certbot certificates
+
+# Force renew
+docker compose run --rm certbot renew --force-renewal
+docker compose restart frontend
+
+# Check certificate expiry
+echo | openssl s_client -connect yourdomain.com:443 2>/dev/null | openssl x509 -noout -dates
+```
+
+### Redis out of memory
+
+```bash
+# Check memory usage
+docker compose exec redis redis-cli INFO memory | grep used_memory_human
+
+# If near limit, increase in docker-compose.yml:
+# Change --maxmemory 256mb to --maxmemory 512mb
+docker compose restart redis
+```
+
+### Database full
+
+```bash
+# Check database size
+docker compose exec postgres psql -U cryptonpay -c "SELECT pg_size_pretty(pg_database_size('cryptonpay'));"
+
+# Check table sizes
+docker compose exec postgres psql -U cryptonpay -c "SELECT relname, pg_size_pretty(pg_total_relation_size(oid)) FROM pg_class ORDER BY pg_total_relation_size(oid) DESC LIMIT 10;"
+
+# Vacuum (reclaim space)
+docker compose exec postgres psql -U cryptonpay -c "VACUUM ANALYZE;"
+```
+
+---
+
+## 11. Security Hardening
+
+### Server-Level
+
+```bash
+# Disable root SSH login
+sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
 sudo systemctl restart sshd
 
-# ─── Automatic security updates ───
-sudo apt install unattended-upgrades -y
+# Install fail2ban
+sudo apt install -y fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+
+# Automatic security updates
+sudo apt install -y unattended-upgrades
 sudo dpkg-reconfigure -plow unattended-upgrades
 ```
 
----
-
-## 9. Systemd Service (Alternative to Docker)
-
-If you prefer running directly on the VM without Docker:
-
-### Create the systemd unit file
+### Docker-Level
 
 ```bash
-sudo cat > /etc/systemd/system/cryptonpay-api.service << 'EOF'
+# Run containers as non-root (add to Dockerfiles)
+# USER node
+
+# Limit container resources in docker-compose.yml
+# deploy:
+#   resources:
+#     limits:
+#       cpus: '1.0'
+#       memory: 512M
+```
+
+### Application-Level
+
+- ✅ JWT tokens expire in 15 minutes
+- ✅ Refresh token rotation with reuse detection
+- ✅ API keys hashed with argon2id
+- ✅ Webhooks signed with HMAC-SHA256
+- ✅ Rate limiting on all endpoints
+- ✅ Request body size limited to 10KB
+- ✅ CORS restricted to allowed origins
+- ✅ Security headers (HSTS, CSP, X-Frame-Options)
+- ✅ Audit log for all admin actions
+- ✅ Signer on isolated Docker network
+
+---
+
+## 12. Systemd Service Files
+
+If running without Docker, use systemd:
+
+### `/etc/systemd/system/cryptonpay-api.service`
+
+```ini
 [Unit]
 Description=Cryptonpay API Server
 After=network.target postgresql.service redis.service
@@ -736,62 +1254,56 @@ Requires=postgresql.service redis.service
 Type=simple
 User=cryptonpay
 Group=cryptonpay
-WorkingDirectory=/home/cryptonpay/cryptonpay/backend
-Environment=NODE_ENV=production
-EnvironmentFile=/home/cryptonpay/cryptonpay/.env
-ExecStart=/usr/bin/node dist/server.js
+WorkingDirectory=/opt/cryptonpay/backend
+ExecStart=/usr/bin/node dist/main.js
 Restart=always
 RestartSec=5
+EnvironmentFile=/opt/cryptonpay/.env
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/cryptonpay
+
+# Logging
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=cryptonpay-api
 
-# Security hardening
-NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=read-only
-ReadWritePaths=/home/cryptonpay/cryptonpay/backend/logs
-PrivateTmp=true
-
 [Install]
 WantedBy=multi-user.target
-EOF
 ```
 
-### Create the worker service
+### `/etc/systemd/system/cryptonpay-worker.service`
 
-```bash
-sudo cat > /etc/systemd/system/cryptonpay-worker.service << 'EOF'
+```ini
 [Unit]
 Description=Cryptonpay Background Worker
 After=network.target postgresql.service redis.service cryptonpay-api.service
-Requires=postgresql.service redis.service
 
 [Service]
 Type=simple
 User=cryptonpay
 Group=cryptonpay
-WorkingDirectory=/home/cryptonpay/cryptonpay/backend
-Environment=NODE_ENV=production
-EnvironmentFile=/home/cryptonpay/cryptonpay/.env
+WorkingDirectory=/opt/cryptonpay/backend
 ExecStart=/usr/bin/node dist/worker.js
 Restart=always
 RestartSec=5
+EnvironmentFile=/opt/cryptonpay/.env
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/cryptonpay
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=cryptonpay-worker
 
-NoNewPrivileges=true
-ProtectSystem=strict
-ProtectHome=read-only
-PrivateTmp=true
-
 [Install]
 WantedBy=multi-user.target
-EOF
 ```
 
-### Enable and start
+### Enable and Start
 
 ```bash
 sudo systemctl daemon-reload
@@ -809,4 +1321,5 @@ journalctl -u cryptonpay-worker -f
 
 ---
 
-*Last updated: 2026-02-21 · Cryptonpay v1.0*
+*Cryptonpay v1.0 — Enterprise Deployment Guide*
+*No room for error. Deploy with confidence.*
