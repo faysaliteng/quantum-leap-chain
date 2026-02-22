@@ -123,6 +123,37 @@ export default function LandingPage() {
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
         </div>
+
+        {/* Floating crypto icons background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden hidden lg:block">
+          {[
+            { icon: "₿", top: "8%", right: "8%", size: "h-16 w-16", opacity: "opacity-20", delay: 0, duration: 6, y: [-14, 0, -14], rotate: [0, 6, -6, 0] },
+            { icon: "Ξ", top: "18%", left: "6%", size: "h-14 w-14", opacity: "opacity-[0.12]", delay: 1.2, duration: 7, y: [0, -18, 0], rotate: [0, -8, 4, 0] },
+            { icon: "◈", bottom: "22%", right: "5%", size: "h-12 w-12", opacity: "opacity-[0.10]", delay: 2, duration: 8, y: [0, -12, 0], rotate: [0, 10, -5, 0] },
+            { icon: "◎", top: "60%", left: "4%", size: "h-10 w-10", opacity: "opacity-[0.08]", delay: 0.8, duration: 9, y: [-10, 0, -10], rotate: [0, -5, 8, 0] },
+            { icon: "₮", top: "5%", left: "18%", size: "h-11 w-11", opacity: "opacity-[0.10]", delay: 3, duration: 7.5, y: [0, -16, 0], rotate: [0, 4, -8, 0] },
+            { icon: "◆", bottom: "15%", left: "12%", size: "h-9 w-9", opacity: "opacity-[0.07]", delay: 1.5, duration: 10, y: [0, -10, 0], rotate: [0, -12, 6, 0] },
+            { icon: "⬡", top: "30%", right: "4%", size: "h-10 w-10", opacity: "opacity-[0.09]", delay: 2.5, duration: 8.5, y: [-8, 0, -8], rotate: [0, 7, -3, 0] },
+            { icon: "◇", bottom: "30%", right: "15%", size: "h-8 w-8", opacity: "opacity-[0.06]", delay: 4, duration: 11, y: [0, -14, 0], rotate: [0, -6, 10, 0] },
+            { icon: "₿", top: "45%", right: "18%", size: "h-8 w-8", opacity: "opacity-[0.06]", delay: 3.5, duration: 9.5, y: [-6, 0, -6], rotate: [0, 5, -5, 0] },
+            { icon: "Ξ", bottom: "10%", right: "25%", size: "h-9 w-9", opacity: "opacity-[0.07]", delay: 1, duration: 8, y: [0, -12, 0], rotate: [0, -4, 8, 0] },
+            { icon: "◎", top: "12%", right: "30%", size: "h-7 w-7", opacity: "opacity-[0.05]", delay: 2.8, duration: 12, y: [0, -8, 0], rotate: [0, 3, -7, 0] },
+            { icon: "₮", top: "70%", left: "20%", size: "h-7 w-7", opacity: "opacity-[0.05]", delay: 0.5, duration: 10.5, y: [-12, 0, -12], rotate: [0, -9, 3, 0] },
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              className="absolute"
+              style={{ top: item.top, bottom: item.bottom, left: item.left, right: item.right } as React.CSSProperties}
+              animate={{ y: item.y, rotate: item.rotate }}
+              transition={{ duration: item.duration, repeat: Infinity, ease: "easeInOut", delay: item.delay }}
+            >
+              <div className={`${item.size} rounded-2xl bg-gradient-gold glow-gold flex items-center justify-center ${item.opacity}`}>
+                <span className="text-primary-foreground font-display font-bold text-lg">{item.icon}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
         <motion.div
           className="relative"
           initial="hidden"
@@ -158,17 +189,6 @@ export default function LandingPage() {
             <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border/50" asChild>
               <Link to="/docs/api">View API Docs</Link>
             </Button>
-          </motion.div>
-
-          {/* Floating Bitcoin icon */}
-          <motion.div
-            className="absolute -top-4 right-[10%] hidden lg:block"
-            animate={{ y: [0, -14, 0], rotate: [0, 6, -6, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <div className="h-16 w-16 rounded-2xl bg-gradient-gold glow-gold flex items-center justify-center opacity-20">
-              <Bitcoin className="h-9 w-9 text-primary-foreground" />
-            </div>
           </motion.div>
         </motion.div>
       </section>
