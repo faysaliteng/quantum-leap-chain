@@ -49,6 +49,7 @@ import SingularityCoinDocs from "./pages/docs/SingularityCoinDocs";
 import NotFound from "./pages/NotFound";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/pay/:chargeId" element={<CheckoutPage />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/pricing" element={<Pricing />} />
 
               <Route path="/docs/architecture" element={<ArchitectureDocs />} />
               <Route path="/docs/security" element={<SecurityDocs />} />
