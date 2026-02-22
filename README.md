@@ -85,7 +85,7 @@
 | **State** | TanStack React Query |
 | **Charts** | Recharts (Area, Bar, Pie/Donut) |
 | **QR Codes** | qrcode.react |
-| **Routing** | React Router v6 (31 routes) |
+| **Routing** | React Router v6 (35 routes) |
 | **Validation** | Zod |
 | **HTTP Client** | Axios (typed, 45+ endpoints) |
 | **Animations** | Framer Motion |
@@ -159,6 +159,8 @@ cryptoniumpay/
 | `/login` | Login |
 | `/signup` | Signup with password validation |
 | `/pay/:chargeId` | Public checkout |
+| `/terms` | Terms of Service |
+| `/privacy` | Privacy Policy |
 | `/docs/api` | API reference |
 | `/docs/security` | Security docs |
 | `/docs/architecture` | Architecture docs |

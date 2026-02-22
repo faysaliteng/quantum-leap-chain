@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SEOHead } from "@/components/SEOHead";
 import { SocialLinks } from "@/components/SocialLinks";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Accept Crypto Payments — 0.5% Flat Fee" description="The lowest-fee crypto payment gateway. Accept BTC, ETH, and stablecoins with 0.5% flat fee. No KYC, no monthly fees, instant setup." />
       {/* Nav */}
       <header className="border-b border-border/50 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container flex h-16 items-center justify-between">
@@ -507,8 +509,8 @@ export default function LandingPage() {
           <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Cryptoniumpay. All rights reserved.</p>
             <div className="flex gap-4 text-xs text-muted-foreground">
-              <span>Terms of Service</span>
-              <span>Privacy Policy</span>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
             </div>
           </div>
         </div>

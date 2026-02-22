@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 import { useQuery } from "@tanstack/react-query";
 import { checkout } from "@/lib/api-client";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -43,6 +44,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <SEOHead title={`Pay ${charge.name}`} description="Complete your crypto payment securely." noindex />
       <Card className="w-full max-w-md border-border/50">
         <CardContent className="pt-6 space-y-6">
           <div className="flex justify-center">
