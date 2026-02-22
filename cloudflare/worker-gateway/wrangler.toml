@@ -1,5 +1,10 @@
-# Cloudflare Worker — API Gateway for Cryptoniumpay
-# Proxies requests from Cloudflare to the VPS backend
+# Cloudflare Worker — Enterprise API Gateway for Cryptoniumpay
+# Proxies requests from Cloudflare to the VPS backend with:
+# - HMAC edge signature auth
+# - Edge rate limiting
+# - Request size limits
+# - CORS handling
+# - Maintenance mode enforcement
 
 name = "cryptoniumpay-api-gateway"
 main = "src/index.ts"
@@ -7,6 +12,13 @@ compatibility_date = "2024-01-01"
 
 [vars]
 BACKEND_ORIGIN = "https://api.yourdomain.com"
+RATE_LIMIT_RPM = "100"
+MAX_BODY_BYTES = "10485760"
+MAINTENANCE_MODE = "false"
+# ALLOWED_ORIGINS = "https://yourdomain.com,https://pay.yourdomain.com"
+
+# Secrets (set via: wrangler secret put <NAME>)
+# - EDGE_SECRET: shared HMAC key between worker and origin
 
 # Optional: Custom domain routing
 # [routes]

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Query, Body } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { CurrentUser } from '../common/auth/decorators';
+import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/create-invoice.dto';
 
 @Controller('v1/invoices')
 export class InvoicesController {
@@ -17,12 +18,12 @@ export class InvoicesController {
   }
 
   @Post()
-  create(@CurrentUser() user: any, @Body() body: any) {
+  create(@CurrentUser() user: any, @Body() body: CreateInvoiceDto) {
     return this.invoicesService.create(user.merchant_id, body);
   }
 
   @Put(':id')
-  update(@CurrentUser() user: any, @Param('id') id: string, @Body() body: any) {
+  update(@CurrentUser() user: any, @Param('id') id: string, @Body() body: UpdateInvoiceDto) {
     return this.invoicesService.update(user.merchant_id, id, body);
   }
 

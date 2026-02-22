@@ -1,6 +1,10 @@
 import { Controller, Post, Delete, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public, CurrentUser } from '../common/auth/decorators';
+import {
+  LoginDto, SignupDto, VerifyEmailDto, Verify2faDto,
+  ResendEmailCodeDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto,
+} from './dto/login.dto';
 
 @Controller('v1/auth')
 export class AuthController {
@@ -9,13 +13,13 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() body: { email: string; password: string }) {
+  login(@Body() body: LoginDto) {
     return this.authService.login(body.email, body.password);
   }
 
   @Public()
   @Post('signup')
-  signup(@Body() body: { name: string; email: string; password: string }) {
+  signup(@Body() body: SignupDto) {
     return this.authService.signup(body.name, body.email, body.password);
   }
 
@@ -28,35 +32,42 @@ export class AuthController {
   @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  verifyEmail(@Body() body: { session_token: string; code: string }) {
+  verifyEmail(@Body() body: VerifyEmailDto) {
     return this.authService.verifyEmailCode(body.session_token, body.code);
   }
 
   @Public()
   @Post('verify-2fa')
   @HttpCode(HttpStatus.OK)
-  verify2fa(@Body() body: { session_token: string; totp_code: string }) {
+  verify2fa(@Body() body: Verify2faDto) {
     return this.authService.verify2fa(body.session_token, body.totp_code);
   }
 
   @Public()
   @Post('resend-email-code')
   @HttpCode(HttpStatus.OK)
-  resendEmailCode(@Body() body: { session_token: string }) {
+  resendEmailCode(@Body() body: ResendEmailCodeDto) {
     return this.authService.resendEmailCode(body.session_token);
   }
 
   @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  forgotPassword(@Body() body: { email: string }) {
+  forgotPassword(@Body() body: ForgotPasswordDto) {
     return this.authService.forgotPassword(body.email);
   }
 
   @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
-  resetPassword(@Body() body: { token: string; new_password: string }) {
+  resetPassword(@Body() body: ResetPasswordDto) {
     return this.authService.resetPassword(body.token, body.new_password);
+  }
+
+  @Public()
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  refresh(@Body() body: RefreshTokenDto) {
+    return this.authService.refreshToken(body.refresh_token);
   }
 }

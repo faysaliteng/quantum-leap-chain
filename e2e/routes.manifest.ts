@@ -1,6 +1,6 @@
 /**
  * Cryptoniumpay — Route Manifest (Single Source of Truth)
- * Total: 62 routes
+ * Total: 65 routes
  */
 
 export const publicRoutes = [
@@ -43,6 +43,7 @@ export const merchantRoutes = [
   { key: "dashboard-settings-addresses", path: "/dashboard/settings/addresses" },
   { key: "dashboard-settings-security", path: "/dashboard/settings/security" },
   { key: "dashboard-exports", path: "/dashboard/exports" },
+  { key: "dashboard-intelligence", path: "/dashboard/intelligence" },
 ] as const;
 
 export const adminRoutes = [
@@ -67,6 +68,8 @@ export const adminRoutes = [
   { key: "admin-cms-social", path: "/admin/cms/social" },
   { key: "admin-cms-settings", path: "/admin/cms/settings" },
   { key: "admin-exports", path: "/admin/exports" },
+  { key: "admin-intelligence", path: "/admin/intelligence" },
+  { key: "admin-api-settings", path: "/admin/api-settings" },
 ] as const;
 
 export const dynamicRoutes = [

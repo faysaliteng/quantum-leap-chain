@@ -1,0 +1,33 @@
+[Unit]
+Description=Cryptoniumpay API Server
+After=network.target postgresql.service redis.service
+Wants=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=cryptoniumpay
+Group=cryptoniumpay
+WorkingDirectory=/opt/cryptoniumpay/backend
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/cryptoniumpay/backend/.env
+ExecStart=/usr/bin/node dist/main.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cryptoniumpay-api
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/cryptoniumpay/backend/exports /tmp/exports
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

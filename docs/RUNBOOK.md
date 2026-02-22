@@ -379,3 +379,106 @@ docker compose run --rm certbot renew
 # Restart nginx
 docker compose restart frontend
 ```
+
+---
+
+## 9. Edge Signature & Worker Gateway
+
+### Rotate EDGE_SECRET
+
+```bash
+# 1. Generate new secret
+openssl rand -hex 32
+
+# 2. Update on Cloudflare Worker
+cd cloudflare/worker-gateway
+wrangler secret put EDGE_SECRET
+# Paste new secret
+
+# 3. Update on backend (.env)
+nano /opt/cryptoniumpay/backend/.env
+# Change EDGE_SECRET=<new_value>
+
+# 4. Restart backend
+docker compose restart api worker
+
+# 5. Verify
+curl -s https://api.yourdomain.com/api/v1/health
+# Expected: { "status": "ok", ... }
+```
+
+### Worker Gateway Debugging
+
+```bash
+# View Worker logs (real-time)
+wrangler tail cryptoniumpay-api-gateway
+
+# Check Worker status
+wrangler deployments list
+
+# Redeploy Worker
+cd cloudflare/worker-gateway
+wrangler deploy
+```
+
+### Enable/Disable Maintenance Mode at Edge
+
+```bash
+# Enable
+cd cloudflare/worker-gateway
+# Edit wrangler.toml: MAINTENANCE_MODE = "true"
+wrangler deploy
+
+# Disable
+# Edit wrangler.toml: MAINTENANCE_MODE = "false"
+wrangler deploy
+```
+
+### Rate Limit Tuning
+
+```bash
+# Change rate limit in wrangler.toml
+# [vars]
+# RATE_LIMIT_RPM = "200"  # Increase from default 100
+wrangler deploy
+```
+
+---
+
+## 10. CI Debugging & Log-Grep Failures
+
+### Understanding log-grep gates
+
+The CI pipeline greps build output and E2E artifacts for critical error patterns:
+- `UnhandledPromiseRejection`
+- `TypeError`
+- `ECONNREFUSED`
+- `ReferenceError`
+- `SyntaxError`
+
+### Fixing log-grep failures
+
+1. Download the CI artifacts (playwright-report, test-results)
+2. Search for the error pattern to find the exact source
+3. Fix the root cause in code
+4. Re-run CI
+
+### Common false positives
+
+- `TypeError` in minified JS may be a build-time issue
+- `ECONNREFUSED` in E2E may indicate backend isn't running (expected in frontend-only CI)
+
+---
+
+## 11. Export Cleanup
+
+```bash
+# List export files
+docker compose exec api ls -la /tmp/exports/
+
+# Clean up exports older than 7 days
+docker compose exec api find /tmp/exports -mtime +7 -delete
+
+# Add to crontab for automatic cleanup
+0 4 * * * docker compose exec api find /tmp/exports -mtime +7 -delete
+```

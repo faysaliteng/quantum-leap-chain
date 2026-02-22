@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
 import { CurrentUser } from '../common/auth/decorators';
+import { CreateWebhookDto } from './dto/create-webhook.dto';
 
 @Controller('v1/webhooks')
 export class WebhooksController {
@@ -12,7 +13,7 @@ export class WebhooksController {
   }
 
   @Post()
-  create(@CurrentUser() user: any, @Body() body: { url: string; events: string[] }) {
+  create(@CurrentUser() user: any, @Body() body: CreateWebhookDto) {
     return this.webhooksService.create(user.merchant_id, body);
   }
 

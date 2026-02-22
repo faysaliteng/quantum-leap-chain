@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { ApiKeysService } from './api-keys.service';
 import { CurrentUser } from '../common/auth/decorators';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 
 @Controller('v1/api-keys')
 export class ApiKeysController {
@@ -12,7 +13,7 @@ export class ApiKeysController {
   }
 
   @Post()
-  create(@CurrentUser() user: any, @Body() body: { name: string; scopes: string[] }) {
+  create(@CurrentUser() user: any, @Body() body: CreateApiKeyDto) {
     return this.apiKeysService.create(user.merchant_id, body);
   }
 
