@@ -56,7 +56,7 @@ export default function BlogManager() {
   if (isLoading) return <PageSkeleton />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms-blog">
       <h1 className="text-lg font-semibold">Blog & News Manager</h1>
 
       {/* Create Form */}

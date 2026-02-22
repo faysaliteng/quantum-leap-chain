@@ -52,7 +52,7 @@ export default function FAQManager() {
   const categories = [...new Set(faqs?.map((f) => f.category) ?? ["General"])];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms-faq">
       <h1 className="text-lg font-semibold">FAQ Manager</h1>
 
       {/* Create */}

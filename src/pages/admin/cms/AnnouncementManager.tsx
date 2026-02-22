@@ -50,7 +50,7 @@ export default function AnnouncementManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms-announcements">
       <h1 className="text-lg font-semibold">Announcement Banners</h1>
 
       {/* Create Form */}

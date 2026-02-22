@@ -36,7 +36,7 @@ export default function CMSSettings() {
   if (isLoading) return <PageSkeleton />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms-settings">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">CMS Settings</h1>
         <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>

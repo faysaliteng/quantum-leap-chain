@@ -27,7 +27,7 @@ export default function PageManager() {
   if (isLoading) return <PageSkeleton />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:admin-cms-pages">
       <h1 className="text-lg font-semibold">Page Manager</h1>
       <p className="text-sm text-muted-foreground">Manage SEO metadata and visibility for all site pages.</p>
 

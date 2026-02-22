@@ -21,7 +21,7 @@ export default function SettlementSettings() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="page:dashboard-settings-settlement">
       <h1 className="text-lg font-semibold">Settlement Settings</h1>
       <div className="grid gap-4">
         {configs?.map((cfg) => (

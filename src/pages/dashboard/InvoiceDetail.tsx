@@ -68,7 +68,7 @@ export default function InvoiceDetail() {
   if (!inv) return <div className="text-center py-16 text-muted-foreground">Invoice not found</div>;
 
   return (
-    <div className="space-y-6 max-w-3xl" data-testid="page:invoice-detail">
+    <div className="space-y-6 max-w-3xl" data-testid="page:dashboard-invoice-detail">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

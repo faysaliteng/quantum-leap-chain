@@ -142,7 +142,7 @@ export default function SecuritySettings() {
   if (isLoading) return <div className="p-6 text-muted-foreground">Loading security settings…</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="page:dashboard-settings-security">
       <div>
         <h1 className="text-2xl font-display font-bold">Security Settings</h1>
         <p className="text-muted-foreground text-sm mt-1">Manage your account security, 2FA, and active sessions.</p>
