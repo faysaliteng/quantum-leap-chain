@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notifications } from "@/lib/api-extended";
+import { useNotifications } from "@/hooks/use-notifications";
+import { useAuth } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
   Bell, Check, CheckCheck, Trash2, Info, AlertTriangle, CheckCircle, XCircle,
-  CreditCard, FileText, Webhook, Shield, Wallet, Settings, Clock,
+  CreditCard, FileText, Webhook, Shield, Wallet, Settings, Clock, Wifi, WifiOff,
 } from "lucide-react";
 import type { Notification, NotificationCategory } from "@/lib/types-extended";
 
@@ -33,11 +36,17 @@ const categoryIcon: Record<string, React.ReactNode> = {
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
+  const { user } = useAuth();
+
+  // Real-time WebSocket with polling fallback
+  const { connected, transport } = useNotifications({
+    enabled: !!user,
+  });
 
   const { data: countData } = useQuery({
     queryKey: ["notification-count"],
     queryFn: notifications.unreadCount,
-    refetchInterval: 30000,
+    refetchInterval: connected ? false : 30000, // Only poll when WS is disconnected
   });
 
   const { data: notifData } = useQuery({
@@ -86,14 +95,29 @@ export function NotificationBell() {
 
   return (
     <>
-      <Button variant="ghost" size="icon" className="relative h-9 w-9" onClick={() => setOpen(true)}>
-        <Bell className="h-4 w-4" />
-        {count > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-            {count > 99 ? "99+" : count}
-          </span>
-        )}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative h-9 w-9" onClick={() => setOpen(true)}>
+            <Bell className="h-4 w-4" />
+            {count > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                {count > 99 ? "99+" : count}
+              </span>
+            )}
+            {/* Connection indicator dot */}
+            <span
+              className={`absolute bottom-0 right-0 h-2 w-2 rounded-full border border-background ${
+                connected ? "bg-success" : "bg-muted-foreground/40"
+              }`}
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <p className="text-xs">
+            {connected ? "Live updates active" : `Polling every ${Math.round(30000 / 1000)}s`}
+          </p>
+        </TooltipContent>
+      </Tooltip>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="w-full sm:max-w-md p-0">
@@ -102,6 +126,11 @@ export function NotificationBell() {
               <SheetTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />Notifications
                 {count > 0 && <Badge variant="destructive" className="text-xs">{count}</Badge>}
+                {connected ? (
+                  <Wifi className="h-3.5 w-3.5 text-success" />
+                ) : (
+                  <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
               </SheetTitle>
               {items.length > 0 && (
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => markAllMut.mutate()}>

@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => NotificationsGateway))
+    private gateway: NotificationsGateway,
+  ) {}
 
   async list(userId: string, query: any) {
     const page = parseInt(query.page) || 1;
@@ -27,14 +32,17 @@ export class NotificationsService {
 
   async markRead(userId: string, id: string) {
     await this.prisma.notification.updateMany({ where: { id, user_id: userId }, data: { read_at: new Date() } });
+    this.emitCountUpdate(userId);
   }
 
   async markAllRead(userId: string) {
     await this.prisma.notification.updateMany({ where: { user_id: userId, read_at: null }, data: { read_at: new Date() } });
+    this.emitCountUpdate(userId);
   }
 
   async remove(userId: string, id: string) {
     await this.prisma.notification.deleteMany({ where: { id, user_id: userId } });
+    this.emitCountUpdate(userId);
   }
 
   async getPreferences(userId: string) {
@@ -50,8 +58,35 @@ export class NotificationsService {
     });
   }
 
-  /** Helper to create a notification from other services */
+  /** Create a notification and push it via WebSocket in real time */
   async create(userId: string, data: { type: string; category: string; title: string; body: string; data?: any }) {
-    return this.prisma.notification.create({ data: { user_id: userId, ...data } });
+    const notification = await this.prisma.notification.create({ data: { user_id: userId, ...data } });
+
+    // Push real-time via WebSocket
+    try {
+      this.gateway.emitToUser(userId, 'notification:new', notification);
+    } catch {
+      // Gateway may not be initialized yet during startup
+    }
+
+    return notification;
+  }
+
+  /** Broadcast a notification to all users (admin announcements) */
+  async broadcast(data: { type: string; category: string; title: string; body: string }) {
+    try {
+      this.gateway.emitToAll('notification:new', data);
+    } catch {
+      // Gateway may not be initialized
+    }
+  }
+
+  private async emitCountUpdate(userId: string) {
+    try {
+      const { count } = await this.unreadCount(userId);
+      this.gateway.emitToUser(userId, 'notification:count', { count });
+    } catch {
+      // Silently ignore if gateway not ready
+    }
   }
 }
