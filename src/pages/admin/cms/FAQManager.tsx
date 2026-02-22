@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,8 @@ import { toast } from "sonner";
 import { PlusCircle, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
 
 export default function FAQManager() {
-  usePageTitle("FAQ Manager");
+  const { t } = useI18n();
+  usePageTitle(t("cms.faq"));
   const qc = useQueryClient();
 
   const [form, setForm] = useState({ question: "", answer: "", category: "General" });
@@ -53,7 +55,7 @@ export default function FAQManager() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-cms-faq">
-      <h1 className="text-lg font-semibold">FAQ Manager</h1>
+      <h1 className="text-lg font-semibold">{t("cms.faq")}</h1>
 
       {/* Create */}
       <Card>

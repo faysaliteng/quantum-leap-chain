@@ -13,8 +13,8 @@ import { useI18n } from "@/lib/i18n";
 
 export default function ChargeDetail() {
   const { id } = useParams<{ id: string }>();
-  usePageTitle(`Charge ${id?.slice(0, 8) ?? ""}`);
   const { t } = useI18n();
+  usePageTitle(`${t("chargeDetail.title")} ${id?.slice(0, 8) ?? ""}`);
   const { data: charge, isLoading } = useQuery({ queryKey: ["charge", id], queryFn: () => chargesApi.get(id!), enabled: !!id });
   const { data: txs } = useQuery({ queryKey: ["charge-txs", id], queryFn: () => chargesApi.getTransactions(id!), enabled: !!id });
 

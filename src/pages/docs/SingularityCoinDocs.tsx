@@ -4,16 +4,18 @@ import { DocsNav } from "@/components/DocsNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SEOHead } from "@/components/SEOHead";
 import { ShareBar } from "@/components/ShareBar";
+import { useI18n } from "@/lib/i18n";
 
 export default function SingularityCoinDocs() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-background" data-testid="page:docs-singularitycoin">
-      <SEOHead title="SingularityCoin Protocol" description="Layer-1 blockchain protocol specification: HotStuff BFT consensus, post-quantum signatures, and Rust monorepo architecture." />
+      <SEOHead title={t("docs.singularityCoin")} description="Layer-1 blockchain protocol specification: HotStuff BFT consensus, post-quantum signatures, and Rust monorepo architecture." />
       <DocsNav />
       <div className="max-w-5xl mx-auto space-y-8 py-8 px-4">
         <div>
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h1 className="text-2xl font-display font-bold">SingularityCoin — Layer-1 Protocol Specification</h1>
+            <h1 className="text-2xl font-display font-bold">{t("docs.singularityCoin")}</h1>
             <ShareBar title="SingularityCoin Protocol Spec" />
           </div>
           <p className="text-muted-foreground mt-2">Post-quantum secure, HotStuff PoS consensus, 1-3s finality, self-hosted on commodity VMs</p>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,8 @@ import { Save, Settings, AlertTriangle } from "lucide-react";
 import type { CMSSettings as CMSSettingsType } from "@/lib/types";
 
 export default function CMSSettings() {
-  usePageTitle("CMS Settings");
+  const { t } = useI18n();
+  usePageTitle(t("cms.settings"));
   const qc = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
@@ -38,7 +40,7 @@ export default function CMSSettings() {
   return (
     <div className="space-y-6" data-testid="page:admin-cms-settings">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">CMS Settings</h1>
+        <h1 className="text-lg font-semibold">{t("cms.settings")}</h1>
         <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
           <Save className="mr-1.5 h-3.5 w-3.5" />Save Settings
         </Button>

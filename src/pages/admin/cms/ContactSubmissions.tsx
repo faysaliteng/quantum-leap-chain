@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +26,8 @@ const statusColors: Record<ContactSubmission["status"], string> = {
 };
 
 export default function ContactSubmissions() {
-  usePageTitle("Contact Submissions");
+  const { t } = useI18n();
+  usePageTitle(t("cms.contacts"));
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | ContactSubmission["status"]>("all");
@@ -72,7 +74,7 @@ export default function ContactSubmissions() {
   return (
     <div className="space-y-6" data-testid="page:admin-cms-contacts">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Contact Submissions</h1>
+        <h1 className="text-lg font-semibold">{t("cms.contacts")}</h1>
         {counts.new > 0 && (
           <Badge className="bg-primary/10 text-primary border-primary/20">
             {counts.new} new

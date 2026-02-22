@@ -28,8 +28,8 @@ const chargeSchema = z.object({
 });
 
 export default function CreateCharge() {
-  usePageTitle("Create Charge");
   const { t } = useI18n();
+  usePageTitle(t("createCharge.title"));
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState<CreateChargeRequest>({
