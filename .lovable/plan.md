@@ -1,165 +1,173 @@
 
 
-# SingularityPay — Self-Hosted Crypto Payment Gateway
+# Cryptonpay — Production Readiness Plan
 
-## Overview
-A production-grade frontend application for a self-hosted crypto payment gateway inspired by Coinbase Commerce. The app includes a **Merchant Dashboard**, **Admin Dashboard**, and **Hosted Checkout Page** — all built as a React SPA with a typed API client targeting your self-hosted backend.
+## Scope Clarification
 
-**Design style:** Enterprise/serious — dense data tables, sidebar navigation, muted color palette, dark mode default, optimized for power users.
+This is a **Lovable-hosted React SPA** project. Lovable runs React + Vite + Tailwind only — it cannot run Node.js servers, NestJS, PostgreSQL, Redis, or Docker. The backend (NestJS + Postgres + Redis + BullMQ + Signer + Watchers) is a **separate repository** that must be built and deployed independently.
 
----
-
-## Phase A: Design Artifacts (Rendered as App Pages)
-
-### 1. Architecture Documentation Page (`/docs/architecture`)
-- Mermaid-rendered architecture diagram showing all services (frontend, api, worker, postgres, redis, signer) and their network boundaries
-- Data flow diagrams for "Create Charge" and "Verify Payment" flows
-- Docker network isolation diagram (signer in separate network)
-
-### 2. Threat Model Page (`/docs/security`)
-- STRIDE threat model with mitigations table
-- Key management security model (xpub-only server, isolated signer)
-- Hardening checklist (firewall, TLS, secrets rotation, admin 2FA)
-
-### 3. Database Schema Page (`/docs/schema`)
-- Interactive ERD showing all 17+ tables with relationships
-- Index strategy documentation
-- Migration plan overview
-
-### 4. API Reference Page (`/docs/api`)
-- Full REST API documentation for all endpoints
-- Request/response examples with types
-- Webhook event catalog with payload schemas
-- Authentication flow documentation
+This plan covers everything that CAN be done inside this project to reach 100% production readiness.
 
 ---
 
-## Phase B: Merchant Dashboard
+## What Will Be Built (14 Deliverables)
 
-### 5. Authentication & Session Management
-- Login page with email/password
-- Session token management via API client
-- Protected route wrappers
-- Logout functionality
+### 1. Signup Page + Route
+- New `/signup` page with name, email, password, confirm password fields
+- Zod validation (email format, password strength, match confirmation)
+- "Back to Home" button (matching Login page pattern)
+- New API client method: `auth.signup()` -> POST `/v1/auth/signup`
+- New TypeScript type: `SignupRequest`
+- Route added to `App.tsx` (public, no auth)
+- Login page gets "Don't have an account? Sign up" link
+- Signup page gets "Already have an account? Log in" link
 
-### 6. Dashboard Home (`/dashboard`)
-- Summary cards: total charges, pending payments, confirmed today, total volume
-- Recent charges table with status badges
-- Quick-create charge button
+### 2. Frontend API Client — Add Signup Endpoint
+- Add `SignupRequest` and `SignupResponse` types to `types.ts`
+- Add `auth.signup` method to `api-client.ts`
+- Total endpoints: 33 (32 existing + 1 signup)
 
-### 7. Charges Management (`/dashboard/charges`)
-- Dense data table with columns: ID, name, amount, asset, status, created, expires
-- Status filter chips: NEW, PENDING, CONFIRMED, PAID, EXPIRED, UNDERPAID, OVERPAID
-- Date range filter, asset filter, search
-- CSV export button
-- Click-through to charge detail
+### 3. Fix Auth Logout Method
+- Current code calls `http.post("/v1/auth/logout")` but DEVELOPER.md documents it as DELETE
+- Fix to `http.delete("/v1/auth/logout")` to match documentation
 
-### 8. Charge Detail (`/dashboard/charges/:id`)
-- Full charge info card with status badge and timeline
-- Inbound transactions list with confirmations count and block depth
-- Settlement/sweep status and linked outbound tx
-- Payment addresses per chain with copy buttons
-- Link to hosted checkout page
+### 4. Fix API Client URL Discrepancies
+- `api-client.ts` uses `/v1/settlement` but DEVELOPER.md says `/settlement/config` — align to match actual axios paths (the frontend code is the source of truth since it's what actually runs)
+- Document the ACTUAL endpoint paths used by the frontend in DEVELOPER.md
 
-### 9. Create Charge (`/dashboard/charges/new`)
-- Form: name, description, pricing type (fixed/donation), amount, currency
-- Chain/asset selection (BTC, ETH, USDC, USDT across supported chains)
-- Expiry duration picker
-- Metadata JSON editor
-- Redirect/cancel URL fields
-- Idempotency key auto-generation
+### 5. CoinMarketCap + Multi-Source Price Data
+- Enhance `CryptoPriceTicker.tsx` to support CoinGecko (current) + CoinMarketCap proxy pattern
+- Add fallback: if CoinGecko fails, show cached data with "stale" indicator
+- Add more coins: SOL, XRP, ADA, DOT alongside existing BTC/ETH/USDC/BNB/SOL
+- Add 24h volume and market cap display
 
-### 10. Settlement Settings (`/dashboard/settings/settlement`)
-- Per-chain settlement address configuration
-- Sweep mode toggle (immediate vs. batched)
-- Minimum sweep threshold per asset
-- Dust handling config
+### 6. Landing Page — Premium Crypto Dashboard
+- Enhanced hero with animated price tickers
+- Live price cards with sparkline charts (already exists, will polish)
+- Add "Top Movers" section showing 24h gainers/losers
+- Add trust indicators (security badges, uptime stats)
+- Add "How It Works" step-by-step section
 
-### 11. API Keys Management (`/dashboard/settings/api-keys`)
-- List active API keys (masked) with created date and last used
-- Create new key with scope selection
-- Revoke/delete key with confirmation
-- Copy key on creation (shown once)
+### 7. Complete Backend Specification Documents
 
-### 12. Webhook Configuration (`/dashboard/settings/webhooks`)
-- Add webhook endpoint URL
-- Auto-generated HMAC secret with copy
-- Event type subscriptions (checkboxes for all event types)
-- Test webhook button
-- Delivery log table: event, status code, latency, timestamp, retry count
+**New files to create:**
 
-### 13. Deposit Address Pool (`/dashboard/settings/addresses`)
-- Upload pre-generated deposit addresses (CSV)
-- View pool status per chain: total, allocated, available
-- Address allocation history
+- `docs/BACKEND-SPEC.md` — Complete NestJS backend specification with:
+  - All 33 endpoints with exact request/response schemas
+  - Prisma schema for all 18 tables
+  - Module structure (auth, charges, webhooks, admin, etc.)
+  - BullMQ queue definitions
+  - Middleware chain (auth, rate-limit, validation)
 
-### 14. Reporting (`/dashboard/reports`)
-- Date-range filtered transaction reports
-- Volume by chain/asset breakdown
-- CSV/JSON export
+- `docs/SECURITY.md` — Threat model, auth flows, webhook signing, secrets handling
 
----
+- `docs/RUNBOOK.md` — Operational procedures: rotate secrets, scale workers, handle failed webhooks, DB migrations, incident response
 
-## Phase C: Admin Dashboard
+- `docs/API.md` — Full API reference with curl examples for every endpoint
 
-### 15. Admin Home (`/admin`)
-- System health overview: watcher lag per chain, RPC endpoint status, webhook queue depth
-- Global metrics cards: total merchants, active charges, transactions today
+### 8. Update DEPLOYMENT.md
+- Add backend deployment sections (NestJS + Postgres + Redis)
+- Add Cloudflare Workers edge gateway configuration
+- Add wrangler.toml template
+- Add docker-compose.yml templates (dev + prod)
+- Add Dockerfile templates for each service
+- Add systemd unit files
+- Add backup/restore procedures
+- Add health check verification steps
 
-### 16. Merchant Management (`/admin/merchants`)
-- Merchant list table with search, status filter
-- Merchant detail view with their charges, volume, API keys count
-- Enable/disable merchant
+### 9. Update README.md
+- Add architecture diagram
+- Add "For Developers" section linking to DEVELOPER.md
+- Add local dev quickstart for frontend + backend
+- Add production deployment links
+- Add badge placeholders (CI, coverage, license)
 
-### 17. Chain & Asset Configuration (`/admin/chains`)
-- Chain list with enable/disable toggles
-- RPC endpoint management per chain (add/remove/reorder for failover)
-- Confirmation threshold settings per chain
-- Asset/token list with contract addresses and enable/disable
+### 10. Update DEVELOPER.md
+- Add signup page documentation
+- Update endpoint count to 33
+- Add backend specification cross-references
+- Update file tree
 
-### 18. System Monitoring (`/admin/monitoring`)
-- Watcher checkpoint status per chain (current block, lag)
-- RPC endpoint health and latency
-- Webhook queue depth and failure rate
-- Recent errors log
+### 11. Error Handling Improvements
+- Standardize error display across all pages
+- Add retry buttons on failed API calls
+- Add offline detection banner
+- Ensure all loading states show skeletons (already done, verify)
 
-### 19. Audit Log (`/admin/audit-log`)
-- Append-only audit log viewer with search
-- Filterable by actor, action type, resource, date range
-- Dense table with expandable JSON detail rows
+### 12. Security Headers Enhancement
+- Update `public/_headers` with stricter CSP
+- Add Permissions-Policy header
+- Add Referrer-Policy header
 
----
+### 13. CI/CD Configuration
+- Create `.github/workflows/ci.yml` for frontend:
+  - Lint, typecheck, test, build
+  - Deploy to Cloudflare Pages on main branch
 
-## Phase D: Hosted Checkout Page
-
-### 20. Checkout Page (`/pay/:chargeId`)
-- Public page (no auth required)
-- Chain/asset selector tabs (BTC, ETH, USDC, etc.)
-- Selected payment option shows: deposit address, QR code, exact amount, chain name
-- Copy address button
-- Expiration countdown timer
-- Auto-polling status updates (every 3-5 seconds)
-- Status states with distinct visuals: waiting → detecting → confirming (with count) → paid ✓
-- Underpaid/overpaid handling with clear messaging
-- Redirect on completion (if configured)
+### 14. Playwright Smoke Test Configuration
+- Create `e2e/` directory with Playwright config
+- Add smoke tests: landing page loads, login page loads, docs pages load, 404 works
 
 ---
 
-## Technical Foundation
+## Technical Details
 
-### 21. API Client Layer
-- Typed API client module with axios, configured via environment variable `VITE_API_BASE_URL`
-- Request/response TypeScript interfaces for all endpoints
-- Interceptors for auth token injection and error handling
-- Standardized error types and toast notifications
-- Loading and error state patterns across all data-fetching components
+### New Files Created
+```text
+src/pages/Signup.tsx                    # Signup page
+docs/BACKEND-SPEC.md                   # Full backend specification
+docs/SECURITY.md                       # Security documentation
+docs/RUNBOOK.md                        # Operations runbook
+docs/API.md                            # API reference with curl examples
+.github/workflows/ci.yml               # CI pipeline
+e2e/playwright.config.ts               # Playwright config
+e2e/smoke.spec.ts                      # Smoke tests
+```
 
-### 22. Shared UI Patterns
-- Enterprise sidebar with collapsible navigation (Merchant vs Admin contexts)
-- Dense data table component with sorting, pagination, filtering
-- Status badge component with color-coded charge statuses
-- Copy-to-clipboard utility
-- QR code generation (client-side)
-- JSON viewer/editor component
-- Confirmation dialogs for destructive actions
+### Modified Files
+```text
+src/App.tsx                            # Add /signup route
+src/lib/types.ts                       # Add SignupRequest/Response
+src/lib/api-client.ts                  # Add auth.signup, fix logout method
+src/pages/Login.tsx                    # Add signup link
+src/pages/LandingPage.tsx              # Enhanced price display
+src/components/CryptoPriceTicker.tsx   # Multi-source prices, more coins
+public/_headers                        # Stricter security headers
+README.md                              # Comprehensive update
+DEVELOPER.md                           # Add signup, update counts
+DEPLOYMENT.md                          # Full backend deployment guide
+```
+
+### Signup Page Design
+- Centered card layout (matches Login)
+- Fields: Full Name, Email, Password (with strength indicator), Confirm Password
+- Zod schema: email valid, password min 8 chars + 1 uppercase + 1 number, passwords match
+- On success: auto-login and redirect to `/dashboard`
+- Error display: field-level + form-level
+- "Back to Home" arrow button (top-left, matching Login)
+
+### Error Response Format (Standardized)
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email is already registered",
+    "details": { "field": "email" }
+  }
+}
+```
+
+### Execution Order
+1. Types + API client updates (foundation)
+2. Signup page + route wiring
+3. Login page cross-link
+4. Landing page enhancements
+5. CryptoPriceTicker improvements
+6. Documentation (BACKEND-SPEC, SECURITY, RUNBOOK, API)
+7. DEPLOYMENT.md update
+8. README.md update
+9. DEVELOPER.md update
+10. Security headers
+11. CI configuration
+12. Smoke tests
 
