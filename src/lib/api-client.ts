@@ -40,7 +40,7 @@ function createClient(): AxiosInstance {
   return client;
 }
 
-const http = createClient();
+export const http = createClient();
 
 // ── Auth ──
 export const auth = {

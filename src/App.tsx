@@ -31,6 +31,8 @@ import MerchantWallets from "./pages/dashboard/MerchantWallets";
 import InvoicesList from "./pages/dashboard/InvoicesList";
 import CreateInvoice from "./pages/dashboard/CreateInvoice";
 import InvoiceDetail from "./pages/dashboard/InvoiceDetail";
+import NotificationsPage from "./pages/dashboard/NotificationsPage";
+import WalletTransactionHistory from "./pages/dashboard/WalletTransactionHistory";
 
 import AdminHome from "./pages/admin/AdminHome";
 import MerchantManagement from "./pages/admin/MerchantManagement";
@@ -40,6 +42,9 @@ import AuditLog from "./pages/admin/AuditLog";
 import FeeManagement from "./pages/admin/FeeManagement";
 import RevenueDashboard from "./pages/admin/RevenueDashboard";
 import AdminWalletManagement from "./pages/admin/WalletManagement";
+import AdminSecurityPolicies from "./pages/admin/SecurityPolicies";
+import AdminRoleManagement from "./pages/admin/RoleManagement";
+import AdminWalletTransactions from "./pages/admin/WalletTransactions";
 
 import CMSDashboard from "./pages/admin/cms/CMSDashboard";
 import PageManager from "./pages/admin/cms/PageManager";
@@ -111,9 +116,11 @@ const App = () => (
                 <Route path="settings/addresses" element={<AddressPool />} />
                 <Route path="settings/security" element={<SecuritySettings />} />
                 <Route path="wallets" element={<MerchantWallets />} />
+                <Route path="wallets/transactions" element={<WalletTransactionHistory />} />
                 <Route path="invoices" element={<InvoicesList />} />
                 <Route path="invoices/new" element={<CreateInvoice />} />
                 <Route path="invoices/:id" element={<InvoiceDetail />} />
+                <Route path="notifications" element={<NotificationsPage />} />
               </Route>
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
@@ -125,6 +132,10 @@ const App = () => (
                 <Route path="monitoring" element={<SystemMonitoring />} />
                 <Route path="audit-log" element={<AuditLog />} />
                 <Route path="wallets" element={<AdminWalletManagement />} />
+                <Route path="wallets/transactions" element={<AdminWalletTransactions />} />
+                <Route path="security-policies" element={<AdminSecurityPolicies />} />
+                <Route path="roles" element={<AdminRoleManagement />} />
+                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="cms" element={<CMSDashboard />} />
                 <Route path="cms/pages" element={<PageManager />} />
                 <Route path="cms/blog" element={<BlogManager />} />
