@@ -8,6 +8,7 @@ import type {
   SystemHealth, DashboardStats, AdminStats, AuditLogEntry,
   FeeConfig, MerchantFeeOverride, RevenueStats, TopMerchant,
   CMSPage, Announcement, BlogPost, FAQEntry, CMSSettings, CMSStats, ContactSubmission,
+  WalletConfig, WalletStats,
 } from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -92,6 +93,14 @@ export const addressPool = {
   list: (chain?: string) => http.get<DepositAddress[]>("/v1/addresses", { params: { chain } }).then((r) => r.data),
 };
 
+// ── Merchant Wallets ──
+export const wallets = {
+  list: () => http.get<WalletConfig[]>("/v1/wallets").then((r) => r.data),
+  add: (data: { label: string; chain: string; address: string; type: string }) =>
+    http.post<WalletConfig>("/v1/wallets", data).then((r) => r.data),
+  remove: (id: string) => http.delete(`/v1/wallets/${id}`),
+};
+
 // ── Dashboard ──
 export const dashboard = {
   stats: () => http.get<DashboardStats>("/v1/dashboard/stats").then((r) => r.data),
@@ -127,6 +136,14 @@ export const admin = {
   health: () => http.get<SystemHealth>("/v1/admin/health").then((r) => r.data),
   auditLog: (params?: { actor?: string; action?: string; from?: string; to?: string; page?: number }) =>
     http.get<PaginatedResponse<AuditLogEntry>>("/v1/admin/audit-log", { params }).then((r) => r.data),
+
+  // ── Wallets ──
+  wallets: {
+    stats: () => http.get<WalletStats>("/v1/admin/wallets/stats").then((r) => r.data),
+    add: (data: Partial<WalletConfig>) => http.post<WalletConfig>("/v1/admin/wallets", data).then((r) => r.data),
+    update: (id: string, data: Partial<WalletConfig>) => http.put(`/v1/admin/wallets/${id}`, data),
+    remove: (id: string) => http.delete(`/v1/admin/wallets/${id}`),
+  },
 
   // ── CMS ──
   cms: {

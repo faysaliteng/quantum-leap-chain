@@ -63,8 +63,11 @@ export default function LandingPage() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild><Link to="/pricing">Pricing</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/blog">Blog</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API Docs</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/docs/security">Security</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/contact">Contact</Link></Button>
             <Button variant="ghost" size="sm" asChild><Link to="/login">Sign in</Link></Button>
             <ThemeToggle />
             <Button size="sm" className="bg-gradient-gold text-primary-foreground font-semibold ml-2" asChild>
@@ -86,10 +89,19 @@ export default function LandingPage() {
           <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-sm">
             <nav className="container flex flex-col gap-1 py-4">
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/pricing">Pricing</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/blog">Blog</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
                 <Link to="/docs/api">API Docs</Link>
               </Button>
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
                 <Link to="/docs/security">Security</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/contact">Contact</Link>
               </Button>
               <Button variant="ghost" size="sm" className="justify-start" asChild onClick={() => setMobileMenuOpen(false)}>
                 <Link to="/login">Sign in</Link>
@@ -481,10 +493,10 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold mb-3">Product</h4>
               <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
                 <Link to="/signup" className="hover:text-foreground transition-colors">Get Started</Link>
                 <Link to="/docs/api" className="hover:text-foreground transition-colors">API Reference</Link>
                 <Link to="/docs/architecture" className="hover:text-foreground transition-colors">Architecture</Link>
-                <Link to="/docs/schema" className="hover:text-foreground transition-colors">Database Schema</Link>
               </div>
             </div>
             <div>
@@ -499,10 +511,10 @@ export default function LandingPage() {
             <div>
               <h4 className="text-sm font-semibold mb-3">Company</h4>
               <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+                <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
                 <Link to="/login" className="hover:text-foreground transition-colors">Sign In</Link>
-                <a href="https://x.com/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Twitter / X</a>
                 <a href="https://github.com/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
-                <a href="https://discord.gg/cryptoniumpay" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
               </div>
             </div>
           </div>
