@@ -44,32 +44,15 @@ export default function AdminExportCenter() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-exports"],
-    queryFn: () => adminExports.list(),
-    refetchInterval: 5000,
-  });
+  const { data, isLoading } = useQuery({ queryKey: ["admin-exports"], queryFn: () => adminExports.list(), refetchInterval: 5000 });
 
   const createMut = useMutation({
-    mutationFn: () => adminExports.create({
-      kind,
-      format,
-      filters: {
-        ...(dateFrom ? { from: dateFrom } : {}),
-        ...(dateTo ? { to: dateTo } : {}),
-      },
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-exports"] });
-      setShowCreate(false);
-      toast.success("Export job created");
-    },
-    onError: () => toast.error("Failed to create export"),
+    mutationFn: () => adminExports.create({ kind, format, filters: { ...(dateFrom ? { from: dateFrom } : {}), ...(dateTo ? { to: dateTo } : {}) } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-exports"] }); setShowCreate(false); toast.success(t("cms.settingsSaved")); },
+    onError: () => toast.error(t("admin.failed")),
   });
 
-  const handleDownload = (job: DataExportJob) => {
-    window.open(adminExports.downloadUrl(job.id), "_blank");
-  };
+  const handleDownload = (job: DataExportJob) => { window.open(adminExports.downloadUrl(job.id), "_blank"); };
 
   if (isLoading) return <PageSkeleton />;
 
@@ -80,10 +63,10 @@ export default function AdminExportCenter() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold">{t("admin.exports")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">Export platform data for reporting and compliance</p>
+          <p className="text-sm text-muted-foreground mt-1">{t("admin.exportDesc")}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />New Export
+          <Plus className="mr-1.5 h-4 w-4" />{t("admin.newExport")}
         </Button>
       </div>
 
@@ -91,7 +74,7 @@ export default function AdminExportCenter() {
         <Card>
           <CardContent className="py-16 text-center">
             <FileSpreadsheet className="h-10 w-10 mx-auto mb-3 opacity-20" />
-            <p className="text-muted-foreground text-sm">No exports yet. Create your first export.</p>
+            <p className="text-muted-foreground text-sm">{t("admin.noExports")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -114,7 +97,7 @@ export default function AdminExportCenter() {
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                           <span>{new Date(job.created_at).toLocaleString()}</span>
                           {job.size_bytes && <span>{(job.size_bytes / 1024).toFixed(1)} KB</span>}
-                          {job.expires_at && <span>Expires: {new Date(job.expires_at).toLocaleDateString()}</span>}
+                          {job.expires_at && <span>{t("admin.expires")}: {new Date(job.expires_at).toLocaleDateString()}</span>}
                         </div>
                         {job.error_message && <p className="text-xs text-destructive mt-1">{job.error_message}</p>}
                       </div>
@@ -122,12 +105,12 @@ export default function AdminExportCenter() {
                     <div className="flex gap-1 shrink-0">
                       {job.status === "completed" && (
                         <Button variant="outline" size="sm" onClick={() => handleDownload(job)}>
-                          <Download className="mr-1.5 h-3.5 w-3.5" />Download
+                          <Download className="mr-1.5 h-3.5 w-3.5" />{t("common.download")}
                         </Button>
                       )}
                       {job.status === "failed" && (
                         <Button variant="outline" size="sm" onClick={() => createMut.mutate()}>
-                          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />Retry
+                          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />{t("common.retry")}
                         </Button>
                       )}
                     </div>
@@ -141,21 +124,19 @@ export default function AdminExportCenter() {
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Create Admin Export</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("admin.createAdminExport")}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Data Type</Label>
+              <Label>{t("admin.dataType")}</Label>
               <Select value={kind} onValueChange={(v) => setKind(v as ExportKind)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {ADMIN_KINDS.map((k) => (
-                    <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>
-                  ))}
+                  {ADMIN_KINDS.map((k) => (<SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Format</Label>
+              <Label>{t("admin.format")}</Label>
               <Select value={format} onValueChange={(v) => setFormat(v as "csv" | "json")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -166,19 +147,19 @@ export default function AdminExportCenter() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>From Date</Label>
+                <Label>{t("admin.fromDate")}</Label>
                 <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>To Date</Label>
+                <Label>{t("admin.toDate")}</Label>
                 <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
             <Button onClick={() => createMut.mutate()} disabled={createMut.isPending}>
-              {createMut.isPending ? "Creating…" : "Create Export"}
+              {createMut.isPending ? t("admin.creating") : t("admin.createExport")}
             </Button>
           </DialogFooter>
         </DialogContent>

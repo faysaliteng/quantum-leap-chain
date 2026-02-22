@@ -28,11 +28,11 @@ export default function ChainConfig() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-mono uppercase">{chain.name} ({chain.chain})</CardTitle>
-                <Badge variant={chain.enabled ? "default" : "outline"} className="text-xs">{chain.enabled ? "Enabled" : "Disabled"}</Badge>
+                <Badge variant={chain.enabled ? "default" : "outline"} className="text-xs">{chain.enabled ? t("admin.enabled") : t("admin.disabled")}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="text-xs text-muted-foreground">Confirmations: {chain.confirmation_threshold} · RPCs: {chain.rpc_endpoints.length}</div>
+              <div className="text-xs text-muted-foreground">{t("admin.confirmations")}: {chain.confirmation_threshold} · {t("admin.rpcs")}: {chain.rpc_endpoints.length}</div>
               <div className="space-y-2">
                 {chain.rpc_endpoints.map((rpc) => (
                   <div key={rpc.id} className="flex items-center gap-2 text-xs">
@@ -43,7 +43,7 @@ export default function ChainConfig() {
                 ))}
               </div>
               <div className="border-t pt-3">
-                <p className="text-xs font-medium mb-2">Assets</p>
+                <p className="text-xs font-medium mb-2">{t("admin.assets")}</p>
                 <div className="space-y-2">
                   {assets?.filter((a) => a.chain === chain.chain).map((asset) => (
                     <div key={`${asset.chain}-${asset.symbol}`} className="flex items-center justify-between text-sm">
@@ -59,7 +59,7 @@ export default function ChainConfig() {
               </div>
             </CardContent>
           </Card>
-        )) ?? <p className="text-muted-foreground">No chain configurations found</p>}
+        )) ?? <p className="text-muted-foreground">{t("admin.noChains")}</p>}
       </div>
     </div>
   );
