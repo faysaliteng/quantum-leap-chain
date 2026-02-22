@@ -283,3 +283,16 @@ export interface AddressPoolStats {
   allocated: number;
   available: number;
 }
+
+// ── Signup ──
+
+export interface SignupRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface SignupResponse {
+  token: string;
+  user: { id: string; email: string; role: "merchant" | "admin"; merchant_id?: string };
+}

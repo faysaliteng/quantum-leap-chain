@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 import type {
   Charge, ChargePayment, CreateChargeRequest, ListChargesParams, PaginatedResponse,
-  LoginRequest, LoginResponse, HealthResponse, ApiKey, ApiKeyCreated, CreateApiKeyRequest,
+  LoginRequest, LoginResponse, SignupRequest, SignupResponse, HealthResponse,
+  ApiKey, ApiKeyCreated, CreateApiKeyRequest,
   WebhookEndpoint, WebhookDelivery, CreateWebhookRequest, SettlementConfig, DepositAddress,
   AddressPoolUpload, AddressPoolStats, Sweep, Merchant, ChainConfig, AssetConfig,
   SystemHealth, DashboardStats, AdminStats, AuditLogEntry, WatcherCheckpoint,
@@ -41,7 +42,8 @@ const http = createClient();
 // ── Auth ──
 export const auth = {
   login: (data: LoginRequest) => http.post<LoginResponse>("/v1/auth/login", data).then((r) => r.data),
-  logout: () => http.post("/v1/auth/logout"),
+  signup: (data: SignupRequest) => http.post<SignupResponse>("/v1/auth/signup", data).then((r) => r.data),
+  logout: () => http.delete("/v1/auth/logout"),
 };
 
 // ── Charges ──

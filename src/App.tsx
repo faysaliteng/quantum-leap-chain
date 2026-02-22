@@ -9,6 +9,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -52,6 +53,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/pay/:chargeId" element={<CheckoutPage />} />
 
               <Route path="/docs/architecture" element={<ArchitectureDocs />} />

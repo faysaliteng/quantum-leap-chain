@@ -2,6 +2,9 @@
 
 > Enterprise-grade, non-custodial cryptocurrency payment infrastructure. Accept BTC, ETH, and stablecoins with automatic on-chain verification, HMAC-signed webhooks, and instant settlement.
 
+[![CI](https://github.com/your-org/cryptonpay/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/cryptonpay/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-gold.svg)](LICENSE)
+
 ---
 
 ## 🏗️ Architecture
@@ -23,10 +26,10 @@ Browser → Nginx (TLS) → React SPA + API → Worker → PostgreSQL + Redis
 
 ### Merchant Dashboard
 - **Charge Management** — Create, list, filter, search, and export charges (CSV/JSON)
-- **Charge Detail** — Full timeline, inbound transactions with confirmation tracking, payment addresses with copy
-- **Settlement Settings** — Per-chain settlement addresses, sweep mode (immediate/batched), dust thresholds
-- **API Keys** — Scoped (read/write/admin) with rotation, masked display, and audit logging
-- **Webhooks** — HMAC-signed endpoints, event subscriptions, test delivery, delivery log with retry status
+- **Charge Detail** — Full timeline, inbound transactions with confirmation tracking
+- **Settlement Settings** — Per-chain settlement addresses, sweep mode, dust thresholds
+- **API Keys** — Scoped (read/write/admin) with rotation, masked display, audit logging
+- **Webhooks** — HMAC-signed endpoints, event subscriptions, test delivery, delivery log
 - **Address Pool** — Upload pre-generated deposit addresses via CSV, pool status per chain
 - **Reports** — Date-range filtered exports in CSV/JSON
 
@@ -40,46 +43,11 @@ Browser → Nginx (TLS) → React SPA + API → Worker → PostgreSQL + Redis
 ### Hosted Checkout (`/pay/:chargeId`)
 - Public page, no auth required
 - Chain/asset selector, QR code, copy address, exact amount display
-- Expiration countdown timer
-- Auto-polling status updates (every 4s)
-- Underpaid/overpaid handling with clear messaging
-- Redirect on completion
+- Expiration countdown timer, auto-polling status updates (every 4s)
 
 ### Live Market Data
 - Real-time cryptocurrency prices via CoinGecko API
-- 7-day sparkline charts with area gradients
-- Market cap, volume, 24h change indicators
-- Auto-refresh every 60 seconds
-
-### Documentation (Built-in)
-- `/docs/architecture` — System diagram, data flows, Docker network isolation
-- `/docs/security` — STRIDE threat model, key management, hardening checklist
-- `/docs/schema` — 18-table PostgreSQL schema with indexes and relationships
-- `/docs/api` — Full REST API reference, webhook events, authentication methods
-- `/docs/singularitycoin` — Full Layer-1 blockchain protocol specification
-
-### SingularityCoin (Layer-1 Blockchain)
-- Post-quantum secure (ML-DSA / Dilithium signatures, BLAKE3 hashing)
-- HotStuff-style BFT PoS consensus with 1-3s deterministic finality
-- Permissionless staking with epoch-based validator set rotation
-- Real fee market with adaptive base_fee_per_byte
-- Full protocol spec, CLI reference, deployment guides, and Prometheus metrics
-- Rust monorepo architecture (node, consensus, crypto, p2p, storage, state, rpc, cli)
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + TypeScript + Vite |
-| Styling | Tailwind CSS + shadcn/ui |
-| State | TanStack React Query |
-| Charts | Recharts |
-| QR Codes | qrcode.react |
-| Routing | React Router v6 |
-| Validation | Zod |
-| HTTP | Axios (typed API client) |
+- 7-day sparkline charts, market cap, volume, 24h change
 
 ---
 
@@ -110,86 +78,74 @@ See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for atomic, step-by-step instructions c
 - **Option A:** Cloudflare Pages (CDN) + Workers (API)
 - **Option B:** VM with Docker Compose (full self-hosted stack)
 
-Includes SSL setup, security hardening, automated backups, health monitoring, and troubleshooting.
+---
+
+## 📖 For Developers
+
+| Document | Description |
+|----------|-------------|
+| **[DEVELOPER.md](./DEVELOPER.md)** | Atomic-level frontend reference (routes, components, types, hooks, API client) |
+| **[docs/BACKEND-SPEC.md](./docs/BACKEND-SPEC.md)** | Complete NestJS backend specification (33 endpoints, 18 tables, Prisma schema) |
+| **[docs/API.md](./docs/API.md)** | REST API reference with curl examples for every endpoint |
+| **[docs/SECURITY.md](./docs/SECURITY.md)** | Threat model, auth flows, webhook signing, secrets handling |
+| **[docs/RUNBOOK.md](./docs/RUNBOOK.md)** | Operational procedures: secret rotation, scaling, incident response |
+| **[DEPLOYMENT.md](./DEPLOYMENT.md)** | Full deployment guide (Cloudflare + VM/Docker) |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + TypeScript + Vite |
+| Styling | Tailwind CSS + shadcn/ui |
+| State | TanStack React Query |
+| Charts | Recharts |
+| QR Codes | qrcode.react |
+| Routing | React Router v6 |
+| Validation | Zod |
+| HTTP | Axios (typed API client) |
 
 ---
 
 ## 🔐 Security Model
 
-- **Non-custodial:** XPUB-only on server. Private keys never touch the API
-- **Isolated signer:** Separate Docker network, only worker process can communicate
+- **Non-custodial:** XPUB-only on server, private keys never touch the API
+- **Isolated signer:** Separate Docker network, only worker can communicate
 - **HMAC webhooks:** SHA-256 signed with timestamp replay protection
-- **Scoped API keys:** Hashed (bcrypt/argon2), never stored plaintext
+- **Scoped API keys:** Hashed (argon2id), never stored plaintext
 - **Audit logging:** Append-only with actor, IP, timestamp
 - **Rate limiting:** Redis-backed per-endpoint rate limits
-- **Admin 2FA:** TOTP enforced at login
+
+See **[docs/SECURITY.md](./docs/SECURITY.md)** for the full threat model.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/        # Reusable UI components
-│   ├── ui/           # shadcn/ui primitives
-│   ├── CryptonpayLogo.tsx
-│   ├── CryptoPriceTicker.tsx
-│   ├── DocsNav.tsx
-│   ├── StatusBadge.tsx
-│   ├── CopyButton.tsx
-│   └── ThemeToggle.tsx
-├── layouts/           # Dashboard + Admin layouts with sidebars
-├── pages/
-│   ├── LandingPage.tsx
-│   ├── Login.tsx
-│   ├── dashboard/     # Merchant dashboard pages
-│   ├── admin/         # Admin panel pages
-│   ├── checkout/      # Public checkout page
-│   └── docs/          # Built-in documentation
-├── lib/
-│   ├── api-client.ts  # Typed Axios API client
-│   ├── auth.tsx       # Auth context + JWT management
-│   ├── types.ts       # Full TypeScript type definitions
-│   └── utils.ts       # Utility functions
-└── hooks/             # Custom React hooks
+├── src/                    # React frontend
+│   ├── components/         # UI components (13 custom + 45 shadcn/ui)
+│   ├── layouts/            # Dashboard + Admin layouts
+│   ├── pages/              # 18 pages across 23 routes
+│   ├── lib/                # API client, auth, types, utils
+│   └── hooks/              # Custom React hooks
+├── docs/                   # Backend spec, API ref, security, runbook
+├── e2e/                    # Playwright smoke tests
+├── public/                 # Static assets, security headers, redirects
+└── .github/workflows/      # CI pipeline
 ```
 
 ---
 
 ## 🌐 API Client
 
-The typed API client (`src/lib/api-client.ts`) covers all endpoints:
-
 ```typescript
-import { charges, webhooks, apiKeys, settlement, admin } from '@/lib/api-client';
+import { charges, webhooks, apiKeys } from '@/lib/api-client';
 
-// Create a charge
 const charge = await charges.create({ name: 'Order #123', pricing_type: 'fixed_price', local_price: { amount: '99.00', currency: 'USD' } });
-
-// List with filters
 const list = await charges.list({ status: 'PENDING', page: 1, per_page: 25 });
-
-// Webhook management
-const endpoints = await webhooks.list();
-await webhooks.test(endpoints[0].id);
 ```
-
-Configure via environment variable:
-```bash
-VITE_API_BASE_URL=https://api.yourdomain.com
-```
-
----
-
-## 🎨 Theming
-
-Dual-mode theming (light/dark) with warm off-white light mode and gold-accented dark mode:
-
-- Light: Warm cream backgrounds (`hsl(40, 20%, 96%)`)
-- Dark: Deep charcoal with gold accents
-- Toggle persisted in localStorage
-- Semantic CSS variables in `src/index.css`
-- Design tokens in `tailwind.config.ts`
 
 ---
 
