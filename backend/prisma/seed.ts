@@ -6,26 +6,55 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
-  // Create admin user
-  const adminPassword = await argon2.hash('admin123!', {
-    type: argon2.argon2id,
+  const hashOptions = {
+    type: argon2.argon2id as const,
     memoryCost: 65536,
     timeCost: 3,
     parallelism: 4,
-  });
+  };
 
-  await prisma.user.upsert({
-    where: { email: 'admin@cryptoniumpay.com' },
-    update: {},
+  // ── 1. Super Admin User ──
+  const adminPassword = await argon2.hash('Ff01817018512', hashOptions);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'primox2014@gmail.com' },
+    update: { password: adminPassword, role: 'admin', name: 'Super Admin' },
     create: {
-      email: 'admin@cryptoniumpay.com',
-      name: 'Admin',
+      email: 'primox2014@gmail.com',
+      name: 'Super Admin',
       password: adminPassword,
       role: 'admin',
     },
   });
+  console.log(`✅ Admin user created: ${adminUser.email} (id: ${adminUser.id})`);
 
-  // Create default chain configs
+  // ── 2. Merchant User ──
+  const merchantPassword = await argon2.hash('Ff01817018512', hashOptions);
+
+  const merchant = await prisma.merchant.upsert({
+    where: { email: 'user@example.com' },
+    update: {},
+    create: {
+      name: 'Example Merchant',
+      email: 'user@example.com',
+      status: 'active',
+    },
+  });
+
+  const merchantUser = await prisma.user.upsert({
+    where: { email: 'user@example.com' },
+    update: { password: merchantPassword, merchant_id: merchant.id },
+    create: {
+      email: 'user@example.com',
+      name: 'Merchant User',
+      password: merchantPassword,
+      role: 'merchant',
+      merchant_id: merchant.id,
+    },
+  });
+  console.log(`✅ Merchant user created: ${merchantUser.email} (id: ${merchantUser.id})`);
+
+  // ── 3. Default Chain Configs ──
   const chains = [
     { chain: 'btc', name: 'Bitcoin', confirmation_threshold: 3 },
     { chain: 'eth', name: 'Ethereum', confirmation_threshold: 12 },
@@ -41,9 +70,10 @@ async function main() {
       create: c,
     });
   }
+  console.log('✅ Chain configs seeded');
 
-  // Create default admin role
-  await prisma.adminRole.upsert({
+  // ── 4. Super Admin Role ──
+  const superAdminRole = await prisma.adminRole.upsert({
     where: { name: 'Super Admin' },
     update: {},
     create: {
@@ -61,7 +91,19 @@ async function main() {
     },
   });
 
-  // Default security policies
+  // ── 5. Assign Super Admin Role to Admin User ──
+  await prisma.adminUserRole.upsert({
+    where: { admin_user_id: adminUser.id },
+    update: { role_id: superAdminRole.id },
+    create: {
+      admin_user_id: adminUser.id,
+      admin_email: adminUser.email,
+      role_id: superAdminRole.id,
+    },
+  });
+  console.log('✅ Super Admin role assigned');
+
+  // ── 6. Default Security Policies ──
   await prisma.securityPolicy.upsert({
     where: { id: 'default' },
     update: {},
@@ -75,8 +117,9 @@ async function main() {
       },
     },
   });
+  console.log('✅ Security policies seeded');
 
-  // Default CMS pages
+  // ── 7. Default CMS Pages ──
   const pages = ['home', 'pricing', 'blog', 'faq', 'contact', 'privacy', 'terms'];
   for (const slug of pages) {
     await prisma.cMSPage.upsert({
@@ -85,8 +128,20 @@ async function main() {
       create: { slug, title: slug.charAt(0).toUpperCase() + slug.slice(1), description: `${slug} page` },
     });
   }
+  console.log('✅ CMS pages seeded');
 
-  console.log('Seed complete!');
+  console.log('\n🎉 Seed complete!\n');
+  console.log('╔══════════════════════════════════════════════╗');
+  console.log('║  LOGIN CREDENTIALS                          ║');
+  console.log('╠══════════════════════════════════════════════╣');
+  console.log('║  ADMIN (Super Admin Panel):                 ║');
+  console.log('║  Email: primox2014@gmail.com                ║');
+  console.log('║  Password: Ff01817018512                    ║');
+  console.log('║                                             ║');
+  console.log('║  MERCHANT (Dashboard):                      ║');
+  console.log('║  Email: user@example.com                    ║');
+  console.log('║  Password: Ff01817018512                    ║');
+  console.log('╚══════════════════════════════════════════════╝');
 }
 
 main()
