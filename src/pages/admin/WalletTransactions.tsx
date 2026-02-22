@@ -62,10 +62,10 @@ export default function AdminWalletTransactions() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />{t("admin.walletAudit")}</h1>
-          <p className="text-xs text-muted-foreground mt-1">All platform wallet transactions — full audit view</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("admin.walletAuditDesc")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => startExport("wallet_transactions", "csv", { direction: filterDir !== "all" ? filterDir : undefined, status: filterStatus !== "all" ? filterStatus : undefined })} disabled={isExporting}>
-          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}
+          <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? t("charges.exporting") : t("common.export")}
         </Button>
       </div>
 
@@ -74,32 +74,32 @@ export default function AdminWalletTransactions() {
         <Select value={filterDir} onValueChange={setFilterDir}>
           <SelectTrigger className="w-32 h-9"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Directions</SelectItem>
-            <SelectItem value="send">Send</SelectItem>
-            <SelectItem value="receive">Receive</SelectItem>
-            <SelectItem value="withdraw">Withdraw</SelectItem>
+            <SelectItem value="all">{t("admin.allDirections")}</SelectItem>
+            <SelectItem value="send">{t("txHistory.send")}</SelectItem>
+            <SelectItem value="receive">{t("txHistory.receive")}</SelectItem>
+            <SelectItem value="withdraw">{t("txHistory.withdraw")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="confirmed">Confirmed</SelectItem>
-            <SelectItem value="broadcasted">Broadcasted</SelectItem>
-            <SelectItem value="pending_signature">Pending Signature</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="all">{t("admin.allStatuses")}</SelectItem>
+            <SelectItem value="confirmed">{t("txHistory.confirmed")}</SelectItem>
+            <SelectItem value="broadcasted">{t("txHistory.broadcasted")}</SelectItem>
+            <SelectItem value="pending_signature">{t("txHistory.pendingSignature")}</SelectItem>
+            <SelectItem value="failed">{t("txHistory.failed")}</SelectItem>
           </SelectContent>
         </Select>
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search hash, address, memo…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-9" />
+          <Input placeholder={t("admin.searchHashAddress")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-9" />
         </div>
       </div>
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Wallet className="h-10 w-10 mx-auto mb-3 opacity-20" />
-          <p className="text-sm">No wallet transactions found</p>
+          <p className="text-sm">{t("admin.noWalletTx")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -137,8 +137,8 @@ export default function AdminWalletTransactions() {
                       <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
                         <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5" />{new Date(tx.created_at).toLocaleString()}</span>
                         <Badge variant="outline" className="text-[10px]">{tx.chain}</Badge>
-                        {tx.created_by && <span>Created by: {tx.created_by}</span>}
-                        {tx.approved_by && <span className="text-success">Approved by: {tx.approved_by}</span>}
+                        {tx.created_by && <span>{t("admin.createdBy")}: {tx.created_by}</span>}
+                        {tx.approved_by && <span className="text-success">{t("admin.approvedBy")}: {tx.approved_by}</span>}
                       </div>
                     </div>
                   </div>

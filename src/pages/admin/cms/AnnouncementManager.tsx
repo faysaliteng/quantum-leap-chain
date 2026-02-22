@@ -29,18 +29,18 @@ export default function AnnouncementManager() {
 
   const createMut = useMutation({
     mutationFn: () => admin.cms.announcements.create({ message, type, active: true, start_date: new Date().toISOString() }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-announcements"] }); setMessage(""); toast.success("Announcement created"); },
-    onError: () => toast.error("Failed to create announcement"),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-announcements"] }); setMessage(""); toast.success(t("cms.newAnnouncement")); },
+    onError: () => toast.error(t("admin.failed")),
   });
 
   const toggleMut = useMutation({
     mutationFn: ({ id, active }: { id: string; active: boolean }) => admin.cms.announcements.update(id, { active }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-announcements"] }); toast.success("Updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-announcements"] }); toast.success(t("admin.update")); },
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => admin.cms.announcements.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-announcements"] }); toast.success("Deleted"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-announcements"] }); toast.success(t("common.delete")); },
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -55,17 +55,16 @@ export default function AnnouncementManager() {
     <div className="space-y-6" data-testid="page:admin-cms-announcements">
       <h1 className="text-lg font-semibold">{t("cms.announcements")}</h1>
 
-      {/* Create Form */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">New Announcement</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.newAnnouncement")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto]">
             <div className="space-y-1.5">
-              <Label htmlFor="msg">Message</Label>
-              <Input id="msg" placeholder="Enter announcement message..." value={message} onChange={(e) => setMessage(e.target.value)} />
+              <Label htmlFor="msg">{t("contact.message")}</Label>
+              <Input id="msg" placeholder={t("contact.messagePlaceholder")} value={message} onChange={(e) => setMessage(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Type</Label>
+              <Label>{t("chargeDetail.type")}</Label>
               <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
                 <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -77,12 +76,11 @@ export default function AnnouncementManager() {
             </div>
             <div className="flex items-end">
               <Button onClick={() => createMut.mutate()} disabled={!message.trim() || createMut.isPending}>
-                <PlusCircle className="mr-1.5 h-3.5 w-3.5" />Create
+                <PlusCircle className="mr-1.5 h-3.5 w-3.5" />{t("cms.newAnnouncement")}
               </Button>
             </div>
           </div>
 
-          {/* Live Preview */}
           {message.trim() && (
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" />Preview</Label>
@@ -94,18 +92,17 @@ export default function AnnouncementManager() {
         </CardContent>
       </Card>
 
-      {/* List */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Active & Past Announcements</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.announcements")}</CardTitle></CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                <th className="px-4 py-2">Message</th>
-                <th className="px-4 py-2">Type</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Created</th>
-                <th className="px-4 py-2 text-right">Actions</th>
+                <th className="px-4 py-2">{t("contact.message")}</th>
+                <th className="px-4 py-2">{t("chargeDetail.type")}</th>
+                <th className="px-4 py-2">{t("table.status")}</th>
+                <th className="px-4 py-2">{t("table.created")}</th>
+                <th className="px-4 py-2 text-right">{t("table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -114,12 +111,12 @@ export default function AnnouncementManager() {
                   <td className="px-4 py-2 max-w-xs truncate">{a.message}</td>
                   <td className="px-4 py-2"><Badge variant="outline" className="text-xs font-mono">{a.type}</Badge></td>
                   <td className="px-4 py-2">
-                    <Badge variant={a.active ? "default" : "secondary"} className="text-xs">{a.active ? "Active" : "Inactive"}</Badge>
+                    <Badge variant={a.active ? "default" : "secondary"} className="text-xs">{a.active ? t("admin.active") : t("admin.disabled")}</Badge>
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-2 text-right space-x-1">
                     <Button variant="ghost" size="sm" onClick={() => toggleMut.mutate({ id: a.id, active: !a.active })}>
-                      {a.active ? "Deactivate" : "Activate"}
+                      {a.active ? t("admin.disable") : t("admin.enable")}
                     </Button>
                     <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteMut.mutate(a.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
@@ -127,7 +124,7 @@ export default function AnnouncementManager() {
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No announcements yet</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">{t("cms.noRecentActivity")}</td></tr>
               )}
             </tbody>
           </table>

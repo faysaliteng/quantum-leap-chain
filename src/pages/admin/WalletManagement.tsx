@@ -40,14 +40,11 @@ export default function AdminWalletManagement() {
   const [showConnect, setShowConnect] = useState(false);
   const [filter, setFilter] = useState<"all" | "hot" | "cold">("all");
 
-  // Send / Withdraw dialog
   const [sendWallet, setSendWallet] = useState<WalletConfig | null>(null);
   const [sendTo, setSendTo] = useState("");
   const [sendAmount, setSendAmount] = useState("");
   const [sendConfirm, setSendConfirm] = useState(false);
   const [sendMemo, setSendMemo] = useState("");
-
-  // Receive dialog
   const [receiveWallet, setReceiveWallet] = useState<WalletConfig | null>(null);
 
   const { data: stats, isLoading } = useQuery({
@@ -57,22 +54,19 @@ export default function AdminWalletManagement() {
 
   const addMut = useMutation({
     mutationFn: (data: Partial<WalletConfig>) => admin.wallets.add(data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-wallets"] });
-      toast.success("Wallet connected");
-    },
-    onError: () => toast.error("Failed to add wallet"),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-wallets"] }); toast.success(t("admin.connectWallet")); },
+    onError: () => toast.error(t("admin.failed")),
   });
 
   const toggleMut = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       admin.wallets.update(id, { status: status === "active" ? "locked" : "active" } as any),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-wallets"] }); toast.success("Updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-wallets"] }); toast.success(t("admin.update")); },
   });
 
   const removeMut = useMutation({
     mutationFn: (id: string) => admin.wallets.remove(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-wallets"] }); toast.success("Removed"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-wallets"] }); toast.success(t("admin.remove")); },
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -90,21 +84,21 @@ export default function AdminWalletManagement() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-lg font-semibold">{t("admin.walletMgmt")}</h1>
-          <p className="text-xs text-muted-foreground">Platform treasury & connected wallets</p>
+          <p className="text-xs text-muted-foreground">{t("admin.platformTreasury")}</p>
         </div>
         <Button onClick={() => setShowConnect(true)}>
-          <Link2 className="mr-1.5 h-3.5 w-3.5" />Connect Wallet
+          <Link2 className="mr-1.5 h-3.5 w-3.5" />{t("admin.connectWallet")}
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
-          { icon: <Wallet className="h-6 w-6 text-primary" />, value: `$${(stats?.total_balance_usd ?? 0).toLocaleString()}`, label: "Total Balance" },
-          { icon: <Shield className="h-6 w-6 text-warning" />, value: stats?.total_hot_wallets ?? 0, label: "Hot Wallets" },
-          { icon: <ShieldCheck className="h-6 w-6 text-success" />, value: stats?.total_cold_wallets ?? 0, label: "Cold Wallets" },
-          { icon: <TrendingUp className="h-6 w-6 text-info" />, value: `$${(stats?.hot_balance_usd ?? 0).toLocaleString()}`, label: "Hot Balance" },
-          { icon: <Lock className="h-6 w-6 text-muted-foreground" />, value: `$${(stats?.cold_balance_usd ?? 0).toLocaleString()}`, label: "Cold Balance" },
+          { icon: <Wallet className="h-6 w-6 text-primary" />, value: `$${(stats?.total_balance_usd ?? 0).toLocaleString()}`, label: t("admin.totalBalance") },
+          { icon: <Shield className="h-6 w-6 text-warning" />, value: stats?.total_hot_wallets ?? 0, label: t("admin.hotWallets") },
+          { icon: <ShieldCheck className="h-6 w-6 text-success" />, value: stats?.total_cold_wallets ?? 0, label: t("admin.coldWallets") },
+          { icon: <TrendingUp className="h-6 w-6 text-info" />, value: `$${(stats?.hot_balance_usd ?? 0).toLocaleString()}`, label: t("admin.hotBalance") },
+          { icon: <Lock className="h-6 w-6 text-muted-foreground" />, value: `$${(stats?.cold_balance_usd ?? 0).toLocaleString()}`, label: t("admin.coldBalance") },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-6 text-center">
@@ -120,7 +114,7 @@ export default function AdminWalletManagement() {
       <Card className="border-primary/20">
         <CardContent className="p-4">
           <div className="flex items-center gap-4 flex-wrap">
-            <p className="text-sm font-medium">Supported:</p>
+            <p className="text-sm font-medium">{t("admin.supported")}</p>
             {[
               { icon: <Smartphone className="h-3.5 w-3.5" />, label: "WalletConnect v2" },
               { icon: <Usb className="h-3.5 w-3.5" />, label: "Ledger" },
@@ -138,7 +132,7 @@ export default function AdminWalletManagement() {
         {(["all", "hot", "cold"] as const).map((f) => (
           <Button key={f} variant={filter === f ? "default" : "outline"} size="sm" onClick={() => setFilter(f)}
             className={filter === f ? "bg-gradient-gold text-primary-foreground" : ""}>
-            {f === "all" ? "All Wallets" : f === "hot" ? "🔥 Hot" : "🧊 Cold"} ({f === "all" ? walletsList.length : walletsList.filter((w) => w.type === f).length})
+            {f === "all" ? t("admin.allWallets") : f === "hot" ? `🔥 ${t("admin.hot")}` : `🧊 ${t("admin.cold")}`} ({f === "all" ? walletsList.length : walletsList.filter((w) => w.type === f).length})
           </Button>
         ))}
       </div>
@@ -158,14 +152,14 @@ export default function AdminWalletManagement() {
                       <span className="font-semibold">{w.label}</span>
                       <Badge variant="outline" className="text-xs font-mono">{chainLabels[w.chain] ?? w.chain}</Badge>
                       <Badge className={`${statusColors[w.status]} border-0 text-xs`}>{w.status}</Badge>
-                      <Badge variant="outline" className="text-xs">{w.type === "hot" ? "🔥 Hot" : "🧊 Cold"}</Badge>
+                      <Badge variant="outline" className="text-xs">{w.type === "hot" ? `🔥 ${t("admin.hot")}` : `🧊 ${t("admin.cold")}`}</Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="text-xs text-muted-foreground font-mono truncate max-w-[200px] sm:max-w-xs">{w.address}</code>
                       <CopyButton value={w.address} />
                     </div>
                     {w.last_activity && (
-                      <p className="text-xs text-muted-foreground mt-1">Last activity: {new Date(w.last_activity).toLocaleString()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("admin.lastActivity")}: {new Date(w.last_activity).toLocaleString()}</p>
                     )}
                   </div>
                 </div>
@@ -175,16 +169,16 @@ export default function AdminWalletManagement() {
                     <p className="text-xs text-muted-foreground">${w.balance_usd.toLocaleString()}</p>
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSendWallet(w)} title="Send / Withdraw">
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setSendWallet(w)} title={t("common.send")}>
                       <Send className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setReceiveWallet(w)} title="Receive">
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setReceiveWallet(w)} title={t("wallets.receive")}>
                       <Download className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleMut.mutate({ id: w.id, status: w.status })} title={w.status === "active" ? "Lock" : "Unlock"}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleMut.mutate({ id: w.id, status: w.status })}>
                       {w.status === "active" ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeMut.mutate(w.id)} title="Remove">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeMut.mutate(w.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -195,32 +189,25 @@ export default function AdminWalletManagement() {
         )) : (
           <div className="text-center py-12 text-muted-foreground text-sm">
             <Wallet className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p>No {filter === "all" ? "" : filter} wallets connected.</p>
+            <p>{t("admin.noWalletsConnected")}</p>
             <Button variant="outline" className="mt-4" onClick={() => setShowConnect(true)}>
-              <Link2 className="mr-1.5 h-4 w-4" />Connect First Wallet
+              <Link2 className="mr-1.5 h-4 w-4" />{t("admin.connectFirstWallet")}
             </Button>
           </div>
         )}
       </div>
 
-      {/* WalletConnect Panel */}
-      <WalletConnectPanel
-        open={showConnect}
-        onOpenChange={setShowConnect}
-        onWalletConnected={handleWalletConnected}
-      />
+      <WalletConnectPanel open={showConnect} onOpenChange={setShowConnect} onWalletConnected={handleWalletConnected} />
 
-      {/* ── Admin Send / Withdraw Dialog ── */}
+      {/* Send Dialog */}
       <Dialog open={!!sendWallet} onOpenChange={() => { setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo(""); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5" />Admin Withdraw / Send
+              <Send className="h-5 w-5" />{t("admin.adminWithdraw")}
             </DialogTitle>
             <DialogDescription>
-              {sendWallet?.type === "cold"
-                ? "Cold wallet — requires hardware device signing"
-                : `Treasury send from ${sendWallet?.label}`}
+              {sendWallet?.type === "cold" ? t("admin.coldWalletSign") : `${t("admin.treasurySend")} ${sendWallet?.label}`}
             </DialogDescription>
           </DialogHeader>
           {sendWallet && (
@@ -233,7 +220,7 @@ export default function AdminWalletManagement() {
                     <p className="text-xs text-muted-foreground">${sendWallet.balance_usd.toLocaleString()}</p>
                   </div>
                   <Badge className={`${statusColors[sendWallet.status]} border-0`}>
-                    {sendWallet.type === "hot" ? "🔥 Hot" : "🧊 Cold"}
+                    {sendWallet.type === "hot" ? `🔥 ${t("admin.hot")}` : `🧊 ${t("admin.cold")}`}
                   </Badge>
                 </div>
               </div>
@@ -242,17 +229,17 @@ export default function AdminWalletManagement() {
                 <div className="bg-info/10 border border-info/20 rounded-lg p-3 flex items-start gap-2">
                   <Usb className="h-4 w-4 text-info shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">
-                    <strong className="text-info">Hardware signing required:</strong> Transaction must be approved on the connected hardware device.
+                    <strong className="text-info">{t("admin.hardwareRequired")}</strong> {t("admin.hardwareRequiredDesc")}
                   </p>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label>Recipient Address</Label>
+                <Label>{t("admin.recipientAddress")}</Label>
                 <Input placeholder="0x... or bc1..." value={sendTo} onChange={(e) => setSendTo(e.target.value)} className="font-mono text-sm" />
               </div>
               <div className="space-y-2">
-                <Label>Amount</Label>
+                <Label>{t("admin.amount")}</Label>
                 <div className="relative">
                   <Input type="number" step="any" placeholder="0.00" value={sendAmount} onChange={(e) => setSendAmount(e.target.value)} className="pr-16" />
                   <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1 h-8 text-xs text-primary" onClick={() => setSendAmount(sendWallet.balance)}>
@@ -261,39 +248,39 @@ export default function AdminWalletManagement() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Memo / Audit Note</Label>
-                <Input placeholder="Reason for withdrawal…" value={sendMemo} onChange={(e) => setSendMemo(e.target.value)} />
+                <Label>{t("admin.memoAudit")}</Label>
+                <Input placeholder={t("admin.memoPlaceholder")} value={sendMemo} onChange={(e) => setSendMemo(e.target.value)} />
               </div>
 
               {!sendConfirm ? (
                 <Button className="w-full" onClick={() => setSendConfirm(true)} disabled={!sendTo || !sendAmount}>
-                  <ArrowUpRight className="mr-1.5 h-4 w-4" />Review Withdrawal
+                  <ArrowUpRight className="mr-1.5 h-4 w-4" />{t("admin.reviewWithdrawal")}
                 </Button>
               ) : (
                 <div className="space-y-3">
                   <div className="bg-muted rounded-lg p-3 space-y-2 text-sm">
                     <div className="flex justify-between"><span className="text-muted-foreground">To:</span><code className="font-mono text-xs truncate max-w-[200px]">{sendTo}</code></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Amount:</span><span className="font-bold">{sendAmount}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Network Fee (est.):</span><span>~{estimatedFee}</span></div>
-                    {sendMemo && <div className="flex justify-between"><span className="text-muted-foreground">Audit Note:</span><span className="text-xs">{sendMemo}</span></div>}
+                    <div className="flex justify-between"><span className="text-muted-foreground">{t("admin.amount")}:</span><span className="font-bold">{sendAmount}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{t("admin.networkFee")}:</span><span>~{estimatedFee}</span></div>
+                    {sendMemo && <div className="flex justify-between"><span className="text-muted-foreground">{t("admin.auditNote")}:</span><span className="text-xs">{sendMemo}</span></div>}
                     <Separator />
-                    <div className="flex justify-between font-semibold"><span>Total:</span><span>{(parseFloat(sendAmount || "0") + estimatedFee).toFixed(6)}</span></div>
+                    <div className="flex justify-between font-semibold"><span>{t("admin.totalLabel")}:</span><span>{(parseFloat(sendAmount || "0") + estimatedFee).toFixed(6)}</span></div>
                   </div>
                   <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                     <p className="text-xs text-muted-foreground">
-                      <strong className="text-destructive">Admin withdrawal:</strong> This action is logged in the audit trail and is irreversible.
+                      <strong className="text-destructive">{t("admin.adminWithdrawalWarning")}</strong> {t("admin.adminWithdrawalDesc")}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>Back</Button>
+                    <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>{t("admin.back")}</Button>
                     <Button className="flex-1 bg-gradient-gold text-primary-foreground font-semibold"
                       onClick={() => {
-                        toast.success(sendWallet.type === "cold" ? "Awaiting hardware device signing…" : "Withdrawal submitted — logged in audit trail");
+                        toast.success(sendWallet.type === "cold" ? t("admin.signOnDevice") : t("admin.confirmWithdrawal"));
                         setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
                       }}>
                       <ShieldCheck className="mr-1.5 h-4 w-4" />
-                      {sendWallet.type === "cold" ? "Sign on Device" : "Confirm Withdrawal"}
+                      {sendWallet.type === "cold" ? t("admin.signOnDevice") : t("admin.confirmWithdrawal")}
                     </Button>
                   </div>
                 </div>
@@ -303,14 +290,14 @@ export default function AdminWalletManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Receive Dialog ── */}
+      {/* Receive Dialog */}
       <Dialog open={!!receiveWallet} onOpenChange={() => setReceiveWallet(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5" />Receive Funds
+              <Download className="h-5 w-5" />{t("admin.receiveFunds")}
             </DialogTitle>
-            <DialogDescription>Deposit to this platform wallet</DialogDescription>
+            <DialogDescription>{t("admin.depositToWallet")}</DialogDescription>
           </DialogHeader>
           {receiveWallet && (
             <div className="space-y-4">
@@ -318,7 +305,7 @@ export default function AdminWalletManagement() {
                 <QRCodeSVG value={receiveWallet.address} size={180} level="H" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Wallet Address</Label>
+                <Label className="text-xs text-muted-foreground">{t("admin.walletAddress")}</Label>
                 <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
                   <code className="text-xs font-mono break-all flex-1">{receiveWallet.address}</code>
                   <CopyButton value={receiveWallet.address} />
@@ -326,7 +313,7 @@ export default function AdminWalletManagement() {
               </div>
               <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
                 <Badge variant="outline" className="text-xs">{chainLabels[receiveWallet.chain]}</Badge>
-                <span className="text-xs text-muted-foreground">Only send {chainLabels[receiveWallet.chain]} assets</span>
+                <span className="text-xs text-muted-foreground">{t("admin.onlySend")} {chainLabels[receiveWallet.chain]}</span>
               </div>
             </div>
           )}

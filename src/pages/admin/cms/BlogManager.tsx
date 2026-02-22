@@ -39,20 +39,20 @@ export default function BlogManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cms-blog"] });
       setForm({ title: "", slug: "", excerpt: "", body: "", tags: "", status: "draft", author: "Admin" });
-      toast.success("Post created");
+      toast.success(t("cms.newBlogPost"));
     },
-    onError: () => toast.error("Failed to create post"),
+    onError: () => toast.error(t("admin.failed")),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => admin.cms.blog.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-blog"] }); toast.success("Deleted"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-blog"] }); toast.success(t("common.delete")); },
   });
 
   const toggleStatus = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       admin.cms.blog.update(id, { status: status === "published" ? "draft" : "published" } as any),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-blog"] }); toast.success("Updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-blog"] }); toast.success(t("admin.update")); },
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -63,11 +63,11 @@ export default function BlogManager() {
 
       {/* Create Form */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">New Blog Post</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.newBlogPost")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Title</Label>
+              <Label>{t("table.name")}</Label>
               <Input placeholder="Post title" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-") }))} />
             </div>
             <div className="space-y-1.5">
@@ -85,7 +85,7 @@ export default function BlogManager() {
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
-              <Label>Tags (comma-separated)</Label>
+              <Label>Tags</Label>
               <Input placeholder="crypto, payments, update" value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
@@ -93,36 +93,36 @@ export default function BlogManager() {
               <Input placeholder="Author name" value={form.author} onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label>Status</Label>
+              <Label>{t("table.status")}</Label>
               <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v as typeof f.status }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="draft">{t("invoices.draft")}</SelectItem>
+                  <SelectItem value="published">{t("cms.publish")}</SelectItem>
                   <SelectItem value="scheduled">Scheduled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <Button onClick={() => createMut.mutate()} disabled={!form.title.trim() || createMut.isPending}>
-            <PlusCircle className="mr-1.5 h-3.5 w-3.5" />Create Post
+            <PlusCircle className="mr-1.5 h-3.5 w-3.5" />{t("cms.newBlogPost")}
           </Button>
         </CardContent>
       </Card>
 
       {/* List */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">All Posts ({posts?.length ?? 0})</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.blog")} ({posts?.length ?? 0})</CardTitle></CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                <th className="px-4 py-2">Title</th>
-                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">{t("table.name")}</th>
+                <th className="px-4 py-2">{t("table.status")}</th>
                 <th className="px-4 py-2">Author</th>
                 <th className="px-4 py-2">Tags</th>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2 text-right">Actions</th>
+                <th className="px-4 py-2">{t("table.created")}</th>
+                <th className="px-4 py-2 text-right">{t("table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -146,7 +146,7 @@ export default function BlogManager() {
                   <td className="px-4 py-2 text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-2 text-right space-x-1">
                     <Button variant="ghost" size="sm" onClick={() => toggleStatus.mutate({ id: p.id, status: p.status })}>
-                      {p.status === "published" ? "Unpublish" : "Publish"}
+                      {p.status === "published" ? t("cms.unpublish") : t("cms.publish")}
                     </Button>
                     <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteMut.mutate(p.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
@@ -154,7 +154,7 @@ export default function BlogManager() {
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No blog posts yet</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t("blog.noArticles")}</td></tr>
               )}
             </tbody>
           </table>

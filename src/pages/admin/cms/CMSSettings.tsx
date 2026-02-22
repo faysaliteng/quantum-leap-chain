@@ -31,8 +31,8 @@ export default function CMSSettings() {
 
   const saveMut = useMutation({
     mutationFn: () => admin.cms.settings.update(form),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-settings"] }); toast.success("Settings saved"); },
-    onError: () => toast.error("Failed to save settings"),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-settings"] }); toast.success(t("cms.settingsSaved")); },
+    onError: () => toast.error(t("admin.failed")),
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -42,25 +42,25 @@ export default function CMSSettings() {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">{t("cms.settings")}</h1>
         <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
-          <Save className="mr-1.5 h-3.5 w-3.5" />Save Settings
+          <Save className="mr-1.5 h-3.5 w-3.5" />{t("cms.saveSettings")}
         </Button>
       </div>
 
       {/* SEO Defaults */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">SEO Defaults</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.seoDefaults")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Site Title Template</Label>
+            <Label>{t("cms.siteTitleTemplate")}</Label>
             <Input
               placeholder="%s — Cryptoniumpay"
               value={form.site_title_template ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, site_title_template: e.target.value }))}
             />
-            <p className="text-xs text-muted-foreground">Use %s as placeholder for page title</p>
+            <p className="text-xs text-muted-foreground">{t("cms.siteTitleHelp")}</p>
           </div>
           <div className="space-y-1.5">
-            <Label>Default OG Image URL</Label>
+            <Label>{t("cms.defaultOgImage")}</Label>
             <Input
               placeholder="https://cryptoniumpay.com/og-image.png"
               value={form.default_og_image ?? ""}
@@ -73,7 +73,7 @@ export default function CMSSettings() {
 
       {/* Social URLs */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Social Media URLs</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.socialUrls")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {["twitter", "github", "discord", "telegram", "linkedin"].map((key) => (
             <div key={key} className="space-y-1.5">
@@ -91,10 +91,10 @@ export default function CMSSettings() {
 
       {/* Analytics */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Analytics</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.analytics")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Google Analytics / GTM ID</Label>
+            <Label>{t("cms.gtmId")}</Label>
             <Input
               placeholder="G-XXXXXXXXXX or GTM-XXXXXXX"
               value={form.analytics_id ?? ""}
@@ -110,14 +110,14 @@ export default function CMSSettings() {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-destructive" />
-            Maintenance Mode
+            {t("cms.maintenanceMode")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium">Enable Maintenance Mode</p>
-              <p className="text-xs text-muted-foreground">When enabled, the site will show a maintenance page to all visitors.</p>
+              <p className="text-sm font-medium">{t("cms.enableMaintenance")}</p>
+              <p className="text-xs text-muted-foreground">{t("cms.maintenanceDesc")}</p>
             </div>
             <Switch
               checked={form.maintenance_mode ?? false}

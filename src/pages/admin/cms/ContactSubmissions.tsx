@@ -44,7 +44,7 @@ export default function ContactSubmissions() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cms-contacts"] });
       qc.invalidateQueries({ queryKey: ["cms-stats"] });
-      toast.success("Updated");
+      toast.success(t("admin.update"));
     },
   });
 
@@ -53,7 +53,7 @@ export default function ContactSubmissions() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cms-contacts"] });
       qc.invalidateQueries({ queryKey: ["cms-stats"] });
-      toast.success("Deleted");
+      toast.success(t("common.delete"));
     },
   });
 
@@ -77,12 +77,11 @@ export default function ContactSubmissions() {
         <h1 className="text-lg font-semibold">{t("cms.contacts")}</h1>
         {counts.new > 0 && (
           <Badge className="bg-primary/10 text-primary border-primary/20">
-            {counts.new} new
+            {counts.new} {t("cms.unreadNew")}
           </Badge>
         )}
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {(["all", "new", "read", "replied", "archived"] as const).map((s) => (
           <button
@@ -98,14 +97,12 @@ export default function ContactSubmissions() {
         ))}
       </div>
 
-      {/* Submissions list */}
       <div className="space-y-3">
         {filtered.length ? filtered.map((sub) => {
           const isOpen = expanded === sub.id;
           return (
             <Card key={sub.id} className={sub.status === "new" ? "border-primary/30" : ""}>
               <CardContent className="p-0">
-                {/* Header row */}
                 <button
                   className="w-full flex items-center justify-between px-5 py-4 text-left"
                   onClick={() => {
@@ -142,11 +139,10 @@ export default function ContactSubmissions() {
                   </div>
                 </button>
 
-                {/* Expanded content */}
                 {isOpen && (
                   <div className="border-t px-5 py-4 space-y-4">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1 font-medium">Message</p>
+                      <p className="text-xs text-muted-foreground mb-1 font-medium">{t("contact.message")}</p>
                       <p className="text-sm whitespace-pre-wrap bg-muted/50 rounded-lg p-4">{sub.message}</p>
                     </div>
 
@@ -157,9 +153,8 @@ export default function ContactSubmissions() {
                       </div>
                     )}
 
-                    {/* Add note */}
                     <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground font-medium">Add Note / Reply Record</p>
+                      <p className="text-xs text-muted-foreground font-medium">Add Note</p>
                       <Textarea
                         placeholder="Add internal notes about this submission..."
                         rows={3}
@@ -168,7 +163,6 @@ export default function ContactSubmissions() {
                       />
                     </div>
 
-                    {/* Actions */}
                     <div className="flex flex-wrap gap-2">
                       {replyNote.trim() && (
                         <Button
@@ -184,7 +178,7 @@ export default function ContactSubmissions() {
                             setReplyNote("");
                           }}
                         >
-                          <Reply className="mr-1.5 h-3.5 w-3.5" />Save Note & Mark Replied
+                          <Reply className="mr-1.5 h-3.5 w-3.5" />{t("common.save")}
                         </Button>
                       )}
                       <Button
@@ -200,14 +194,14 @@ export default function ContactSubmissions() {
                         className="text-destructive"
                         onClick={() => deleteMut.mutate(sub.id)}
                       >
-                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />Delete
+                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />{t("common.delete")}
                       </Button>
                       <a
                         href={`mailto:${sub.email}?subject=Re: ${encodeURIComponent(sub.subject)}`}
                         className="inline-flex"
                       >
                         <Button variant="outline" size="sm">
-                          <MessageSquare className="mr-1.5 h-3.5 w-3.5" />Reply via Email
+                          <MessageSquare className="mr-1.5 h-3.5 w-3.5" />{t("common.send")}
                         </Button>
                       </a>
                     </div>
@@ -218,7 +212,7 @@ export default function ContactSubmissions() {
           );
         }) : (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            No {filter === "all" ? "" : filter} submissions yet.
+            {t("cms.noRecentActivity")}
           </div>
         )}
       </div>

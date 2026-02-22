@@ -101,9 +101,9 @@ export default function AdminRoleManagement() {
       qc.invalidateQueries({ queryKey: ["admin-roles"] });
       setShowCreate(false);
       setForm({ name: "", description: "", permissions: [] });
-      toast.success("Role created");
+      toast.success(t("admin.createRole"));
     },
-    onError: () => toast.error("Failed to create role"),
+    onError: () => toast.error(t("admin.failed")),
   });
 
   const updateMut = useMutation({
@@ -111,7 +111,7 @@ export default function AdminRoleManagement() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-roles"] });
       setEditRole(null);
-      toast.success("Role updated");
+      toast.success(t("admin.updateRole"));
     },
   });
 
@@ -119,7 +119,7 @@ export default function AdminRoleManagement() {
     mutationFn: (id: string) => adminRoles.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-roles"] });
-      toast.success("Role deleted");
+      toast.success(t("common.delete"));
     },
   });
 
@@ -129,14 +129,14 @@ export default function AdminRoleManagement() {
       qc.invalidateQueries({ queryKey: ["admin-invites"] });
       setShowInvite(false);
       setInviteForm({ email: "", role_id: "" });
-      toast.success("Invite sent");
+      toast.success(t("admin.sendInvite"));
     },
-    onError: () => toast.error("Failed to send invite"),
+    onError: () => toast.error(t("admin.failed")),
   });
 
   const revokeInviteMut = useMutation({
     mutationFn: (id: string) => adminRoles.revokeInvite(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-invites"] }); toast.success("Invite revoked"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-invites"] }); toast.success(t("admin.revoke")); },
   });
 
   if (rolesLoading) return <PageSkeleton />;
@@ -153,19 +153,19 @@ export default function AdminRoleManagement() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />{t("admin.roles")}</h1>
-          <p className="text-xs text-muted-foreground mt-1">Fine-grained RBAC for admin team</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("admin.rbacDesc")}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowInvite(true)}><UserPlus className="mr-1.5 h-3.5 w-3.5" />Invite Team Member</Button>
-          <Button onClick={() => { setForm({ name: "", description: "", permissions: [] }); setShowCreate(true); }}><Plus className="mr-1.5 h-3.5 w-3.5" />Create Role</Button>
+          <Button variant="outline" onClick={() => setShowInvite(true)}><UserPlus className="mr-1.5 h-3.5 w-3.5" />{t("admin.inviteTeamMember")}</Button>
+          <Button onClick={() => { setForm({ name: "", description: "", permissions: [] }); setShowCreate(true); }}><Plus className="mr-1.5 h-3.5 w-3.5" />{t("admin.createRole")}</Button>
         </div>
       </div>
 
       <Tabs defaultValue="roles">
         <TabsList>
-          <TabsTrigger value="roles">Roles ({roles?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="team">Team Members ({assignments?.length ?? 0})</TabsTrigger>
-          <TabsTrigger value="invites">Invites ({invites?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="roles">{t("admin.roles_tab")} ({roles?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="team">{t("admin.teamMembers")} ({assignments?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="invites">{t("admin.invites")} ({invites?.length ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="roles" className="space-y-3 mt-4">
@@ -176,15 +176,15 @@ export default function AdminRoleManagement() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold">{role.name}</span>
-                      {role.is_system && <Badge variant="outline" className="text-xs">System</Badge>}
-                      <Badge variant="secondary" className="text-xs">{role.permissions.length} permissions</Badge>
+                      {role.is_system && <Badge variant="outline" className="text-xs">{t("admin.system")}</Badge>}
+                      <Badge variant="secondary" className="text-xs">{role.permissions.length} {t("admin.permissions")}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{role.description}</p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {role.permissions.slice(0, 8).map((p) => (
                         <Badge key={p} variant="outline" className="text-[10px]">{p}</Badge>
                       ))}
-                      {role.permissions.length > 8 && <Badge variant="outline" className="text-[10px]">+{role.permissions.length - 8} more</Badge>}
+                      {role.permissions.length > 8 && <Badge variant="outline" className="text-[10px]">+{role.permissions.length - 8} {t("admin.more")}</Badge>}
                     </div>
                   </div>
                   {!role.is_system && (
@@ -206,7 +206,7 @@ export default function AdminRoleManagement() {
 
         <TabsContent value="team" className="space-y-3 mt-4">
           {(assignments ?? []).length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground text-sm"><Users className="h-10 w-10 mx-auto mb-3 opacity-20" /><p>No team members assigned</p></div>
+            <div className="text-center py-12 text-muted-foreground text-sm"><Users className="h-10 w-10 mx-auto mb-3 opacity-20" /><p>{t("admin.noTeamMembers")}</p></div>
           ) : (
             (assignments ?? []).map((a) => (
               <Card key={a.admin_user_id}>
@@ -217,7 +217,7 @@ export default function AdminRoleManagement() {
                     </div>
                     <div>
                       <p className="text-sm font-medium">{a.admin_email}</p>
-                      <p className="text-xs text-muted-foreground">Assigned: {new Date(a.assigned_at).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground">{t("admin.assigned")}: {new Date(a.assigned_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <Badge variant="secondary">{a.role_name}</Badge>
@@ -229,7 +229,7 @@ export default function AdminRoleManagement() {
 
         <TabsContent value="invites" className="space-y-3 mt-4">
           {(invites ?? []).length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground text-sm"><Mail className="h-10 w-10 mx-auto mb-3 opacity-20" /><p>No pending invites</p></div>
+            <div className="text-center py-12 text-muted-foreground text-sm"><Mail className="h-10 w-10 mx-auto mb-3 opacity-20" /><p>{t("admin.noPendingInvites")}</p></div>
           ) : (
             (invites ?? []).map((inv) => (
               <Card key={inv.id}>
@@ -239,12 +239,12 @@ export default function AdminRoleManagement() {
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-xs">{inv.role_name}</Badge>
                       <Badge className={inv.status === "pending" ? "bg-warning/10 text-warning border-0 text-xs" : inv.status === "accepted" ? "bg-success/10 text-success border-0 text-xs" : "bg-muted text-muted-foreground border-0 text-xs"}>{inv.status}</Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />Expires: {new Date(inv.expires_at).toLocaleDateString()}</span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{t("admin.expires")}: {new Date(inv.expires_at).toLocaleDateString()}</span>
                     </div>
                   </div>
                   {inv.status === "pending" && (
                     <Button variant="ghost" size="sm" className="text-destructive" onClick={() => revokeInviteMut.mutate(inv.id)}>
-                      <Trash2 className="mr-1 h-3.5 w-3.5" />Revoke
+                      <Trash2 className="mr-1 h-3.5 w-3.5" />{t("admin.revoke")}
                     </Button>
                   )}
                 </CardContent>
@@ -258,22 +258,22 @@ export default function AdminRoleManagement() {
       <Dialog open={showCreate || !!editRole} onOpenChange={(v) => { if (!v) { setShowCreate(false); setEditRole(null); } }}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editRole ? "Edit Role" : "Create Role"}</DialogTitle>
-            <DialogDescription>Define role name, description, and permissions</DialogDescription>
+            <DialogTitle>{editRole ? t("admin.editRole") : t("admin.createRole")}</DialogTitle>
+            <DialogDescription>{t("admin.roleNameDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Role Name</Label>
+                <Label>{t("admin.roleName")}</Label>
                 <Input placeholder="e.g. Treasury Manager" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>{t("admin.description")}</Label>
                 <Input placeholder="Short description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
               </div>
             </div>
             <Separator />
-            <p className="text-sm font-medium">Permission Matrix</p>
+            <p className="text-sm font-medium">{t("admin.permissionMatrix")}</p>
             {allPermissions.map((group) => (
               <div key={group.group}>
                 <p className="text-xs font-medium text-muted-foreground mb-2">{group.group}</p>
@@ -290,9 +290,9 @@ export default function AdminRoleManagement() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowCreate(false); setEditRole(null); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowCreate(false); setEditRole(null); }}>{t("common.cancel")}</Button>
             <Button onClick={() => editRole ? updateMut.mutate() : createMut.mutate()} disabled={!form.name.trim() || createMut.isPending || updateMut.isPending}>
-              {editRole ? "Update Role" : "Create Role"}
+              {editRole ? t("admin.updateRole") : t("admin.createRole")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -302,18 +302,18 @@ export default function AdminRoleManagement() {
       <Dialog open={showInvite} onOpenChange={setShowInvite}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Invite Team Member</DialogTitle>
-            <DialogDescription>Send an invitation to join the admin team</DialogDescription>
+            <DialogTitle>{t("admin.inviteTeamMember")}</DialogTitle>
+            <DialogDescription>{t("admin.inviteDesc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Email Address</Label>
+              <Label>{t("admin.emailAddress")}</Label>
               <Input type="email" placeholder="admin@company.com" value={inviteForm.email} onChange={(e) => setInviteForm((f) => ({ ...f, email: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <Label>Assign Role</Label>
+              <Label>{t("admin.assignRole")}</Label>
               <Select value={inviteForm.role_id} onValueChange={(v) => setInviteForm((f) => ({ ...f, role_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("admin.selectRole")} /></SelectTrigger>
                 <SelectContent>
                   {(roles ?? []).map((r) => (
                     <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
@@ -323,9 +323,9 @@ export default function AdminRoleManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowInvite(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowInvite(false)}>{t("common.cancel")}</Button>
             <Button onClick={() => inviteMut.mutate()} disabled={!inviteForm.email || !inviteForm.role_id || inviteMut.isPending}>
-              <Mail className="mr-1.5 h-4 w-4" />Send Invite
+              <Mail className="mr-1.5 h-4 w-4" />{t("admin.sendInvite")}
             </Button>
           </DialogFooter>
         </DialogContent>

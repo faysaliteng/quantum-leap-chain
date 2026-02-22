@@ -34,19 +34,19 @@ export default function FAQManager() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["cms-faq"] });
       setForm({ question: "", answer: "", category: "General" });
-      toast.success("FAQ entry created");
+      toast.success(t("cms.addFaq"));
     },
-    onError: () => toast.error("Failed to create FAQ"),
+    onError: () => toast.error(t("admin.failed")),
   });
 
   const toggleMut = useMutation({
     mutationFn: ({ id, visible }: { id: string; visible: boolean }) => admin.cms.faq.update(id, { visible }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-faq"] }); toast.success("Updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-faq"] }); toast.success(t("admin.update")); },
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => admin.cms.faq.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-faq"] }); toast.success("Deleted"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cms-faq"] }); toast.success(t("common.delete")); },
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -59,24 +59,24 @@ export default function FAQManager() {
 
       {/* Create */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">New FAQ Entry</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">{t("cms.newFaq")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
             <div className="space-y-1.5">
-              <Label>Question</Label>
+              <Label>{t("cms.question")}</Label>
               <Input placeholder="What is Cryptoniumpay?" value={form.question} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label>Category</Label>
+              <Label>{t("cms.category")}</Label>
               <Input placeholder="General" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Answer</Label>
+            <Label>{t("cms.answer")}</Label>
             <Textarea placeholder="The answer to the FAQ..." rows={4} value={form.answer} onChange={(e) => setForm((f) => ({ ...f, answer: e.target.value }))} />
           </div>
           <Button onClick={() => createMut.mutate()} disabled={!form.question.trim() || !form.answer.trim() || createMut.isPending}>
-            <PlusCircle className="mr-1.5 h-3.5 w-3.5" />Add FAQ
+            <PlusCircle className="mr-1.5 h-3.5 w-3.5" />{t("cms.addFaq")}
           </Button>
         </CardContent>
       </Card>
@@ -96,7 +96,7 @@ export default function FAQManager() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{faq.question}</span>
-                        {!faq.visible && <Badge variant="secondary" className="text-xs">Hidden</Badge>}
+                        {!faq.visible && <Badge variant="secondary" className="text-xs">{t("cms.hidden")}</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 max-w-lg">{faq.answer.slice(0, 150)}{faq.answer.length > 150 ? "..." : ""}</p>
                     </div>
@@ -117,7 +117,7 @@ export default function FAQManager() {
       ))}
 
       {!faqs?.length && (
-        <div className="text-center py-8 text-muted-foreground text-sm">No FAQ entries yet. Create your first one above.</div>
+        <div className="text-center py-8 text-muted-foreground text-sm">{t("cms.noFaqs")}</div>
       )}
     </div>
   );

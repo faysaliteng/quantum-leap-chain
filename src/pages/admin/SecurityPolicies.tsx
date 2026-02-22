@@ -46,9 +46,9 @@ export default function AdminSecurityPolicies() {
     mutationFn: (data: Partial<SecurityPolicies>) => securityPolicies.update(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["security-policies"] });
-      toast.success("Security policies updated — changes take effect immediately");
+      toast.success(t("admin.securityPolicies") + " — " + t("common.save"));
     },
-    onError: () => toast.error("Failed to update policies"),
+    onError: () => toast.error(t("admin.failed")),
   });
 
   if (isLoading) return <PageSkeleton />;
@@ -58,50 +58,50 @@ export default function AdminSecurityPolicies() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />{t("admin.securityPolicies")}</h1>
-          <p className="text-xs text-muted-foreground mt-1">Centralized platform-wide security enforcement</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("admin.securityEnforcement")}</p>
         </div>
         {policies?.updated_at && (
-          <Badge variant="outline" className="text-xs">Last updated: {new Date(policies.updated_at).toLocaleDateString()}</Badge>
+          <Badge variant="outline" className="text-xs">{t("admin.lastUpdated")}: {new Date(policies.updated_at).toLocaleDateString()}</Badge>
         )}
       </div>
 
       <Tabs defaultValue="password">
         <TabsList className="w-full grid grid-cols-4">
-          <TabsTrigger value="password" className="text-xs gap-1"><Key className="h-3.5 w-3.5" />Password</TabsTrigger>
-          <TabsTrigger value="session" className="text-xs gap-1"><Clock className="h-3.5 w-3.5" />Sessions</TabsTrigger>
-          <TabsTrigger value="access" className="text-xs gap-1"><Globe className="h-3.5 w-3.5" />Access</TabsTrigger>
-          <TabsTrigger value="ratelimit" className="text-xs gap-1"><Zap className="h-3.5 w-3.5" />Rate Limits</TabsTrigger>
+          <TabsTrigger value="password" className="text-xs gap-1"><Key className="h-3.5 w-3.5" />{t("admin.passwordTab")}</TabsTrigger>
+          <TabsTrigger value="session" className="text-xs gap-1"><Clock className="h-3.5 w-3.5" />{t("admin.sessionsTab")}</TabsTrigger>
+          <TabsTrigger value="access" className="text-xs gap-1"><Globe className="h-3.5 w-3.5" />{t("admin.accessTab")}</TabsTrigger>
+          <TabsTrigger value="ratelimit" className="text-xs gap-1"><Zap className="h-3.5 w-3.5" />{t("admin.rateLimitsTab")}</TabsTrigger>
         </TabsList>
 
         {/* Password Policy */}
         <TabsContent value="password" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />Password Policy</CardTitle>
-              <CardDescription>Enforce strong password requirements platform-wide</CardDescription>
+              <CardTitle className="text-sm flex items-center gap-2"><Lock className="h-4 w-4" />{t("admin.passwordPolicy")}</CardTitle>
+              <CardDescription>{t("admin.passwordPolicyDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Minimum Length</Label>
+                  <Label>{t("admin.minimumLength")}</Label>
                   <Input type="number" min={8} max={128} value={password.min_length} onChange={(e) => setPw({ ...password, min_length: +e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Password History Count</Label>
+                  <Label>{t("admin.passwordHistory")}</Label>
                   <Input type="number" min={0} max={24} value={password.history_count} onChange={(e) => setPw({ ...password, history_count: +e.target.value })} />
-                  <p className="text-xs text-muted-foreground">Prevent reuse of last N passwords</p>
+                  <p className="text-xs text-muted-foreground">{t("admin.preventReuse")}</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Password Expiry (days, 0 = never)</Label>
+                <Label>{t("admin.passwordExpiry")}</Label>
                 <Input type="number" min={0} max={365} value={password.expiry_days} onChange={(e) => setPw({ ...password, expiry_days: +e.target.value })} />
               </div>
               <Separator />
               <div className="space-y-3">
                 {([
-                  ["require_uppercase", "Require uppercase letter"],
-                  ["require_number", "Require number"],
-                  ["require_symbol", "Require special character (!@#$%)"],
+                  ["require_uppercase", t("admin.requireUppercase")],
+                  ["require_number", t("admin.requireNumber")],
+                  ["require_symbol", t("admin.requireSymbol")],
                 ] as const).map(([key, label]) => (
                   <div key={key} className="flex items-center justify-between">
                     <span className="text-sm">{label}</span>
@@ -110,7 +110,7 @@ export default function AdminSecurityPolicies() {
                 ))}
               </div>
               <Button onClick={() => saveMut.mutate({ password })} disabled={saveMut.isPending} className="bg-gradient-gold text-primary-foreground">
-                <Save className="mr-1.5 h-4 w-4" />Save Password Policy
+                <Save className="mr-1.5 h-4 w-4" />{t("admin.savePasswordPolicy")}
               </Button>
             </CardContent>
           </Card>
@@ -120,40 +120,40 @@ export default function AdminSecurityPolicies() {
         <TabsContent value="session" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2"><Clock className="h-4 w-4" />Session Policy</CardTitle>
-              <CardDescription>Control token lifetimes and session limits</CardDescription>
+              <CardTitle className="text-sm flex items-center gap-2"><Clock className="h-4 w-4" />{t("admin.sessionPolicy")}</CardTitle>
+              <CardDescription>{t("admin.sessionPolicyDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Access Token TTL (minutes)</Label>
+                  <Label>{t("admin.accessTokenTtl")}</Label>
                   <Input type="number" min={5} max={60} value={session.access_token_ttl_minutes} onChange={(e) => setSess({ ...session, access_token_ttl_minutes: +e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Refresh Token TTL (days)</Label>
+                  <Label>{t("admin.refreshTokenTtl")}</Label>
                   <Input type="number" min={1} max={30} value={session.refresh_token_ttl_days} onChange={(e) => setSess({ ...session, refresh_token_ttl_days: +e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Max Concurrent Sessions</Label>
+                  <Label>{t("admin.maxSessions")}</Label>
                   <Input type="number" min={1} max={50} value={session.max_sessions} onChange={(e) => setSess({ ...session, max_sessions: +e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Idle Timeout (minutes)</Label>
+                  <Label>{t("admin.idleTimeout")}</Label>
                   <Input type="number" min={5} max={120} value={session.idle_timeout_minutes} onChange={(e) => setSess({ ...session, idle_timeout_minutes: +e.target.value })} />
                 </div>
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-medium">Mandatory 2FA for Admins</span>
-                  <p className="text-xs text-muted-foreground">All admin users must have 2FA enabled</p>
+                  <span className="text-sm font-medium">{t("admin.mandatory2fa")}</span>
+                  <p className="text-xs text-muted-foreground">{t("admin.mandatory2faDesc")}</p>
                 </div>
                 <Switch checked={session.mandatory_2fa_admin} onCheckedChange={(v) => setSess({ ...session, mandatory_2fa_admin: v })} />
               </div>
               <Button onClick={() => saveMut.mutate({ session })} disabled={saveMut.isPending} className="bg-gradient-gold text-primary-foreground">
-                <Save className="mr-1.5 h-4 w-4" />Save Session Policy
+                <Save className="mr-1.5 h-4 w-4" />{t("admin.saveSessionPolicy")}
               </Button>
             </CardContent>
           </Card>
@@ -163,14 +163,14 @@ export default function AdminSecurityPolicies() {
         <TabsContent value="access" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4" />Access Control</CardTitle>
-              <CardDescription>Maintenance mode, IP allowlists, and geo-blocking</CardDescription>
+              <CardTitle className="text-sm flex items-center gap-2"><Globe className="h-4 w-4" />{t("admin.accessControl")}</CardTitle>
+              <CardDescription>{t("admin.accessControlDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-3 rounded-lg bg-warning/10 border border-warning/20">
                 <div>
-                  <span className="text-sm font-medium flex items-center gap-1.5"><AlertTriangle className="h-4 w-4 text-warning" />Maintenance Mode</span>
-                  <p className="text-xs text-muted-foreground">Block all non-admin access</p>
+                  <span className="text-sm font-medium flex items-center gap-1.5"><AlertTriangle className="h-4 w-4 text-warning" />{t("admin.maintenanceMode")}</span>
+                  <p className="text-xs text-muted-foreground">{t("admin.blockNonAdmin")}</p>
                 </div>
                 <Switch checked={access.maintenance_mode} onCheckedChange={(v) => setAcc({ ...access, maintenance_mode: v })} />
               </div>
@@ -179,7 +179,7 @@ export default function AdminSecurityPolicies() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">IP Allowlist</span>
+                  <span className="text-sm font-medium">{t("admin.ipAllowlist")}</span>
                   <Switch checked={access.ip_allowlist_enabled} onCheckedChange={(v) => setAcc({ ...access, ip_allowlist_enabled: v })} />
                 </div>
                 {access.ip_allowlist_enabled && (
@@ -204,7 +204,7 @@ export default function AdminSecurityPolicies() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Bypass IPs (admin access during maintenance)</span>
+                  <span className="text-sm font-medium">{t("admin.bypassIps")}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {access.bypass_ips.map((ip, i) => (
@@ -214,7 +214,7 @@ export default function AdminSecurityPolicies() {
                     </Badge>
                   ))}
                   <Input
-                    placeholder="Add bypass IP"
+                    placeholder={t("admin.addBypassIp")}
                     className="w-40 h-7 text-xs font-mono"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && (e.target as HTMLInputElement).value) {
@@ -230,7 +230,7 @@ export default function AdminSecurityPolicies() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Geo-Blocking</span>
+                  <span className="text-sm font-medium">{t("admin.geoBlocking")}</span>
                   <Switch checked={access.geo_block_enabled} onCheckedChange={(v) => setAcc({ ...access, geo_block_enabled: v })} />
                 </div>
                 {access.geo_block_enabled && (
@@ -252,7 +252,7 @@ export default function AdminSecurityPolicies() {
               </div>
 
               <Button onClick={() => saveMut.mutate({ access })} disabled={saveMut.isPending} className="bg-gradient-gold text-primary-foreground">
-                <Save className="mr-1.5 h-4 w-4" />Save Access Policy
+                <Save className="mr-1.5 h-4 w-4" />{t("admin.saveAccessPolicy")}
               </Button>
             </CardContent>
           </Card>
@@ -262,16 +262,16 @@ export default function AdminSecurityPolicies() {
         <TabsContent value="ratelimit" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4" />Rate Limits (Redis-backed)</CardTitle>
-              <CardDescription>Requests per minute per endpoint category</CardDescription>
+              <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4" />{t("admin.rateLimitsRedis")}</CardTitle>
+              <CardDescription>{t("admin.rpmDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 {([
-                  ["public_rpm", "Public Endpoints", "Unauthenticated routes"],
-                  ["auth_rpm", "Auth Endpoints", "Login, signup, 2FA"],
-                  ["merchant_api_rpm", "Merchant API", "Charges, invoices, wallets"],
-                  ["webhook_delivery_rpm", "Webhook Delivery", "Outgoing webhook attempts"],
+                  ["public_rpm", t("admin.publicEndpoints"), t("admin.publicDesc")],
+                  ["auth_rpm", t("admin.authEndpoints"), t("admin.authDesc")],
+                  ["merchant_api_rpm", t("admin.merchantApi"), t("admin.merchantApiDesc")],
+                  ["webhook_delivery_rpm", t("admin.webhookDelivery"), t("admin.webhookDeliveryDesc")],
                 ] as const).map(([key, label, desc]) => (
                   <div key={key} className="space-y-2">
                     <Label>{label}</Label>
@@ -281,7 +281,7 @@ export default function AdminSecurityPolicies() {
                 ))}
               </div>
               <Button onClick={() => saveMut.mutate({ rate_limit: rateLimit })} disabled={saveMut.isPending} className="bg-gradient-gold text-primary-foreground">
-                <Save className="mr-1.5 h-4 w-4" />Save Rate Limits
+                <Save className="mr-1.5 h-4 w-4" />{t("admin.saveRateLimits")}
               </Button>
             </CardContent>
           </Card>
