@@ -6,8 +6,6 @@ RUN npm install @nestjs/websockets@^10.4.0 @nestjs/platform-socket.io@^10.4.0 so
 COPY . .
 RUN npx prisma generate
 RUN npm run build
-# Debug: verify dist structure
-RUN ls -la dist/ && ls -la dist/main* || ls -la dist/src/main* || echo "WARN: main not found in expected paths"
 
 FROM node:20-alpine AS runner
 WORKDIR /app
