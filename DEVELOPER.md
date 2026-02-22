@@ -2,8 +2,8 @@
 
 > Complete technical inventory of every file, route, component, type, hook, and design token in the Cryptoniumpay frontend codebase. This document is the single source of truth for developers onboarding to the project.
 
-**Last updated:** 2026-02-21  
-**Frontend version:** 1.0.0  
+**Last updated:** 2026-02-22  
+**Frontend version:** 2.0.0  
 **Stack:** React 18 · TypeScript · Vite · Tailwind CSS · shadcn/ui
 
 ---
@@ -92,7 +92,9 @@ cryptoniumpay/
 │   ├── favicon.ico                     # Legacy favicon
 │   ├── favicon.png                     # Custom CP monogram favicon (512×512)
 │   ├── placeholder.svg                 # Placeholder image
-│   ├── robots.txt                      # Search engine crawl rules
+│   ├── robots.txt                      # Search engine crawl rules (+ sitemap ref)
+│   ├── sitemap.xml                     # SEO sitemap for all public routes
+│   ├── manifest.json                   # PWA manifest for mobile indexing
 │   ├── _redirects                      # Cloudflare/Netlify SPA redirect rule
 │   └── _headers                        # Security headers (X-Frame, CSP, etc.)
 │
@@ -106,9 +108,10 @@ cryptoniumpay/
 │   │   └── logo-icon.png              # Brand logo (CP monogram, 512×512)
 │   │
 │   ├── lib/
-│   │   ├── api-client.ts              # Axios HTTP client + all API namespaces
+│   │   ├── api-client.ts              # Axios HTTP client + all API namespaces (45+ endpoints)
 │   │   ├── auth.tsx                    # AuthProvider context + useAuth hook
-│   │   ├── types.ts                   # All TypeScript interfaces + enums
+│   │   ├── constants.ts               # Social URLs, SEO defaults, chain colors
+│   │   ├── types.ts                   # All TypeScript interfaces + enums (CMS, fees, revenue)
 │   │   └── utils.ts                   # cn() utility (clsx + tailwind-merge)
 │   │
 │   ├── hooks/
@@ -127,12 +130,21 @@ cryptoniumpay/
 │   │   ├── DocsNav.tsx                # Documentation navigation sidebar
 │   │   ├── ErrorBoundary.tsx          # React error boundary wrapper
 │   │   ├── MerchantSidebar.tsx        # Merchant dashboard sidebar nav
-│   │   ├── AdminSidebar.tsx           # Admin panel sidebar nav
+│   │   ├── AdminSidebar.tsx           # Admin panel sidebar nav (+ CMS group)
 │   │   ├── NavLink.tsx                # Active-aware navigation link
 │   │   ├── PageSkeleton.tsx           # Loading skeleton (page + table variants)
 │   │   ├── ProtectedRoute.tsx         # Auth guard with optional role check
 │   │   ├── StatusBadge.tsx            # Charge status → colored badge
 │   │   ├── ThemeToggle.tsx            # Light/dark mode toggle
+│   │   ├── SEOHead.tsx                # Dynamic per-page meta tags (title, OG, Twitter)
+│   │   ├── SocialLinks.tsx            # Social media icon links (X, GitHub, Discord, etc.)
+│   │   ├── AnnouncementBanner.tsx     # Dismissible site-wide announcement banner
+│   │   ├── StatCard.tsx               # KPI stat card with trend indicator
+│   │   ├── AssetDistributionBar.tsx   # Colored stacked bar for crypto holdings
+│   │   ├── TimeRangeSelector.tsx      # 1D/7D/1M/3M/1Y toggle tabs
+│   │   ├── QuickActions.tsx           # Dashboard quick action buttons
+│   │   ├── ShareBar.tsx               # Share on X + copy link for docs pages
+│   │   ├── OfflineBanner.tsx          # Offline connectivity banner
 │   │   └── ui/                        # 45 shadcn/ui primitive components
 │   │       ├── accordion.tsx
 │   │       ├── alert-dialog.tsx
@@ -184,38 +196,54 @@ cryptoniumpay/
 │   │       └── tooltip.tsx
 │   │
 │   ├── pages/
-│   │   ├── LandingPage.tsx            # Public homepage with hero + features + prices
-│   │   ├── Login.tsx                  # Login form with back-to-home button
-│   │   ├── NotFound.tsx               # 404 page
+│   │   ├── LandingPage.tsx            # Public homepage with hero + features + prices + socials
+│   │   ├── Login.tsx                  # Login form with SEO
+│   │   ├── Signup.tsx                 # Signup with Zod validation + password checks
+│   │   ├── NotFound.tsx               # 404 page with SEO
 │   │   ├── checkout/
 │   │   │   └── CheckoutPage.tsx       # Public payment page (/pay/:chargeId)
 │   │   ├── docs/
-│   │   │   ├── ArchitectureDocs.tsx   # System architecture documentation
-│   │   │   ├── SecurityDocs.tsx       # Security & threat model docs
-│   │   │   ├── SchemaDocs.tsx         # Database schema docs (18 tables)
-│   │   │   ├── ApiDocs.tsx            # REST API reference docs
-│   │   │   └── SingularityCoinDocs.tsx # L1 blockchain protocol spec
+│   │   │   ├── ArchitectureDocs.tsx   # Architecture docs + SEO + share
+│   │   │   ├── SecurityDocs.tsx       # Security docs + SEO + share
+│   │   │   ├── SchemaDocs.tsx         # Schema docs (18 tables) + SEO + share
+│   │   │   ├── ApiDocs.tsx            # API reference + SEO + share
+│   │   │   └── SingularityCoinDocs.tsx # L1 protocol spec + SEO + share
 │   │   ├── dashboard/                 # 🔒 Auth-protected (merchant role)
-│   │   │   ├── DashboardHome.tsx      # Overview: stats cards + recent charges
-│   │   │   ├── ChargesList.tsx        # Paginated charge list + filters + CSV export
+│   │   │   ├── DashboardHome.tsx      # 6 KPIs, wallet overview, volume chart, quick actions
+│   │   │   ├── ChargesList.tsx        # Search + date range + status filters + CSV export
 │   │   │   ├── ChargeDetail.tsx       # Single charge detail + transactions
 │   │   │   ├── CreateCharge.tsx       # New charge form (Zod validated)
-│   │   │   ├── Reports.tsx            # Date-range reports + CSV/JSON export
+│   │   │   ├── Reports.tsx            # KPI cards + volume/asset charts + CSV/JSON export
 │   │   │   └── settings/
 │   │   │       ├── SettlementSettings.tsx  # Per-chain settlement config
 │   │   │       ├── ApiKeysSettings.tsx     # API key CRUD + scope management
 │   │   │       ├── WebhookSettings.tsx     # Webhook endpoint CRUD + test + logs
 │   │   │       └── AddressPool.tsx         # Address pool stats + CSV upload
 │   │   └── admin/                     # 🔒 Auth-protected (admin role only)
-│   │       ├── AdminHome.tsx          # Platform stats + watcher health
+│   │       ├── AdminHome.tsx          # Crypto ticker, 6 KPIs, volume chart, watcher status
+│   │       ├── RevenueDashboard.tsx   # KPIs + area/bar/donut charts + top merchants
+│   │       ├── FeeManagement.tsx      # Global fee config + per-merchant overrides
 │   │       ├── MerchantManagement.tsx # Merchant list + enable/disable
 │   │       ├── ChainConfig.tsx        # Chain/asset config + RPC status
 │   │       ├── SystemMonitoring.tsx   # Watcher checkpoints + queue stats
-│   │       └── AuditLog.tsx           # Filterable audit log + expandable details
+│   │       ├── AuditLog.tsx           # Filterable audit log + expandable details
+│   │       └── cms/                   # Enterprise Content Management System
+│   │           ├── CMSDashboard.tsx    # Content overview + quick actions
+│   │           ├── PageManager.tsx     # Page SEO metadata management
+│   │           ├── BlogManager.tsx     # Blog post CRUD (markdown, tags, scheduling)
+│   │           ├── AnnouncementManager.tsx # Site-wide banners management
+│   │           ├── FAQManager.tsx      # FAQ entries with categories + sort order
+│   │           └── CMSSettings.tsx     # Global SEO, analytics, maintenance mode
 │   │
 │   └── test/
 │       ├── setup.ts                   # Vitest global setup
 │       └── example.test.ts            # Example test
+│
+├── docs/
+│   ├── BACKEND-SPEC.md                # Full NestJS backend specification
+│   ├── API.md                         # REST API endpoint reference
+│   ├── SECURITY.md                    # STRIDE threat model + security architecture
+│   └── RUNBOOK.md                     # Ops runbook (secret rotation, scaling, incidents)
 │
 └── .lovable/
     └── plan.md                        # Build plan (internal)
@@ -227,31 +255,40 @@ cryptoniumpay/
 
 | Path | Component | Auth | Role | Description |
 |------|-----------|------|------|-------------|
-| `/` | `LandingPage` | ❌ | — | Public homepage with hero, features, live prices |
-| `/login` | `Login` | ❌ | — | Email/password login + back-to-home button |
+| `/` | `LandingPage` | ❌ | — | Public homepage with hero, features, live prices, socials |
+| `/login` | `Login` | ❌ | — | Email/password login |
+| `/signup` | `Signup` | ❌ | — | Registration with Zod validation |
 | `/pay/:chargeId` | `CheckoutPage` | ❌ | — | Public hosted checkout page |
 | `/docs/architecture` | `ArchitectureDocs` | ❌ | — | Architecture documentation |
 | `/docs/security` | `SecurityDocs` | ❌ | — | Security documentation |
 | `/docs/schema` | `SchemaDocs` | ❌ | — | Database schema documentation |
 | `/docs/api` | `ApiDocs` | ❌ | — | API reference documentation |
 | `/docs/singularitycoin` | `SingularityCoinDocs` | ❌ | — | L1 blockchain protocol spec |
-| `/dashboard` | `DashboardHome` | ✅ | any | Merchant overview + recent charges |
-| `/dashboard/charges` | `ChargesList` | ✅ | any | Paginated charge list |
+| `/dashboard` | `DashboardHome` | ✅ | any | 6 KPIs, wallet overview, volume chart |
+| `/dashboard/charges` | `ChargesList` | ✅ | any | Search + filters + date range + CSV export |
 | `/dashboard/charges/new` | `CreateCharge` | ✅ | any | Create new charge form |
-| `/dashboard/charges/:id` | `ChargeDetail` | ✅ | any | Single charge detail |
-| `/dashboard/reports` | `Reports` | ✅ | any | Date-range report export |
+| `/dashboard/charges/:id` | `ChargeDetail` | ✅ | any | Single charge detail + transactions |
+| `/dashboard/reports` | `Reports` | ✅ | any | KPI cards + charts + CSV/JSON export |
 | `/dashboard/settings/settlement` | `SettlementSettings` | ✅ | any | Settlement address config |
 | `/dashboard/settings/api-keys` | `ApiKeysSettings` | ✅ | any | API key management |
 | `/dashboard/settings/webhooks` | `WebhookSettings` | ✅ | any | Webhook endpoint management |
 | `/dashboard/settings/addresses` | `AddressPool` | ✅ | any | Address pool management |
-| `/admin` | `AdminHome` | ✅ | admin | Admin system overview |
+| `/admin` | `AdminHome` | ✅ | admin | Crypto ticker, 6 KPIs, volume chart |
+| `/admin/revenue` | `RevenueDashboard` | ✅ | admin | Revenue multi-chart layout |
+| `/admin/fees` | `FeeManagement` | ✅ | admin | Global fees + per-merchant overrides |
 | `/admin/merchants` | `MerchantManagement` | ✅ | admin | Merchant list + toggle |
 | `/admin/chains` | `ChainConfig` | ✅ | admin | Chain/asset configuration |
 | `/admin/monitoring` | `SystemMonitoring` | ✅ | admin | Real-time system health |
 | `/admin/audit-log` | `AuditLog` | ✅ | admin | Audit log viewer |
+| `/admin/cms` | `CMSDashboard` | ✅ | admin | CMS content overview |
+| `/admin/cms/pages` | `PageManager` | ✅ | admin | Page SEO metadata manager |
+| `/admin/cms/blog` | `BlogManager` | ✅ | admin | Blog post CRUD |
+| `/admin/cms/announcements` | `AnnouncementManager` | ✅ | admin | Announcement banners |
+| `/admin/cms/faq` | `FAQManager` | ✅ | admin | FAQ entry manager |
+| `/admin/cms/settings` | `CMSSettings` | ✅ | admin | CMS global settings |
 | `*` | `NotFound` | ❌ | — | 404 catch-all |
 
-**Total routes: 22**
+**Total routes: 33**
 
 ### Route Protection Logic
 
