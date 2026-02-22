@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { PageSkeleton } from "@/components/PageSkeleton";
 
 export default function ChainConfig() {
-  usePageTitle("Chains & Assets");
+  const { t } = useI18n();
+  usePageTitle(t("admin.chains"));
   const qc = useQueryClient();
   const { data: chains, isLoading: chainsLoading } = useQuery({ queryKey: ["admin-chains"], queryFn: admin.chains.list });
   const { data: assets, isLoading: assetsLoading } = useQuery({ queryKey: ["admin-assets"], queryFn: admin.assets.list });
@@ -18,7 +20,7 @@ export default function ChainConfig() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-chains">
-      <h1 className="text-lg font-semibold">Chains & Assets</h1>
+      <h1 className="text-lg font-semibold">{t("admin.chains")}</h1>
 
       <div className="space-y-4">
         {chains?.map((chain) => (

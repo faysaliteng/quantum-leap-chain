@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,8 @@ import {
 } from "recharts";
 
 export default function RevenueDashboard() {
-  usePageTitle("Revenue");
+  const { t } = useI18n();
+  usePageTitle(t("admin.revenue"));
   const [range, setRange] = useState<TimeRange>("1M");
   const { startExport, isExporting } = useExport({ scope: "admin" });
 
@@ -45,7 +47,7 @@ export default function RevenueDashboard() {
   return (
     <div className="space-y-6" data-testid="page:admin-revenue">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold">Platform Revenue</h1>
+        <h1 className="text-lg font-semibold">{t("admin.revenue")}</h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => startExport("revenue", "csv")} disabled={isExporting}>
             <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Download, DollarSign, Receipt, TrendingUp } from "lucide-react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { SEOHead } from "@/components/SEOHead";
 import { StatCard } from "@/components/StatCard";
 import { useQuery } from "@tanstack/react-query";
@@ -59,7 +60,8 @@ function aggregateByAsset(charges: Charge[]) {
 }
 
 export default function Reports() {
-  usePageTitle("Reports");
+  const { t } = useI18n();
+  usePageTitle(t("reports.title"));
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
@@ -79,7 +81,7 @@ export default function Reports() {
   return (
     <div className="space-y-6" data-testid="page:dashboard-reports">
       <SEOHead title="Reports" noindex />
-      <h1 className="text-lg font-semibold">Reports</h1>
+      <h1 className="text-lg font-semibold">{t("reports.title")}</h1>
 
       {/* KPI Summary */}
       {charges.length > 0 && (

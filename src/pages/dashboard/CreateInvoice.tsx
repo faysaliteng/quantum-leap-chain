@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useMutation } from "@tanstack/react-query";
 import { invoices } from "@/lib/api-client";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +30,8 @@ interface LineItem {
 }
 
 export default function CreateInvoice() {
-  usePageTitle("Create Invoice");
+  const { t } = useI18n();
+  usePageTitle(t("createInvoice.title"));
   const navigate = useNavigate();
 
   const [customer, setCustomer] = useState({ name: "", email: "" });
@@ -81,7 +83,7 @@ export default function CreateInvoice() {
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-lg font-semibold">Create Invoice</h1>
+        <h1 className="text-lg font-semibold">{t("createInvoice.title")}</h1>
       </div>
 
       {/* Customer Info */}

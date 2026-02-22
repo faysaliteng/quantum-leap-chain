@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { wallets } from "@/lib/api-client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,7 +38,8 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function MerchantWallets() {
-  usePageTitle("Crypto Wallet");
+  const { t } = useI18n();
+  usePageTitle(t("wallets.title"));
   const qc = useQueryClient();
 
   // WalletConnect dialog
@@ -94,8 +96,8 @@ export default function MerchantWallets() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-display font-bold">Crypto Wallet</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage, send, receive & connect wallets</p>
+          <h1 className="text-2xl font-display font-bold">{t("wallets.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("wallets.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setShowConnect(true)}>

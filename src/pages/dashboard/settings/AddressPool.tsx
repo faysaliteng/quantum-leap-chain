@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { addressPool } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,8 @@ const CHAINS: { value: ChainId; label: string }[] = [
 ];
 
 export default function AddressPool() {
-  usePageTitle("Address Pool");
+  const { t } = useI18n();
+  usePageTitle(t("settings.addressPool"));
   const qc = useQueryClient();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -83,7 +85,7 @@ export default function AddressPool() {
   return (
     <div className="space-y-4" data-testid="page:dashboard-settings-addresses">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Deposit Address Pool</h1>
+        <h1 className="text-lg font-semibold">{t("settings.addressPool")}</h1>
         <Button size="sm" onClick={() => setShowUpload(true)}>
           <Upload className="mr-1.5 h-3.5 w-3.5" />Upload CSV
         </Button>

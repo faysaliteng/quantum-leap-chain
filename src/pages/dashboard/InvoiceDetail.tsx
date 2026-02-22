@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { invoices } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,8 +31,9 @@ const chainLabels: Record<string, string> = {
 export default function InvoiceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useI18n();
+  usePageTitle(t("invoiceDetail.title"));
   const qc = useQueryClient();
-  usePageTitle("Invoice Detail");
 
   const { data: inv, isLoading } = useQuery({
     queryKey: ["invoice", id],

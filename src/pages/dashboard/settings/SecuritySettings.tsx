@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { security } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useToast } from "@/hooks/use-toast";
 import { CopyButton } from "@/components/CopyButton";
@@ -26,7 +27,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import type { TwoFactorSetup } from "@/lib/types";
 
 export default function SecuritySettings() {
-  usePageTitle("Security Settings");
+  const { t } = useI18n();
+  usePageTitle(t("security.title"));
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -144,8 +146,8 @@ export default function SecuritySettings() {
   return (
     <div className="space-y-6" data-testid="page:dashboard-settings-security">
       <div>
-        <h1 className="text-2xl font-display font-bold">Security Settings</h1>
-        <p className="text-muted-foreground text-sm mt-1">Manage your account security, 2FA, and active sessions.</p>
+        <h1 className="text-2xl font-display font-bold">{t("security.title")}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t("security.subtitle")}</p>
       </div>
 
       {/* ── Two-Factor Authentication ── */}

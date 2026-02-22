@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { securityPolicies } from "@/lib/api-extended";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,7 +20,8 @@ import {
 import type { SecurityPolicies, PasswordPolicy, SessionPolicy, AccessPolicy, RateLimitPolicy } from "@/lib/types-extended";
 
 export default function AdminSecurityPolicies() {
-  usePageTitle("Security Policies");
+  const { t } = useI18n();
+  usePageTitle(t("admin.securityPolicies"));
   const qc = useQueryClient();
 
   const { data: policies, isLoading } = useQuery({
@@ -55,7 +57,7 @@ export default function AdminSecurityPolicies() {
     <div className="space-y-6" data-testid="page:admin-security-policies">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Security Policies</h1>
+          <h1 className="text-lg font-semibold flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />{t("admin.securityPolicies")}</h1>
           <p className="text-xs text-muted-foreground mt-1">Centralized platform-wide security enforcement</p>
         </div>
         {policies?.updated_at && (

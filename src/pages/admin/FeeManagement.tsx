@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,8 @@ import { Percent, Save, Users } from "lucide-react";
 import type { FeeConfig, MerchantFeeOverride } from "@/lib/types";
 
 export default function FeeManagement() {
-  usePageTitle("Fee Management");
+  const { t } = useI18n();
+  usePageTitle(t("admin.fees"));
   const qc = useQueryClient();
 
   const { data: feeConfig, isLoading: configLoading } = useQuery({
@@ -62,7 +64,7 @@ export default function FeeManagement() {
 
   return (
     <div className="space-y-6" data-testid="page:admin-fees">
-      <h1 className="text-lg font-semibold">Fee Management</h1>
+      <h1 className="text-lg font-semibold">{t("admin.fees")}</h1>
 
       {/* Global Fee Configuration */}
       <Card>

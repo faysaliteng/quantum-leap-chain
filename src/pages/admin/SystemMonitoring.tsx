@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,8 @@ import { useExport } from "@/hooks/use-export";
 import { FileDown } from "lucide-react";
 
 export default function SystemMonitoring() {
-  usePageTitle("System Monitoring");
+  const { t } = useI18n();
+  usePageTitle(t("admin.monitoring"));
   const { data: health, isLoading } = useQuery({ queryKey: ["admin-health"], queryFn: admin.health, refetchInterval: 10000 });
   const { startExport, isExporting } = useExport({ scope: "admin" });
 
@@ -19,7 +21,7 @@ export default function SystemMonitoring() {
   return (
     <div className="space-y-6" data-testid="page:admin-monitoring">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">System Monitoring</h1>
+        <h1 className="text-lg font-semibold">{t("admin.monitoring")}</h1>
         <Button variant="outline" size="sm" onClick={() => startExport("health_snapshot", "json")} disabled={isExporting}>
           <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Snapshot"}
         </Button>

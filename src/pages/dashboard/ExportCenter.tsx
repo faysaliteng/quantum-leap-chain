@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { exports as exportsApi } from "@/lib/api-extended";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,8 @@ const statusConfig: Record<ExportStatus, { icon: React.ReactNode; color: string 
 };
 
 export default function ExportCenter() {
-  usePageTitle("Export Center");
+  const { t } = useI18n();
+  usePageTitle(t("exports.title"));
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [kind, setKind] = useState<ExportKind>("charges");
@@ -74,8 +76,8 @@ export default function ExportCenter() {
     <div className="space-y-6" data-testid="page:dashboard-exports">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Export Center</h1>
-          <p className="text-sm text-muted-foreground mt-1">Export your data as CSV or JSON files</p>
+          <h1 className="text-2xl font-display font-bold">{t("exports.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("exports.subtitle") || "Export your data as CSV or JSON files"}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="mr-1.5 h-4 w-4" />New Export

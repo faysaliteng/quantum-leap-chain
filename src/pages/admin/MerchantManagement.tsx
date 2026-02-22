@@ -1,4 +1,5 @@
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +13,8 @@ import { Users, UserCheck, UserX, FileDown } from "lucide-react";
 import { useExport } from "@/hooks/use-export";
 
 export default function MerchantManagement() {
-  usePageTitle("Merchants");
+  const { t } = useI18n();
+  usePageTitle(t("admin.merchants"));
   const qc = useQueryClient();
   const { data: merchants, isLoading } = useQuery({ queryKey: ["admin-merchants"], queryFn: admin.merchants.list });
   const [search, setSearch] = useState("");
@@ -26,7 +28,7 @@ export default function MerchantManagement() {
   return (
     <div className="space-y-4" data-testid="page:admin-merchants">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Merchants</h1>
+        <h1 className="text-lg font-semibold">{t("admin.merchants")}</h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => startExport("merchants", "csv")} disabled={isExporting}>
             <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}

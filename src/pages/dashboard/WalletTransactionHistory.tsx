@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { walletTransactions } from "@/lib/api-extended";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +34,8 @@ const statusConfig: Record<WalletTxStatus, { icon: React.ReactNode; color: strin
 };
 
 export default function WalletTransactionHistory() {
-  usePageTitle("Transaction History");
+  const { t } = useI18n();
+  usePageTitle(t("txHistory.title"));
   const [filterDir, setFilterDir] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [search, setSearch] = useState("");
@@ -59,8 +61,8 @@ export default function WalletTransactionHistory() {
     <div className="space-y-6" data-testid="page:dashboard-wallet-transactions">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Transaction History</h1>
-          <p className="text-sm text-muted-foreground mt-1">All wallet sends, receives, and withdrawals</p>
+          <h1 className="text-2xl font-display font-bold">{t("txHistory.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("txHistory.subtitle")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => startExport("wallet_transactions", "csv", { direction: filterDir !== "all" ? filterDir : undefined, status: filterStatus !== "all" ? filterStatus : undefined })} disabled={isExporting}>
           <FileDown className="mr-1.5 h-3.5 w-3.5" />{isExporting ? "Exporting…" : "Export"}

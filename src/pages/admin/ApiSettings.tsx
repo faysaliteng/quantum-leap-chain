@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -85,7 +86,8 @@ const defaultConfig: ApiConfig = {
 };
 
 export default function AdminApiSettings() {
-  usePageTitle("API Settings");
+  const { t } = useI18n();
+  usePageTitle(t("admin.apiSettings"));
   const qc = useQueryClient();
   const [config, setConfig] = useState<ApiConfig>(defaultConfig);
   const [newOrigin, setNewOrigin] = useState("");
@@ -111,7 +113,7 @@ export default function AdminApiSettings() {
             <Terminal className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold">API Configuration</h1>
+            <h1 className="text-lg font-semibold">{t("admin.apiSettings")}</h1>
             <p className="text-xs text-muted-foreground">Rate limits, CORS, key policies, webhooks & security</p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { dashboard, charges as chargesApi } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -39,7 +40,8 @@ const severityColors: Record<Insight["severity"], string> = {
 };
 
 export default function MerchantIntelligence() {
-  usePageTitle("Intelligence");
+  const { t } = useI18n();
+  usePageTitle(t("intelligence.title"));
   const [range, setRange] = useState<TimeRange>("1M");
 
   const { data: stats, isLoading: statsLoading } = useQuery({ queryKey: ["dashboard-stats"], queryFn: dashboard.stats });
@@ -104,8 +106,8 @@ export default function MerchantIntelligence() {
             <Brain className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold">Intelligence Hub</h1>
-            <p className="text-xs text-muted-foreground">AI-powered predictions, trends & smart insights</p>
+            <h1 className="text-lg font-semibold">{t("intelligence.title")}</h1>
+            <p className="text-xs text-muted-foreground">{t("intelligence.subtitle")}</p>
           </div>
         </div>
         <TimeRangeSelector value={range} onChange={setRange} />

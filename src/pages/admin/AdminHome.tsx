@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { useI18n } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,8 @@ import {
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function AdminHome() {
-  usePageTitle("Admin Overview");
+  const { t } = useI18n();
+  usePageTitle(t("admin.overview"));
   const [range, setRange] = useState<TimeRange>("1M");
 
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({ queryKey: ["admin-stats"], queryFn: admin.stats });
@@ -45,7 +47,7 @@ export default function AdminHome() {
 
       {/* Header + Quick Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-lg font-semibold">System Overview</h1>
+        <h1 className="text-lg font-semibold">{t("admin.overview")}</h1>
         <QuickActions actions={[
           { label: "Add Merchant", icon: UserPlus, to: "/admin/merchants" },
           { label: "Audit Log", icon: FileText, to: "/admin/audit-log" },

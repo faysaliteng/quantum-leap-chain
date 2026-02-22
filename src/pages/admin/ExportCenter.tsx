@@ -15,6 +15,7 @@ import {
   Download, FileSpreadsheet, Clock, CheckCircle, XCircle, Loader2, RefreshCw, Plus,
 } from "lucide-react";
 import type { DataExportJob, ExportKind, ExportStatus } from "@/lib/types-extended";
+import { useI18n } from "@/lib/i18n";
 
 const ADMIN_KINDS: { value: ExportKind; label: string }[] = [
   { value: "merchants", label: "Merchants" },
@@ -34,7 +35,8 @@ const statusConfig: Record<ExportStatus, { icon: React.ReactNode; color: string 
 };
 
 export default function AdminExportCenter() {
-  usePageTitle("Export Center");
+  const { t } = useI18n();
+  usePageTitle(t("admin.exports"));
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [kind, setKind] = useState<ExportKind>("merchants");
@@ -77,7 +79,7 @@ export default function AdminExportCenter() {
     <div className="space-y-6" data-testid="page:admin-exports">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-bold">Admin Export Center</h1>
+          <h1 className="text-2xl font-display font-bold">{t("admin.exports")}</h1>
           <p className="text-sm text-muted-foreground mt-1">Export platform data for reporting and compliance</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
