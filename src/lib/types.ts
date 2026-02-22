@@ -37,6 +37,9 @@ export type WebhookEventType =
 
 export type ApiKeyScope = "read" | "write" | "admin";
 
+export type WalletType = "hot" | "cold";
+export type WalletStatus = "active" | "inactive" | "locked";
+
 // ── Core models ──
 
 export interface Merchant {
@@ -337,6 +340,44 @@ export interface CMSStats {
   total_contacts: number;
   unread_contacts: number;
   recent_activity: { id: string; type: string; title: string; action: string; time: string }[];
+}
+
+// ── Wallet types ──
+
+export interface WalletConfig {
+  id: string;
+  label: string;
+  type: WalletType;
+  chain: ChainId;
+  address: string;
+  xpub?: string;
+  derivation_path?: string;
+  balance: string;
+  balance_usd: number;
+  status: WalletStatus;
+  last_activity?: string;
+  created_at: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  wallet_id: string;
+  tx_hash: string;
+  direction: "in" | "out";
+  amount: string;
+  asset: AssetSymbol;
+  chain: ChainId;
+  confirmed: boolean;
+  timestamp: string;
+}
+
+export interface WalletStats {
+  total_hot_wallets: number;
+  total_cold_wallets: number;
+  total_balance_usd: number;
+  hot_balance_usd: number;
+  cold_balance_usd: number;
+  wallets: WalletConfig[];
 }
 
 // ── API request/response types ──

@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, Link2, Activity, FileText, LogOut, Shield,
   Percent, DollarSign, Newspaper, Megaphone, HelpCircle, Settings, FileEdit,
-  Mail, Share2,
+  Mail, Share2, Wallet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -17,6 +17,7 @@ const adminNav = [
   { title: "Fee Management", url: "/admin/fees", icon: Percent },
   { title: "Merchants", url: "/admin/merchants", icon: Users },
   { title: "Chains & Assets", url: "/admin/chains", icon: Link2 },
+  { title: "Wallets", url: "/admin/wallets", icon: Wallet },
   { title: "Monitoring", url: "/admin/monitoring", icon: Activity },
   { title: "Audit Log", url: "/admin/audit-log", icon: FileText },
 ];

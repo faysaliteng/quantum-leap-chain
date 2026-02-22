@@ -23,6 +23,7 @@ import SettlementSettings from "./pages/dashboard/settings/SettlementSettings";
 import ApiKeysSettings from "./pages/dashboard/settings/ApiKeysSettings";
 import WebhookSettings from "./pages/dashboard/settings/WebhookSettings";
 import AddressPool from "./pages/dashboard/settings/AddressPool";
+import MerchantWallets from "./pages/dashboard/MerchantWallets";
 
 import AdminHome from "./pages/admin/AdminHome";
 import MerchantManagement from "./pages/admin/MerchantManagement";
@@ -31,6 +32,7 @@ import SystemMonitoring from "./pages/admin/SystemMonitoring";
 import AuditLog from "./pages/admin/AuditLog";
 import FeeManagement from "./pages/admin/FeeManagement";
 import RevenueDashboard from "./pages/admin/RevenueDashboard";
+import AdminWalletManagement from "./pages/admin/WalletManagement";
 
 import CMSDashboard from "./pages/admin/cms/CMSDashboard";
 import PageManager from "./pages/admin/cms/PageManager";
@@ -95,6 +97,7 @@ const App = () => (
                 <Route path="settings/api-keys" element={<ApiKeysSettings />} />
                 <Route path="settings/webhooks" element={<WebhookSettings />} />
                 <Route path="settings/addresses" element={<AddressPool />} />
+                <Route path="wallets" element={<MerchantWallets />} />
               </Route>
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
@@ -105,6 +108,7 @@ const App = () => (
                 <Route path="chains" element={<ChainConfig />} />
                 <Route path="monitoring" element={<SystemMonitoring />} />
                 <Route path="audit-log" element={<AuditLog />} />
+                <Route path="wallets" element={<AdminWalletManagement />} />
                 <Route path="cms" element={<CMSDashboard />} />
                 <Route path="cms/pages" element={<PageManager />} />
                 <Route path="cms/blog" element={<BlogManager />} />
