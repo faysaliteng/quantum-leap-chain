@@ -116,7 +116,7 @@ export interface ApiKey {
 }
 
 export interface ApiKeyCreated extends ApiKey {
-  key: string; // full key, shown once
+  key: string;
 }
 
 export interface WebhookEndpoint {
@@ -207,12 +207,25 @@ export interface DashboardStats {
   pending_payments: number;
   confirmed_today: number;
   total_volume_usd: string;
+  total_payments_received?: number;
+  success_rate?: number;
+  volume_chart?: { date: string; amount: number }[];
+  holdings?: { symbol: string; percentage: number; amount: string; usd_value: string }[];
 }
 
 export interface AdminStats {
   total_merchants: number;
   active_charges: number;
   transactions_today: number;
+  total_transactions?: number;
+  completed?: number;
+  processing?: number;
+  rejected?: number;
+  failed?: number;
+  flagged?: number;
+  volume_chart?: { date: string; amount: number }[];
+  holdings?: { symbol: string; percentage: number; amount: string; usd_value: string }[];
+  recent_activity?: { id: string; action: string; detail: string; time: string }[];
 }
 
 // ── Fee Management ──
@@ -238,6 +251,8 @@ export interface RevenueStats {
   active_merchants: number;
   revenue_change_pct: number;
   daily_revenue: { date: string; amount: number }[];
+  revenue_by_chain?: { chain: string; amount: number }[];
+  transaction_volume?: { date: string; count: number }[];
 }
 
 export interface TopMerchant {
@@ -247,6 +262,67 @@ export interface TopMerchant {
   fees_usd: string;
   tx_count: number;
   rate_percent: number;
+}
+
+// ── CMS ──
+
+export interface CMSPage {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  og_image?: string;
+  status: "published" | "draft";
+  updated_at: string;
+}
+
+export interface Announcement {
+  id: string;
+  message: string;
+  type: "info" | "warning" | "promo";
+  active: boolean;
+  start_date: string;
+  end_date?: string;
+  created_at: string;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  tags: string[];
+  status: "published" | "draft" | "scheduled";
+  author: string;
+  published_at?: string;
+  created_at: string;
+}
+
+export interface FAQEntry {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  sort_order: number;
+  visible: boolean;
+  created_at: string;
+}
+
+export interface CMSSettings {
+  site_title_template: string;
+  default_og_image: string;
+  social_urls: Record<string, string>;
+  analytics_id: string;
+  maintenance_mode: boolean;
+}
+
+export interface CMSStats {
+  total_pages: number;
+  total_posts: number;
+  total_announcements: number;
+  total_faqs: number;
+  recent_activity: { id: string; type: string; title: string; action: string; time: string }[];
 }
 
 // ── API request/response types ──

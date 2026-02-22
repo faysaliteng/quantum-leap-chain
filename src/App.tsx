@@ -32,6 +32,13 @@ import AuditLog from "./pages/admin/AuditLog";
 import FeeManagement from "./pages/admin/FeeManagement";
 import RevenueDashboard from "./pages/admin/RevenueDashboard";
 
+import CMSDashboard from "./pages/admin/cms/CMSDashboard";
+import PageManager from "./pages/admin/cms/PageManager";
+import BlogManager from "./pages/admin/cms/BlogManager";
+import AnnouncementManager from "./pages/admin/cms/AnnouncementManager";
+import FAQManager from "./pages/admin/cms/FAQManager";
+import CMSSettings from "./pages/admin/cms/CMSSettings";
+
 import CheckoutPage from "./pages/checkout/CheckoutPage";
 import ArchitectureDocs from "./pages/docs/ArchitectureDocs";
 import SecurityDocs from "./pages/docs/SecurityDocs";
@@ -86,6 +93,12 @@ const App = () => (
                 <Route path="chains" element={<ChainConfig />} />
                 <Route path="monitoring" element={<SystemMonitoring />} />
                 <Route path="audit-log" element={<AuditLog />} />
+                <Route path="cms" element={<CMSDashboard />} />
+                <Route path="cms/pages" element={<PageManager />} />
+                <Route path="cms/blog" element={<BlogManager />} />
+                <Route path="cms/announcements" element={<AnnouncementManager />} />
+                <Route path="cms/faq" element={<FAQManager />} />
+                <Route path="cms/settings" element={<CMSSettings />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

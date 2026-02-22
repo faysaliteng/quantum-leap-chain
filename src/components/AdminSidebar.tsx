@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, Link2, Activity, FileText, LogOut, Shield,
-  Percent, DollarSign,
+  Percent, DollarSign, Newspaper, Megaphone, HelpCircle, Settings, FileEdit,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -10,7 +10,7 @@ import {
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 
-const nav = [
+const adminNav = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
   { title: "Revenue", url: "/admin/revenue", icon: DollarSign },
   { title: "Fee Management", url: "/admin/fees", icon: Percent },
@@ -18,6 +18,15 @@ const nav = [
   { title: "Chains & Assets", url: "/admin/chains", icon: Link2 },
   { title: "Monitoring", url: "/admin/monitoring", icon: Activity },
   { title: "Audit Log", url: "/admin/audit-log", icon: FileText },
+];
+
+const cmsNav = [
+  { title: "Content Overview", url: "/admin/cms", icon: FileEdit },
+  { title: "Pages", url: "/admin/cms/pages", icon: FileText },
+  { title: "Blog Posts", url: "/admin/cms/blog", icon: Newspaper },
+  { title: "Announcements", url: "/admin/cms/announcements", icon: Megaphone },
+  { title: "FAQ", url: "/admin/cms/faq", icon: HelpCircle },
+  { title: "CMS Settings", url: "/admin/cms/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -38,10 +47,28 @@ export function AdminSidebar() {
           <SidebarGroupLabel>Administration</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {nav.map((item) => (
+              {adminNav.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink to={item.url} end={item.url === "/admin"} activeClassName="bg-sidebar-accent text-sidebar-accent-foreground">
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Content Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {cmsNav.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton asChild tooltip={item.title}>
+                    <NavLink to={item.url} end={item.url === "/admin/cms"} activeClassName="bg-sidebar-accent text-sidebar-accent-foreground">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </NavLink>

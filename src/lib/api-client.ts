@@ -5,8 +5,9 @@ import type {
   ApiKey, ApiKeyCreated, CreateApiKeyRequest,
   WebhookEndpoint, WebhookDelivery, CreateWebhookRequest, SettlementConfig, DepositAddress,
   AddressPoolUpload, AddressPoolStats, Sweep, Merchant, ChainConfig, AssetConfig,
-  SystemHealth, DashboardStats, AdminStats, AuditLogEntry, WatcherCheckpoint,
+  SystemHealth, DashboardStats, AdminStats, AuditLogEntry,
   FeeConfig, MerchantFeeOverride, RevenueStats, TopMerchant,
+  CMSPage, Announcement, BlogPost, FAQEntry, CMSSettings, CMSStats,
 } from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
@@ -126,6 +127,37 @@ export const admin = {
   health: () => http.get<SystemHealth>("/v1/admin/health").then((r) => r.data),
   auditLog: (params?: { actor?: string; action?: string; from?: string; to?: string; page?: number }) =>
     http.get<PaginatedResponse<AuditLogEntry>>("/v1/admin/audit-log", { params }).then((r) => r.data),
+
+  // ── CMS ──
+  cms: {
+    stats: () => http.get<CMSStats>("/v1/admin/cms/stats").then((r) => r.data),
+    pages: {
+      list: () => http.get<CMSPage[]>("/v1/admin/cms/pages").then((r) => r.data),
+      update: (id: string, data: Partial<CMSPage>) => http.put(`/v1/admin/cms/pages/${id}`, data),
+    },
+    announcements: {
+      list: () => http.get<Announcement[]>("/v1/admin/cms/announcements").then((r) => r.data),
+      create: (data: Omit<Announcement, "id" | "created_at">) => http.post<Announcement>("/v1/admin/cms/announcements", data).then((r) => r.data),
+      update: (id: string, data: Partial<Announcement>) => http.put(`/v1/admin/cms/announcements/${id}`, data),
+      delete: (id: string) => http.delete(`/v1/admin/cms/announcements/${id}`),
+    },
+    blog: {
+      list: () => http.get<BlogPost[]>("/v1/admin/cms/blog").then((r) => r.data),
+      create: (data: Omit<BlogPost, "id" | "created_at">) => http.post<BlogPost>("/v1/admin/cms/blog", data).then((r) => r.data),
+      update: (id: string, data: Partial<BlogPost>) => http.put(`/v1/admin/cms/blog/${id}`, data),
+      delete: (id: string) => http.delete(`/v1/admin/cms/blog/${id}`),
+    },
+    faq: {
+      list: () => http.get<FAQEntry[]>("/v1/admin/cms/faq").then((r) => r.data),
+      create: (data: Omit<FAQEntry, "id" | "created_at">) => http.post<FAQEntry>("/v1/admin/cms/faq", data).then((r) => r.data),
+      update: (id: string, data: Partial<FAQEntry>) => http.put(`/v1/admin/cms/faq/${id}`, data),
+      delete: (id: string) => http.delete(`/v1/admin/cms/faq/${id}`),
+    },
+    settings: {
+      get: () => http.get<CMSSettings>("/v1/admin/cms/settings").then((r) => r.data),
+      update: (data: Partial<CMSSettings>) => http.put("/v1/admin/cms/settings", data),
+    },
+  },
 };
 
 // ── Health ──

@@ -1,0 +1,13 @@
+{
+  "name": "Cryptoniumpay",
+  "short_name": "Cryptoniumpay",
+  "description": "The lowest-fee crypto payment gateway. Accept BTC, ETH, USDC and more.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0c10",
+  "theme_color": "#e5930a",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

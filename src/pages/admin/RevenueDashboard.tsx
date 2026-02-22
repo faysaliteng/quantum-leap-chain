@@ -1,14 +1,23 @@
+import { useState } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useQuery } from "@tanstack/react-query";
 import { admin } from "@/lib/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { StatCard } from "@/components/StatCard";
+import { TimeRangeSelector, type TimeRange } from "@/components/TimeRangeSelector";
+import { CHAIN_COLORS } from "@/lib/constants";
 import { DollarSign, TrendingUp, Receipt, Users } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
+} from "recharts";
 
 export default function RevenueDashboard() {
   usePageTitle("Revenue");
+  const [range, setRange] = useState<TimeRange>("1M");
 
   const { data: revenue, isLoading } = useQuery({
     queryKey: ["admin-revenue"],
@@ -23,73 +32,112 @@ export default function RevenueDashboard() {
   if (isLoading && merchantsLoading) return <PageSkeleton />;
 
   const kpis = [
-    { title: "Total Revenue", value: `$${revenue?.total_revenue_usd ?? "0.00"}`, icon: DollarSign, change: revenue?.revenue_change_pct },
-    { title: "Fees Collected Today", value: `$${revenue?.fees_today_usd ?? "0.00"}`, icon: TrendingUp },
-    { title: "Total Transactions", value: revenue?.total_transactions?.toLocaleString() ?? "0", icon: Receipt },
-    { title: "Active Merchants", value: revenue?.active_merchants?.toLocaleString() ?? "0", icon: Users },
+    { label: "Total Revenue", value: `$${revenue?.total_revenue_usd ?? "0.00"}`, icon: DollarSign, change: revenue?.revenue_change_pct },
+    { label: "Fees Collected Today", value: `$${revenue?.fees_today_usd ?? "0.00"}`, icon: TrendingUp },
+    { label: "Total Transactions", value: revenue?.total_transactions?.toLocaleString() ?? "0", icon: Receipt },
+    { label: "Active Merchants", value: revenue?.active_merchants?.toLocaleString() ?? "0", icon: Users },
   ];
+
+  const chainColors = Object.values(CHAIN_COLORS);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">Platform Revenue</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold">Platform Revenue</h1>
+        <TimeRangeSelector value={range} onChange={setRange} />
+      </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
-          <Card key={kpi.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xs text-muted-foreground uppercase">{kpi.title}</CardTitle>
-              <kpi.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{kpi.value}</p>
-              {kpi.change !== undefined && (
-                <p className={`text-xs mt-1 ${kpi.change >= 0 ? "text-green-500" : "text-destructive"}`}>
-                  {kpi.change >= 0 ? "+" : ""}{kpi.change}% vs last month
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <StatCard key={kpi.label} label={kpi.label} value={kpi.value} icon={kpi.icon} change={kpi.change} />
         ))}
       </div>
 
-      {/* Revenue Chart */}
-      {revenue?.daily_revenue && revenue.daily_revenue.length > 0 && (
+      {/* Charts Row */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Revenue Area Chart */}
+        {revenue?.daily_revenue && revenue.daily_revenue.length > 0 && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Daily Revenue (Last 30 Days)</CardTitle></CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenue.daily_revenue}>
+                    <defs>
+                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `$${v}`} />
+                    <Tooltip
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]}
+                    />
+                    <Area type="monotone" dataKey="amount" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#revenueGradient)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Transaction Volume Bar Chart */}
+        {revenue?.transaction_volume && revenue.transaction_volume.length > 0 && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Transaction Volume</CardTitle></CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenue.transaction_volume}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                    <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip
+                      contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
+                      formatter={(value: number) => [value.toLocaleString(), "Transactions"]}
+                    />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Revenue by Chain Donut */}
+      {revenue?.revenue_by_chain && revenue.revenue_by_chain.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Daily Revenue (Last 30 Days)</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-sm">Revenue by Chain</CardTitle></CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-64 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenue.daily_revenue}>
-                  <defs>
-                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `$${v}`} />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                    formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]}
-                  />
-                  <Area
-                    type="monotone"
+                <PieChart>
+                  <Pie
+                    data={revenue.revenue_by_chain}
                     dataKey="amount"
-                    stroke="hsl(var(--primary))"
-                    fillOpacity={1}
-                    fill="url(#revenueGradient)"
+                    nameKey="chain"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
                     strokeWidth={2}
+                    stroke="hsl(var(--background))"
+                  >
+                    {revenue.revenue_by_chain.map((entry, i) => (
+                      <Cell key={entry.chain} fill={CHAIN_COLORS[entry.chain.toUpperCase()] || chainColors[i % chainColors.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
                   />
-                </AreaChart>
+                  <Legend />
+                </PieChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -98,9 +146,7 @@ export default function RevenueDashboard() {
 
       {/* Top Merchants */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Top Merchants by Volume</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-sm">Top Merchants by Volume</CardTitle></CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
