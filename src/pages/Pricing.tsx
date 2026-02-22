@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import { Check, X, ArrowRight, Calculator, Zap, Shield, Globe } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { SocialLinks } from "@/components/SocialLinks";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,6 +38,7 @@ const tiers = [
 ];
 
 function FeeCalculator() {
+  const { t } = useI18n();
   const [volume, setVolume] = useState(5000);
 
   const getRate = (v: number) => {
@@ -56,12 +59,12 @@ function FeeCalculator() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-display">
           <Calculator className="h-5 w-5 text-primary" />
-          Fee Calculator
+          {t("pricing.feeCalculator")}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-3">
-          <Label>Monthly Volume</Label>
+          <Label>{t("pricing.monthlyVolume")}</Label>
           <div className="flex items-center gap-4">
             <Input
               type="number"
@@ -83,20 +86,20 @@ function FeeCalculator() {
 
         <div className="grid grid-cols-3 gap-4 text-center">
           <div className="rounded-lg bg-secondary p-4">
-            <p className="text-xs text-muted-foreground mb-1">Your Rate</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("pricing.yourRate")}</p>
             <p className="text-2xl font-bold text-primary font-display">{(rate * 100).toFixed(2)}%</p>
           </div>
           <div className="rounded-lg bg-secondary p-4">
-            <p className="text-xs text-muted-foreground mb-1">Your Fee</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("pricing.yourFee")}</p>
             <p className="text-2xl font-bold font-display">${fee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
           <div className="rounded-lg bg-success/10 p-4">
-            <p className="text-xs text-muted-foreground mb-1">You Save</p>
+            <p className="text-xs text-muted-foreground mb-1">{t("pricing.youSave")}</p>
             <p className="text-2xl font-bold text-success font-display">${saved.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          Compared to the industry-standard 1.0% fee
+          {t("pricing.comparedTo")}
         </p>
       </CardContent>
     </Card>
@@ -104,6 +107,7 @@ function FeeCalculator() {
 }
 
 export default function Pricing() {
+  const { t } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -120,12 +124,13 @@ export default function Pricing() {
             <CryptoniumpayLogo />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link to="/pricing" className="text-primary font-medium">Pricing</Link>
-            <Link to="/docs/api" className="text-muted-foreground hover:text-foreground transition-colors">API Docs</Link>
-            <Link to="/docs/security" className="text-muted-foreground hover:text-foreground transition-colors">Security</Link>
+            <Link to="/pricing" className="text-primary font-medium">{t("nav.pricing")}</Link>
+            <Link to="/docs/api" className="text-muted-foreground hover:text-foreground transition-colors">{t("nav.docs")}</Link>
+            <Link to="/docs/security" className="text-muted-foreground hover:text-foreground transition-colors">{t("nav.security")}</Link>
+            <LanguageSwitcher />
             <ThemeToggle />
-            <Link to="/login"><Button variant="ghost" size="sm">Log in</Button></Link>
-            <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">Get Started</Button></Link>
+            <Link to="/login"><Button variant="ghost" size="sm">{t("nav.login")}</Button></Link>
+            <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">{t("nav.getStarted")}</Button></Link>
           </nav>
           <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
             <div className="space-y-1.5">
@@ -137,14 +142,17 @@ export default function Pricing() {
         </div>
         {mobileMenuOpen && (
           <nav className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl p-4 space-y-3">
-            <Link to="/pricing" className="block text-primary font-medium">Pricing</Link>
-            <Link to="/docs/api" className="block text-muted-foreground">API Docs</Link>
-            <Link to="/docs/security" className="block text-muted-foreground">Security</Link>
+            <Link to="/pricing" className="block text-primary font-medium">{t("nav.pricing")}</Link>
+            <Link to="/docs/api" className="block text-muted-foreground">{t("nav.docs")}</Link>
+            <Link to="/docs/security" className="block text-muted-foreground">{t("nav.security")}</Link>
             <div className="flex gap-2 pt-2">
-              <Link to="/login"><Button variant="ghost" size="sm">Log in</Button></Link>
-              <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">Get Started</Button></Link>
+              <Link to="/login"><Button variant="ghost" size="sm">{t("nav.login")}</Button></Link>
+              <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">{t("nav.getStarted")}</Button></Link>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
           </nav>
         )}
       </header>
@@ -156,19 +164,19 @@ export default function Pricing() {
           className="container mx-auto px-4 py-20 text-center"
         >
           <motion.div variants={fadeUp}>
-            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">Simple, transparent pricing</Badge>
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">{t("pricing.badge")}</Badge>
           </motion.div>
           <motion.h1 variants={fadeUp} className="text-4xl md:text-6xl font-bold font-display mb-4">
-            <span className="text-gradient-gold">0.5%</span> flat fee
+            <span className="text-gradient-gold">0.5%</span> {t("pricing.hero")}
           </motion.h1>
           <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            The lowest fee in crypto payments. No hidden charges, no monthly minimums, no KYC required. Start accepting crypto in minutes.
+            {t("pricing.heroDesc")}
           </motion.p>
           <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
             {[
-              { icon: Zap, text: "Instant settlement" },
-              { icon: Shield, text: "No KYC required" },
-              { icon: Globe, text: "7+ chains supported" },
+              { icon: Zap, text: t("pricing.instantSettlement") },
+              { icon: Shield, text: t("pricing.noKyc") },
+              { icon: Globe, text: t("pricing.chainsSupported") },
             ].map(({ icon: Icon, text }) => (
               <span key={text} className="flex items-center gap-2">
                 <Icon className="h-4 w-4 text-primary" /> {text}
@@ -183,17 +191,17 @@ export default function Pricing() {
           className="container mx-auto px-4 py-16"
         >
           <motion.h2 variants={fadeUp} className="text-3xl font-bold font-display text-center mb-10">
-            How We Compare
+            {t("pricing.howWeCompare")}
           </motion.h2>
           <motion.div variants={fadeUp} className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Fee</TableHead>
-                  <TableHead>Settlement</TableHead>
-                  <TableHead>KYC</TableHead>
-                  <TableHead>Chains</TableHead>
+                  <TableHead>{t("pricing.provider")}</TableHead>
+                  <TableHead>{t("pricing.fee")}</TableHead>
+                  <TableHead>{t("pricing.settlement")}</TableHead>
+                  <TableHead>{t("pricing.kyc")}</TableHead>
+                  <TableHead>{t("pricing.chains")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -201,7 +209,7 @@ export default function Pricing() {
                   <TableRow key={c.name} className={c.highlight ? "bg-primary/5 font-medium" : ""}>
                     <TableCell className="flex items-center gap-2">
                       {c.name}
-                      {c.highlight && <Badge className="bg-gradient-gold text-primary-foreground text-[10px]">Best</Badge>}
+                      {c.highlight && <Badge className="bg-gradient-gold text-primary-foreground text-[10px]">{t("pricing.best")}</Badge>}
                     </TableCell>
                     <TableCell className={c.highlight ? "text-primary font-bold" : ""}>{c.fee}</TableCell>
                     <TableCell>
@@ -230,20 +238,20 @@ export default function Pricing() {
           className="container mx-auto px-4 py-16"
         >
           <motion.h2 variants={fadeUp} className="text-3xl font-bold font-display text-center mb-3">
-            Volume Discounts
+            {t("pricing.volumeDiscounts")}
           </motion.h2>
           <motion.p variants={fadeUp} className="text-muted-foreground text-center mb-10 max-w-xl mx-auto">
-            Process more, pay less. Our tiered pricing rewards growth automatically.
+            {t("pricing.volumeDesc")}
           </motion.p>
           <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {tiers.map((t, i) => (
-              <Card key={t.label} className={`text-center ${i === 3 ? "border-primary/40 glow-gold" : ""}`}>
+            {tiers.map((tier, i) => (
+              <Card key={tier.label} className={`text-center ${i === 3 ? "border-primary/40 glow-gold" : ""}`}>
                 <CardContent className="pt-6 space-y-2">
                   <Badge variant={i === 3 ? "default" : "outline"} className={i === 3 ? "bg-gradient-gold text-primary-foreground" : ""}>
-                    {t.label}
+                    {tier.label}
                   </Badge>
-                  <p className="text-3xl font-bold font-display text-primary">{t.fee}</p>
-                  <p className="text-sm text-muted-foreground">{t.range}/mo</p>
+                  <p className="text-3xl font-bold font-display text-primary">{tier.fee}</p>
+                  <p className="text-sm text-muted-foreground">{tier.range}/mo</p>
                 </CardContent>
               </Card>
             ))}
@@ -256,7 +264,7 @@ export default function Pricing() {
           className="container mx-auto px-4 py-16 max-w-xl"
         >
           <motion.h2 variants={fadeUp} className="text-3xl font-bold font-display text-center mb-10">
-            Estimate Your Fees
+            {t("pricing.estimateFees")}
           </motion.h2>
           <motion.div variants={fadeUp}>
             <FeeCalculator />
@@ -265,13 +273,13 @@ export default function Pricing() {
 
         {/* CTA */}
         <section className="container mx-auto px-4 py-20 text-center">
-          <h2 className="text-3xl font-bold font-display mb-4">Ready to save on every transaction?</h2>
+          <h2 className="text-3xl font-bold font-display mb-4">{t("pricing.ctaTitle")}</h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Set up in minutes. No contracts, no minimums, cancel anytime.
+            {t("pricing.ctaDesc")}
           </p>
           <Link to="/signup">
             <Button size="lg" className="bg-gradient-gold text-primary-foreground gap-2">
-              Start Free <ArrowRight className="h-4 w-4" />
+              {t("pricing.startFree")} <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </section>
@@ -281,9 +289,9 @@ export default function Pricing() {
       <footer className="border-t border-border bg-card/50">
         <div className="container mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-4">
-            <Link to="/" className="hover:text-foreground">Home</Link>
-            <Link to="/terms" className="hover:text-foreground">Terms</Link>
-            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
+            <Link to="/terms" className="hover:text-foreground">{t("nav.terms")}</Link>
+            <Link to="/privacy" className="hover:text-foreground">{t("nav.privacy")}</Link>
           </div>
           <SocialLinks />
           <p>© {new Date().getFullYear()} Cryptoniumpay</p>

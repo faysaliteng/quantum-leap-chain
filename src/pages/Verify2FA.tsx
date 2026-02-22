@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { auth as authApi } from "@/lib/api-client";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export default function Verify2FA() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const { loginWithToken } = useAuth();
@@ -40,7 +42,7 @@ export default function Verify2FA() {
     <div className="flex min-h-screen items-center justify-center bg-background relative" data-testid="page:verify-2fa">
       <SEOHead title="Two-Factor Authentication" description="Enter your authenticator code to continue." />
       <Button variant="ghost" size="sm" className="absolute top-6 left-6 text-muted-foreground hover:text-foreground z-10" asChild>
-        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Login</Link>
+        <Link to="/login"><ArrowLeft className="mr-1.5 h-4 w-4" />{t("auth.backToLogin")}</Link>
       </Button>
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[100px]" />
@@ -53,11 +55,9 @@ export default function Verify2FA() {
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
             <ShieldCheck className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-xl font-display">Two-Factor Authentication</CardTitle>
+          <CardTitle className="text-xl font-display">{t("auth.twoFactor")}</CardTitle>
           <CardDescription>
-            {useBackup
-              ? "Enter one of your backup codes"
-              : "Enter the 6-digit code from your authenticator app"}
+            {useBackup ? t("auth.enterBackupCode") : t("auth.enterAuthCode")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -82,7 +82,7 @@ export default function Verify2FA() {
             className="w-full bg-gradient-gold text-primary-foreground font-semibold"
             disabled={loading || code.length !== 6}
           >
-            {loading ? "Verifying…" : "Verify"}
+            {loading ? t("auth.verifying") : t("auth.verify")}
           </Button>
           <div className="text-center">
             <Button
@@ -91,7 +91,7 @@ export default function Verify2FA() {
               onClick={() => { setUseBackup(!useBackup); setCode(""); setError(""); }}
               className="text-muted-foreground hover:text-foreground text-xs"
             >
-              {useBackup ? "Use authenticator app" : "Use a backup code instead"}
+              {useBackup ? t("auth.useAuthApp") : t("auth.useBackupCode")}
             </Button>
           </div>
         </CardContent>

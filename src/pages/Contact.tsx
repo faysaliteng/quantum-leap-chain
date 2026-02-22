@@ -7,8 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SEOHead } from "@/components/SEOHead";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { SocialLinks } from "@/components/SocialLinks";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,6 +45,7 @@ const subjects = [
 ];
 
 export default function Contact() {
+  const { t } = useI18n();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -55,12 +58,19 @@ export default function Contact() {
   } = useForm<ContactForm>({ resolver: zodResolver(contactSchema) });
 
   const onSubmit = async (_data: ContactForm) => {
-    // Simulate API call
     await new Promise((r) => setTimeout(r, 1200));
     setSubmitted(true);
-    toast.success("Message sent! We'll get back to you within 24 hours.");
+    toast.success(t("contact.sent"));
     reset();
   };
+
+  const infoCards = [
+    { icon: Mail, title: t("contact.emailTitle"), detail: t("contact.emailDetail"), sub: t("contact.emailSub") },
+    { icon: MessageSquare, title: t("contact.supportTitle"), detail: t("contact.supportDetail"), sub: t("contact.supportSub") },
+    { icon: MapPin, title: t("contact.officeTitle"), detail: t("contact.officeDetail"), sub: t("contact.officeSub") },
+    { icon: Building2, title: t("contact.legalTitle"), detail: t("contact.legalDetail"), sub: t("contact.legalSub") },
+    { icon: Clock, title: t("contact.responseTitle"), detail: t("contact.responseDetail"), sub: t("contact.responseSub") },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground" data-testid="page:contact">
@@ -76,12 +86,13 @@ export default function Contact() {
             <CryptoniumpayLogo />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
-            <Link to="/docs/api" className="text-muted-foreground hover:text-foreground transition-colors">API Docs</Link>
-            <Link to="/contact" className="text-primary font-medium">Contact</Link>
+            <Link to="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">{t("nav.pricing")}</Link>
+            <Link to="/docs/api" className="text-muted-foreground hover:text-foreground transition-colors">{t("nav.docs")}</Link>
+            <Link to="/contact" className="text-primary font-medium">{t("nav.contact")}</Link>
+            <LanguageSwitcher />
             <ThemeToggle />
-            <Link to="/login"><Button variant="ghost" size="sm">Log in</Button></Link>
-            <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">Get Started</Button></Link>
+            <Link to="/login"><Button variant="ghost" size="sm">{t("nav.login")}</Button></Link>
+            <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">{t("nav.getStarted")}</Button></Link>
           </nav>
           <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
             <div className="space-y-1.5">
@@ -93,14 +104,17 @@ export default function Contact() {
         </div>
         {mobileMenuOpen && (
           <nav className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl p-4 space-y-3">
-            <Link to="/pricing" className="block text-muted-foreground">Pricing</Link>
-            <Link to="/docs/api" className="block text-muted-foreground">API Docs</Link>
-            <Link to="/contact" className="block text-primary font-medium">Contact</Link>
+            <Link to="/pricing" className="block text-muted-foreground">{t("nav.pricing")}</Link>
+            <Link to="/docs/api" className="block text-muted-foreground">{t("nav.docs")}</Link>
+            <Link to="/contact" className="block text-primary font-medium">{t("nav.contact")}</Link>
             <div className="flex gap-2 pt-2">
-              <Link to="/login"><Button variant="ghost" size="sm">Log in</Button></Link>
-              <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">Get Started</Button></Link>
+              <Link to="/login"><Button variant="ghost" size="sm">{t("nav.login")}</Button></Link>
+              <Link to="/signup"><Button size="sm" className="bg-gradient-gold text-primary-foreground">{t("nav.getStarted")}</Button></Link>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
           </nav>
         )}
       </header>
@@ -112,13 +126,13 @@ export default function Contact() {
           className="container mx-auto px-4 py-20 text-center"
         >
           <motion.div variants={fadeUp}>
-            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">Get in touch</Badge>
+            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">{t("contact.badge")}</Badge>
           </motion.div>
           <motion.h1 variants={fadeUp} className="text-4xl md:text-6xl font-bold font-display mb-4">
-            Let's <span className="text-gradient-gold">Talk</span>
+            {t("contact.heading")} <span className="text-gradient-gold">{t("contact.headingAccent")}</span>
           </motion.h1>
           <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Whether you're exploring enterprise integration or need technical support, our team is here to help.
+            {t("contact.subtitle")}
           </motion.p>
         </motion.section>
 
@@ -130,13 +144,7 @@ export default function Contact() {
               initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}
               className="lg:col-span-2 space-y-4"
             >
-              {[
-                { icon: Mail, title: "Email", detail: "enterprise@cryptoniumpay.com", sub: "For partnerships & volume pricing" },
-                { icon: MessageSquare, title: "Support", detail: "support@cryptoniumpay.com", sub: "Technical help & integration" },
-                { icon: MapPin, title: "Office", detail: "71 – 75 Shelton Street", sub: "Covent Garden, London WC2H 9JQ, UK" },
-                { icon: Building2, title: "Legal Entity", detail: "Cryptoniumpay Ltd", sub: "Registered in England & Wales" },
-                { icon: Clock, title: "Response Time", detail: "Within 24 hours", sub: "Mon – Fri, 9 AM – 6 PM GMT" },
-              ].map(({ icon: Icon, title, detail, sub }) => (
+              {infoCards.map(({ icon: Icon, title, detail, sub }) => (
                 <motion.div key={title} variants={fadeUp}>
                   <Card>
                     <CardContent className="flex items-start gap-4 p-5">
@@ -166,27 +174,27 @@ export default function Contact() {
                       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-2">
                         <Send className="h-7 w-7 text-success" />
                       </div>
-                      <h3 className="text-xl font-bold font-display">Message Sent!</h3>
+                      <h3 className="text-xl font-bold font-display">{t("contact.sent")}</h3>
                       <p className="text-muted-foreground max-w-sm mx-auto">
-                        Thank you for reaching out. Our team will review your message and respond within 24 hours.
+                        {t("contact.sentDesc")}
                       </p>
                       <Button variant="outline" onClick={() => setSubmitted(false)} className="mt-4">
-                        Send Another Message
+                        {t("contact.sendAnother")}
                       </Button>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                      <h2 className="text-xl font-bold font-display mb-1">Send us a message</h2>
-                      <p className="text-sm text-muted-foreground mb-4">All fields marked with * are required.</p>
+                      <h2 className="text-xl font-bold font-display mb-1">{t("contact.sendMessage")}</h2>
+                      <p className="text-sm text-muted-foreground mb-4">{t("contact.requiredFields")}</p>
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="name">Name *</Label>
-                          <Input id="name" placeholder="Your name" {...register("name")} />
+                          <Label htmlFor="name">{t("contact.name")} *</Label>
+                          <Input id="name" placeholder={t("contact.name")} {...register("name")} />
                           {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="email">Email *</Label>
+                          <Label htmlFor="email">{t("auth.email")} *</Label>
                           <Input id="email" type="email" placeholder="you@company.com" {...register("email")} />
                           {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                         </div>
@@ -194,15 +202,15 @@ export default function Contact() {
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="company">Company</Label>
-                          <Input id="company" placeholder="Company name" {...register("company")} />
+                          <Label htmlFor="company">{t("contact.company")}</Label>
+                          <Input id="company" placeholder={t("contact.company")} {...register("company")} />
                           {errors.company && <p className="text-xs text-destructive">{errors.company.message}</p>}
                         </div>
                         <div className="space-y-2">
-                          <Label>Subject *</Label>
+                          <Label>{t("contact.subject")} *</Label>
                           <Select onValueChange={(v) => setValue("subject", v, { shouldValidate: true })}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a topic" />
+                              <SelectValue placeholder={t("contact.selectTopic")} />
                             </SelectTrigger>
                             <SelectContent>
                               {subjects.map((s) => (
@@ -215,10 +223,10 @@ export default function Contact() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="message">Message *</Label>
+                        <Label htmlFor="message">{t("contact.message")} *</Label>
                         <Textarea
                           id="message"
-                          placeholder="Tell us how we can help…"
+                          placeholder={t("contact.messagePlaceholder")}
                           rows={5}
                           {...register("message")}
                         />
@@ -230,7 +238,7 @@ export default function Contact() {
                         disabled={isSubmitting}
                         className="w-full bg-gradient-gold text-primary-foreground gap-2"
                       >
-                        {isSubmitting ? "Sending…" : "Send Message"}
+                        {isSubmitting ? t("contact.sending") : t("contact.sendBtn")}
                         <Send className="h-4 w-4" />
                       </Button>
                     </form>
@@ -246,10 +254,10 @@ export default function Contact() {
       <footer className="border-t border-border bg-card/50">
         <div className="container mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-4">
-            <Link to="/" className="hover:text-foreground">Home</Link>
-            <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-            <Link to="/terms" className="hover:text-foreground">Terms</Link>
-            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
+            <Link to="/pricing" className="hover:text-foreground">{t("nav.pricing")}</Link>
+            <Link to="/terms" className="hover:text-foreground">{t("nav.terms")}</Link>
+            <Link to="/privacy" className="hover:text-foreground">{t("nav.privacy")}</Link>
           </div>
           <SocialLinks />
           <p>© {new Date().getFullYear()} Cryptoniumpay</p>

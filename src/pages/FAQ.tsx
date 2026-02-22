@@ -64,9 +64,9 @@ export default function FAQ() {
             <CryptoniumpayLogo size="md" />
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild><Link to="/">Home</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/docs/api">API Docs</Link></Button>
-            <Button variant="ghost" size="sm" asChild><Link to="/contact">Contact</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/">{t("nav.home")}</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/docs/api">{t("nav.docs")}</Link></Button>
+            <Button variant="ghost" size="sm" asChild><Link to="/contact">{t("nav.contact")}</Link></Button>
             <LanguageSwitcher />
             <ThemeToggle />
           </div>
@@ -153,10 +153,10 @@ export default function FAQ() {
         <Card className="mt-12 border-primary/20 bg-primary/5">
           <CardContent className="py-8 text-center">
             <MessageSquare className="h-8 w-8 text-primary mx-auto mb-3" />
-            <h3 className="font-display font-semibold text-lg mb-2">Still have questions?</h3>
-            <p className="text-sm text-muted-foreground mb-4">Our team is happy to help. Reach out and we'll get back to you within 24 hours.</p>
+            <h3 className="font-display font-semibold text-lg mb-2">{t("faq.stillHaveQuestions")}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t("faq.stillHaveQuestionsDesc")}</p>
             <Button className="bg-gradient-gold text-primary-foreground" asChild>
-              <Link to="/contact">Contact Support</Link>
+              <Link to="/contact">{t("faq.contactSupport")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -167,8 +167,8 @@ export default function FAQ() {
         <div className="container flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Cryptoniumpay. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">Terms</Link>
-            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">Privacy</Link>
+            <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground">{t("nav.terms")}</Link>
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground">{t("nav.privacy")}</Link>
             <SocialLinks />
           </div>
         </div>
