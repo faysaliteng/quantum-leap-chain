@@ -13,8 +13,10 @@ export class ChargesService {
       if (existing) return existing.response;
     }
 
+    const chargeId = uuid();
     const charge = await this.prisma.charge.create({
       data: {
+        id: chargeId,
         merchant_id: merchantId,
         name: data.name,
         description: data.description,
@@ -24,7 +26,7 @@ export class ChargesService {
         crypto_chain: data.requested_crypto?.chain,
         crypto_asset: data.requested_crypto?.asset,
         crypto_amount: data.requested_crypto?.amount,
-        hosted_url: `/checkout/${uuid()}`,
+        hosted_url: `/pay/${chargeId}`,
         expires_at: new Date(Date.now() + (data.expires_in_minutes || 60) * 60 * 1000),
         metadata: data.metadata,
         redirect_url: data.redirect_url,
