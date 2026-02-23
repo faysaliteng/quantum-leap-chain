@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -69,11 +69,32 @@ export default function AdminWalletManagement() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-wallets"] }); toast.success(t("admin.remove")); },
   });
 
+  const [estimatedFee, setEstimatedFee] = useState(0);
+  const [feeLoading, setFeeLoading] = useState(false);
+
+  useEffect(() => {
+    if (!sendWallet || !sendTo || !sendAmount) { setEstimatedFee(0); return; }
+    setFeeLoading(true);
+    admin.wallets.estimateFee(sendWallet.id, { to_address: sendTo, amount: sendAmount })
+      .then((res) => setEstimatedFee(parseFloat(res.estimated_fee)))
+      .catch(() => setEstimatedFee(0))
+      .finally(() => setFeeLoading(false));
+  }, [sendWallet?.id, sendTo, sendAmount]);
+
+  const sendMut = useMutation({
+    mutationFn: () => admin.wallets.send(sendWallet!.id, { to_address: sendTo, amount: sendAmount, memo: sendMemo || undefined }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-wallets"] });
+      toast.success(sendWallet!.type === "cold" ? t("admin.signOnDevice") : t("admin.confirmWithdrawal"));
+      setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
+    },
+    onError: () => toast.error(t("admin.failed")),
+  });
+
   if (isLoading) return <PageSkeleton />;
 
   const walletsList = stats?.wallets ?? [];
   const filtered = filter === "all" ? walletsList : walletsList.filter((w) => w.type === filter);
-  const estimatedFee = sendWallet?.chain === "btc" ? 0.00005 : 0.001;
 
   const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold" }) => {
     addMut.mutate({ label: wallet.label, chain: wallet.chain, address: wallet.address, type: wallet.type } as any);
@@ -275,10 +296,8 @@ export default function AdminWalletManagement() {
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>{t("admin.back")}</Button>
                     <Button className="flex-1 bg-gradient-gold text-primary-foreground font-semibold"
-                      onClick={() => {
-                        toast.success(sendWallet.type === "cold" ? t("admin.signOnDevice") : t("admin.confirmWithdrawal"));
-                        setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
-                      }}>
+                      disabled={sendMut.isPending}
+                      onClick={() => sendMut.mutate()}>
                       <ShieldCheck className="mr-1.5 h-4 w-4" />
                       {sendWallet.type === "cold" ? t("admin.signOnDevice") : t("admin.confirmWithdrawal")}
                     </Button>

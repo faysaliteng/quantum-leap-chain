@@ -123,6 +123,10 @@ export const wallets = {
   add: (data: { label: string; chain: string; address: string; type: string }) =>
     http.post<WalletConfig>("/v1/wallets", data).then((r) => r.data),
   remove: (id: string) => http.delete(`/v1/wallets/${id}`),
+  send: (id: string, data: { to_address: string; amount: string; memo?: string }) =>
+    http.post(`/v1/wallets/${id}/send`, data).then((r) => r.data),
+  estimateFee: (id: string, data: { to_address: string; amount: string }) =>
+    http.post<{ estimated_fee: string; chain: string }>(`/v1/wallets/${id}/estimate-fee`, data).then((r) => r.data),
 };
 
 // ── Invoices ──
@@ -185,6 +189,16 @@ export const admin = {
     add: (data: Partial<WalletConfig>) => http.post<WalletConfig>("/v1/admin/wallets", data).then((r) => r.data),
     update: (id: string, data: Partial<WalletConfig>) => http.put(`/v1/admin/wallets/${id}`, data),
     remove: (id: string) => http.delete(`/v1/admin/wallets/${id}`),
+    send: (id: string, data: { to_address: string; amount: string; memo?: string }) =>
+      http.post(`/v1/admin/wallets/${id}/send`, data).then((r) => r.data),
+    estimateFee: (id: string, data: { to_address: string; amount: string }) =>
+      http.post<{ estimated_fee: string; chain: string }>(`/v1/admin/wallets/${id}/estimate-fee`, data).then((r) => r.data),
+  },
+
+  // ── API Settings ──
+  apiSettings: {
+    get: () => http.get("/v1/admin/api-settings").then((r) => r.data),
+    update: (data: any) => http.put("/v1/admin/api-settings", data).then((r) => r.data),
   },
 
   // ── CMS ──
