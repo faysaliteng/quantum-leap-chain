@@ -57,8 +57,14 @@ export default function Contact() {
     reset,
   } = useForm<ContactForm>({ resolver: zodResolver(contactSchema) });
 
-  const onSubmit = async (_data: ContactForm) => {
-    await new Promise((r) => setTimeout(r, 1200));
+  const onSubmit = async (data: ContactForm) => {
+    // Build mailto link with form data
+    const supportEmail = "support@cryptoniumpay.com";
+    const subject = encodeURIComponent(`[${data.subject}] from ${data.name}`);
+    const body = encodeURIComponent(
+      `Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company || "N/A"}\nSubject: ${data.subject}\n\n${data.message}`
+    );
+    window.location.href = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
     setSubmitted(true);
     toast.success(t("contact.sent"));
     reset();
