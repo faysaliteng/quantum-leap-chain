@@ -33,6 +33,7 @@ import CreateInvoice from "./pages/dashboard/CreateInvoice";
 import InvoiceDetail from "./pages/dashboard/InvoiceDetail";
 import NotificationsPage from "./pages/dashboard/NotificationsPage";
 import WalletTransactionHistory from "./pages/dashboard/WalletTransactionHistory";
+import MerchantGuide from "./pages/dashboard/MerchantGuide";
 
 import AdminHome from "./pages/admin/AdminHome";
 import MerchantManagement from "./pages/admin/MerchantManagement";
@@ -133,6 +134,7 @@ const App = () => (
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="exports" element={<ExportCenter />} />
                 <Route path="intelligence" element={<MerchantIntelligence />} />
+                <Route path="guide" element={<MerchantGuide />} />
               </Route>
 
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>

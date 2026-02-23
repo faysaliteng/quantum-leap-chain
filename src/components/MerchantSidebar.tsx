@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Receipt, PlusCircle, Settings, Key, Webhook, MapPin, BarChart3, LogOut, Wallet, FileText, ShieldCheck, Bell, History, FileSpreadsheet, Brain,
+  LayoutDashboard, Receipt, PlusCircle, Settings, Key, Webhook, MapPin, BarChart3, LogOut, Wallet, FileText, ShieldCheck, Bell, History, FileSpreadsheet, Brain, BookOpen,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/lib/auth";
@@ -25,6 +25,7 @@ export function MerchantSidebar() {
     { title: t("sidebar.notifications"), url: "/dashboard/notifications", icon: Bell },
     { title: t("sidebar.exports"), url: "/dashboard/exports", icon: FileSpreadsheet },
     { title: t("sidebar.intelligence"), url: "/dashboard/intelligence", icon: Brain },
+    { title: "Merchant Guide", url: "/dashboard/guide", icon: BookOpen },
   ];
 
   const settingsNav = [
