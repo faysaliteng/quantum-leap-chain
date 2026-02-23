@@ -11,8 +11,30 @@ export class MarketService {
   private readonly logger = new Logger('MarketService');
   private readonly CACHE_KEY = 'market:tickers';
   private readonly CACHE_TTL = 300; // 5 minutes
-  private retryDelay = 60_000; // start at 60s, backs off on 429
-  private readonly MAX_RETRY_DELAY = 600_000; // 10 min max
+  private retryDelay = 60_000;
+  private readonly MAX_RETRY_DELAY = 600_000;
+
+  private readonly COIN_MAP: Record<string, string> = {
+    bitcoin: 'BTC',
+    ethereum: 'ETH',
+    tether: 'USDT',
+    'usd-coin': 'USDC',
+    binancecoin: 'BNB',
+    solana: 'SOL',
+    ripple: 'XRP',
+    cardano: 'ADA',
+    dogecoin: 'DOGE',
+    tron: 'TRX',
+    polkadot: 'DOT',
+    'matic-network': 'MATIC',
+    litecoin: 'LTC',
+    'avalanche-2': 'AVAX',
+    chainlink: 'LINK',
+    'bitcoin-cash': 'BCH',
+    stellar: 'XLM',
+    monero: 'XMR',
+    dai: 'DAI',
+  };
 
   constructor(
     private prisma: PrismaService,
@@ -64,14 +86,16 @@ export class MarketService {
       this.retryDelay = 60_000;
 
       const data = await response.json();
-      const tickers = data.map((coin: any) => ({
-        symbol: this.COIN_MAP[coin.id] || coin.symbol.toUpperCase(),
-        name: coin.name,
-        price_usd: coin.current_price,
-        change_24h: coin.price_change_percentage_24h || 0,
-        volume_24h: coin.total_volume || 0,
-        market_cap: coin.market_cap || 0,
-      }));
+      const tickers = data
+        .filter((coin: any) => coin.current_price != null)
+        .map((coin: any) => ({
+          symbol: this.COIN_MAP[coin.id] || coin.symbol.toUpperCase(),
+          name: coin.name,
+          price_usd: coin.current_price ?? 0,
+          change_24h: coin.price_change_percentage_24h ?? 0,
+          volume_24h: coin.total_volume ?? 0,
+          market_cap: coin.market_cap ?? 0,
+        }));
 
       try {
         await this.redis.client.setex(this.CACHE_KEY, this.CACHE_TTL, JSON.stringify(tickers));
