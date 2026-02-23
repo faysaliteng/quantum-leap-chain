@@ -668,9 +668,9 @@ export default function MerchantWallets() {
                   {recentTx?.data?.length ? recentTx.data.map((tx) => (
                     <tr key={tx.id} className="border-b border-border/20 hover:bg-muted/20 transition-colors">
                       <td className="p-3 pl-4">
-                        <Badge variant="outline" className={`text-[10px] ${tx.direction === "in" ? "border-success/30 text-success" : tx.direction === "swap" ? "border-primary/30 text-primary" : "border-destructive/30 text-destructive"}`}>
-                          {tx.direction === "in" ? <ArrowDown className="h-3 w-3 mr-1" /> : tx.direction === "swap" ? <ArrowDownUp className="h-3 w-3 mr-1" /> : <ArrowUp className="h-3 w-3 mr-1" />}
-                          {tx.direction === "in" ? "Receive" : tx.direction === "swap" ? "Swap" : "Send"}
+                        <Badge variant="outline" className={`text-[10px] ${tx.direction === "receive" ? "border-success/30 text-success" : tx.direction === "swap" ? "border-primary/30 text-primary" : "border-destructive/30 text-destructive"}`}>
+                          {tx.direction === "receive" ? <ArrowDown className="h-3 w-3 mr-1" /> : tx.direction === "swap" ? <ArrowDownUp className="h-3 w-3 mr-1" /> : <ArrowUp className="h-3 w-3 mr-1" />}
+                          {tx.direction === "receive" ? "Receive" : tx.direction === "swap" ? "Swap" : "Send"}
                         </Badge>
                       </td>
                       <td className="p-3">
@@ -680,8 +680,8 @@ export default function MerchantWallets() {
                         </div>
                       </td>
                       <td className="p-3 text-right">
-                        <span className={`text-sm font-mono font-medium ${tx.direction === "in" ? "text-success" : ""}`}>
-                          {tx.direction === "in" ? "+" : "-"}{tx.amount}
+                        <span className={`text-sm font-mono font-medium ${tx.direction === "receive" ? "text-success" : ""}`}>
+                          {tx.direction === "receive" ? "+" : "-"}{tx.amount}
                         </span>
                       </td>
                       <td className="p-3">
@@ -690,7 +690,7 @@ export default function MerchantWallets() {
                         </Badge>
                       </td>
                       <td className="p-3">
-                        <span className="text-xs text-muted-foreground">{new Date(tx.timestamp).toLocaleString()}</span>
+                        <span className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleString()}</span>
                       </td>
                       <td className="p-3 pr-4 text-right">
                         {tx.tx_hash && (
