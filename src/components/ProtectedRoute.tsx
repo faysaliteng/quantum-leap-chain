@@ -7,7 +7,10 @@ export function ProtectedRoute({ children, requiredRole }: { children: React.Rea
 
   if (isLoading) return <div className="flex h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
-  if (requiredRole && user?.role !== requiredRole) return <Navigate to="/" replace />;
+  if (requiredRole && user?.role !== requiredRole) {
+    const redirectTo = user?.role === "admin" ? "/admin" : "/dashboard";
+    return <Navigate to={redirectTo} replace />;
+  }
 
   return <>{children}</>;
 }

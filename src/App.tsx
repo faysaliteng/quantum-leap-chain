@@ -114,7 +114,7 @@ const App = () => (
               <Route path="/docs/api" element={<ApiDocs />} />
               <Route path="/docs/singularitycoin" element={<SingularityCoinDocs />} />
 
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<ProtectedRoute requiredRole="merchant"><DashboardLayout /></ProtectedRoute>}>
                 <Route index element={<DashboardHome />} />
                 <Route path="charges" element={<ChargesList />} />
                 <Route path="charges/new" element={<CreateCharge />} />
