@@ -17,17 +17,12 @@ import {
 } from "lucide-react";
 import { wallets, admin } from "@/lib/api-client";
 import type { ChainId } from "@/lib/types";
+import CryptoIcon from "@/components/CryptoIcon";
 
 const chainLabels: Record<string, string> = {
   btc: "Bitcoin", eth: "Ethereum", bsc: "BNB Chain", polygon: "Polygon",
   arbitrum: "Arbitrum", optimism: "Optimism", solana: "Solana", tron: "Tron",
   ltc: "Litecoin", doge: "Dogecoin", avax: "Avalanche", fantom: "Fantom", base: "Base",
-};
-
-const chainIcons: Record<string, string> = {
-  btc: "₿", eth: "Ξ", bsc: "🔶", polygon: "🟣",
-  arbitrum: "🔵", optimism: "🔴", solana: "◎", tron: "♦",
-  ltc: "Ł", doge: "🐕", avax: "🔺", fantom: "👻", base: "🔵",
 };
 
 // Wallets that inject window.ethereum (EIP-1193)
@@ -121,45 +116,41 @@ function CreateWalletTab({ onWalletConnected, onClose, context = "merchant" }: {
   if (step === "select") {
     return (
       <div className="space-y-4">
-        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-xs flex items-start gap-2">
-          <Plus className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
-          <div>
-            <p className="font-medium text-foreground">Generate New Wallet</p>
-            <p className="text-muted-foreground">
-              A real blockchain address will be created. You'll receive your private key and recovery phrase — save them securely. They are shown <strong>once</strong>.
-            </p>
-          </div>
-        </div>
-
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-xs text-destructive">
             {error}
           </div>
         )}
 
+        {/* Wallet Name — prominent, sticky at top */}
         <div className="space-y-2">
-          <Label>Wallet Name</Label>
+          <Label className="text-sm font-semibold">Wallet Name <span className="text-destructive">*</span></Label>
           <Input
-            placeholder="e.g. My ETH Wallet"
+            placeholder="e.g. My Bitcoin Wallet"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
+            className={!label.trim() ? "border-primary/50 ring-1 ring-primary/20" : ""}
+            autoFocus
           />
+          {!label.trim() && (
+            <p className="text-xs text-muted-foreground">Enter a name to enable wallet creation</p>
+          )}
         </div>
 
         <div className="space-y-2">
-          <Label>Blockchain</Label>
+          <Label className="text-sm font-semibold">Select Blockchain</Label>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(chainLabels).map(([key, name]) => (
               <button
                 key={key}
                 onClick={() => setChain(key)}
-                className={`flex items-center gap-2 p-2.5 rounded-lg border text-left text-sm transition-all ${
+                className={`flex items-center gap-2.5 p-2.5 rounded-lg border text-left text-sm transition-all ${
                   chain === key
                     ? "border-primary bg-primary/10 ring-1 ring-primary/30"
                     : "border-border hover:border-primary/30 hover:bg-muted"
                 }`}
               >
-                <span className="text-lg">{chainIcons[key] || "🔗"}</span>
+                <CryptoIcon chain={key} size={22} />
                 <span className="font-medium">{name}</span>
               </button>
             ))}
@@ -174,6 +165,12 @@ function CreateWalletTab({ onWalletConnected, onClose, context = "merchant" }: {
           <Plus className="mr-1.5 h-4 w-4" />
           Create {chainLabels[chain]} Wallet
         </Button>
+
+        {!label.trim() && (
+          <p className="text-xs text-center text-muted-foreground">
+            ⬆ Enter a wallet name above to enable this button
+          </p>
+        )}
       </div>
     );
   }
@@ -182,7 +179,7 @@ function CreateWalletTab({ onWalletConnected, onClose, context = "merchant" }: {
     return (
       <div className="text-center py-10 space-y-4">
         <div className="relative mx-auto w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <span className="text-4xl">{chainIcons[chain] || "🔗"}</span>
+          <CryptoIcon chain={chain} size={48} />
           <div className="absolute inset-0 rounded-2xl border-2 border-primary animate-pulse" />
         </div>
         <div>
