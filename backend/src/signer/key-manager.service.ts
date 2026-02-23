@@ -185,7 +185,7 @@ export class KeyManagerService {
   /** Generate a real Tron keypair */
   private async generateTronKeypair(): Promise<{ address: string; privateKey: string }> {
     try {
-      const tronModule = await import('tronweb');
+      const tronModule: any = await import('tronweb');
       const TronWeb = tronModule.default?.default ?? tronModule.default ?? tronModule;
       const tronWeb = new (TronWeb as any)({ fullHost: 'https://api.trongrid.io' });
       const account = await tronWeb.createAccount();
