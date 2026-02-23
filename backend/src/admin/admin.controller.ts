@@ -93,6 +93,12 @@ export class AdminController {
   @RequirePermissions('wallets.manage')
   addWallet(@Body() body: any) { return this.adminService.addWallet(body); }
 
+  @Post('wallets/generate')
+  @RequirePermissions('wallets.manage')
+  generateWallet(@Body() body: { label: string; chain: string; merchant_id?: string }) {
+    return this.adminService.generateWallet(body);
+  }
+
   @Put('wallets/:id')
   @RequirePermissions('wallets.manage')
   updateWallet(@Param('id') id: string, @Body() body: any) { return this.adminService.updateWallet(id, body); }

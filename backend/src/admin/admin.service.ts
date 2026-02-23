@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { SignerService } from '../signer/signer.service';
+import { KeyManagerService } from '../signer/key-manager.service';
 import { MarketService } from '../market/market.service';
 import { SwapService } from '../swap/swap.service';
 import * as argon2 from 'argon2';
@@ -8,9 +9,12 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger('AdminService');
+
   constructor(
     private prisma: PrismaService,
     private signer: SignerService,
+    private keyManager: KeyManagerService,
     private market: MarketService,
     private swap: SwapService,
   ) {}
@@ -103,6 +107,28 @@ export class AdminService {
     };
   }
   addWallet(data: any) { return this.prisma.walletConfig.create({ data }); }
+
+  async generateWallet(data: { label: string; chain: string; merchant_id?: string }) {
+    const keypair = await this.keyManager.generateKeypair(data.chain);
+    const wallet = await this.prisma.walletConfig.create({
+      data: {
+        merchant_id: data.merchant_id || 'system',
+        label: data.label,
+        chain: data.chain,
+        address: keypair.address,
+        type: 'hot',
+        status: 'active',
+      },
+    });
+    await this.keyManager.storeKey(wallet.id, keypair.privateKey);
+    this.logger.log(`Admin generated wallet: ${wallet.id} chain=${data.chain}`);
+    return {
+      wallet,
+      address: keypair.address,
+      private_key: keypair.privateKey,
+      mnemonic: keypair.mnemonic || null,
+    };
+  }
   updateWallet(id: string, data: any) { return this.prisma.walletConfig.update({ where: { id }, data }); }
   async removeWallet(id: string) {
     await this.prisma.walletBalance.deleteMany({ where: { wallet_id: id } });
