@@ -207,6 +207,7 @@ cryptoniumpay/
 | [**docs/SECURITY.md**](./docs/SECURITY.md) | STRIDE threat model, auth flows, wallet security |
 | [**docs/RUNBOOK.md**](./docs/RUNBOOK.md) | Ops: secret rotation, scaling, incidents, CI failures |
 | [**DEPLOYMENT.md**](./DEPLOYMENT.md) | Deployment guide (Cloudflare + VM) |
+| [**docs/MERCHANT-GUIDE.md**](./docs/MERCHANT-GUIDE.md) | Merchant integration guide (API keys, charges, webhooks, code examples) |
 
 ---
 

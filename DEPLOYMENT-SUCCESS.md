@@ -1,6 +1,6 @@
 # Cryptoniumpay — Complete Deployment Guide (Atomic Detail)
 
-> **Last Updated:** February 23, 2026 (verified working — full redeploy completed)  
+> **Last Updated:** February 23, 2026 (verified working — wallet generation fix + icon overhaul deployed)  
 > **VPS Provider:** DigitalOcean  
 > **Droplet Spec:** 1 vCPU, 2GB RAM, Ubuntu 24.04  
 > **VPS IP:** 139.59.56.210  
