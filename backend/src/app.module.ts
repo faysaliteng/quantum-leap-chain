@@ -33,6 +33,9 @@ import { BlockchainModule } from './blockchain/blockchain.module';
 import { SecurityModule } from './security/security.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { MetricsInterceptor } from './metrics/metrics.interceptor';
+import { SignerModule } from './signer/signer.module';
+import { MarketModule } from './market/market.module';
+import { SwapModule } from './swap/swap.module';
 
 @Module({
   imports: [
@@ -63,6 +66,9 @@ import { MetricsInterceptor } from './metrics/metrics.interceptor';
     BlockchainModule,
     SecurityModule,
     MetricsModule,
+    SignerModule,
+    MarketModule,
+    SwapModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: MaintenanceGuard },

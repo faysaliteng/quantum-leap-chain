@@ -353,6 +353,8 @@ model WalletConfig {
 
   merchant     Merchant?          @relation(fields: [merchant_id], references: [id])
   transactions WalletTransaction[]
+  balances     WalletBalance[]
+  deposit_addresses WalletDepositAddress[]
 
   @@map("wallet_configs")
 }
@@ -621,4 +623,111 @@ model MerchantFeeOverride {
   created_at   DateTime @default(now())
 
   @@map("merchant_fee_overrides")
+}
+
+// ── 37. Wallet Balances (per-asset per-wallet) ──
+model WalletBalance {
+  id         String @id @default(cuid())
+  wallet_id  String
+  chain      String
+  asset      String
+  symbol     String
+  name       String
+  balance    String @default("0")
+  balance_usd Float @default(0)
+  price_usd  Float @default(0)
+  change_24h Float @default(0)
+  contract_address String?
+
+  wallet WalletConfig @relation(fields: [wallet_id], references: [id], onDelete: Cascade)
+
+  @@unique([wallet_id, chain, symbol])
+  @@index([wallet_id])
+  @@map("wallet_balances")
+}
+
+// ── 38. Swap Orders ──
+model SwapOrder {
+  id          String   @id @default(cuid())
+  merchant_id String?
+  from_asset  String
+  to_asset    String
+  from_amount String
+  to_amount   String
+  rate        String
+  fee         String
+  fee_usd     String
+  slippage    Float    @default(0)
+  status      String   @default("pending") // pending | completed | failed | cancelled
+  quote_id    String?
+  tx_hash     String?
+  created_at  DateTime @default(now())
+  completed_at DateTime?
+
+  @@index([merchant_id])
+  @@index([status])
+  @@map("swap_orders")
+}
+
+// ── 39. Order Book ──
+model OrderBookEntry {
+  id         String   @id @default(cuid())
+  pair       String   // e.g. "BTC/USDT"
+  side       String   // bid | ask
+  price      String
+  amount     String
+  total      String
+  maker_id   String?
+  status     String   @default("open") // open | filled | cancelled
+  created_at DateTime @default(now())
+  filled_at  DateTime?
+
+  @@index([pair, side, status])
+  @@map("order_book")
+}
+
+// ── 40. Market Tickers (cached) ──
+model MarketTicker {
+  id            String   @id @default(cuid())
+  symbol        String   @unique
+  name          String
+  price_usd     Float
+  change_24h    Float    @default(0)
+  volume_24h    Float    @default(0)
+  market_cap    Float    @default(0)
+  last_updated  DateTime @updatedAt
+
+  @@map("market_tickers")
+}
+
+// ── 41. Deposit Addresses (per-chain for wallets) ──
+model WalletDepositAddress {
+  id                     String   @id @default(cuid())
+  wallet_id              String?
+  merchant_id            String?
+  chain                  String
+  address                String
+  memo                   String?
+  min_deposit            String   @default("0")
+  confirmations_required Int      @default(6)
+  estimated_time         String   @default("~10 min")
+  created_at             DateTime @default(now())
+
+  @@unique([merchant_id, chain])
+  @@index([wallet_id])
+  @@map("wallet_deposit_addresses")
+}
+
+// ── 42. Encrypted Keys (HSM-managed) ──
+model EncryptedKey {
+  id            String   @id @default(cuid())
+  wallet_id     String   @unique
+  key_enc       String   // AES-256-GCM encrypted private key
+  iv            String
+  auth_tag      String
+  kms_key_id    String?  // External KMS key reference
+  algorithm     String   @default("aes-256-gcm")
+  created_at    DateTime @default(now())
+
+  @@map("encrypted_keys")
 }

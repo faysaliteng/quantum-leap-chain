@@ -90,20 +90,48 @@ export class AdminController {
   walletStats() { return this.adminService.walletStats(); }
 
   @Post('wallets')
-  @RequirePermissions('wallets.view')
+  @RequirePermissions('wallets.manage')
   addWallet(@Body() body: any) { return this.adminService.addWallet(body); }
 
   @Put('wallets/:id')
-  @RequirePermissions('wallets.view')
+  @RequirePermissions('wallets.manage')
   updateWallet(@Param('id') id: string, @Body() body: any) { return this.adminService.updateWallet(id, body); }
 
   @Delete('wallets/:id')
-  @RequirePermissions('wallets.view')
+  @RequirePermissions('wallets.manage')
   removeWallet(@Param('id') id: string) { return this.adminService.removeWallet(id); }
 
   @Get('wallets/transactions')
   @RequirePermissions('wallets.view')
   walletTransactions(@Query() query: any) { return this.adminService.walletTransactions(query); }
+
+  @Get('wallets/portfolio')
+  @RequirePermissions('wallets.view')
+  walletPortfolio() { return this.adminService.walletPortfolio(); }
+
+  @Get('wallets/assets')
+  @RequirePermissions('wallets.view')
+  walletAssets() { return this.adminService.walletAssets(); }
+
+  @Post('wallets/:id/send')
+  @RequirePermissions('wallets.manage')
+  walletSend(@Param('id') id: string, @Body() body: any) { return this.adminService.walletSend(id, body); }
+
+  @Post('wallets/:id/estimate-fee')
+  @RequirePermissions('wallets.view')
+  walletEstimateFee(@Param('id') id: string, @Body() body: any) { return this.adminService.walletEstimateFee(id, body); }
+
+  @Post('wallets/swap/quote')
+  @RequirePermissions('wallets.manage')
+  walletSwapQuote(@Body() body: any) { return this.adminService.walletSwapQuote(body); }
+
+  @Post('wallets/swap/execute')
+  @RequirePermissions('wallets.manage')
+  walletSwapExecute(@Body() body: any) { return this.adminService.walletSwapExecute(body); }
+
+  @Get('wallets/market')
+  @RequirePermissions('wallets.view')
+  walletMarket() { return this.adminService.walletMarket(); }
 
   // ── Roles ──
   @Get('roles')

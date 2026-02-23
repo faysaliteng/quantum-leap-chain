@@ -1,11 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SignerService } from '../signer/signer.service';
+import { MarketService } from '../market/market.service';
+import { SwapService } from '../swap/swap.service';
 import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private signer: SignerService,
+    private market: MarketService,
+    private swap: SwapService,
+  ) {}
 
   // ── Stats ──
   async stats() {
@@ -96,7 +104,11 @@ export class AdminService {
   }
   addWallet(data: any) { return this.prisma.walletConfig.create({ data }); }
   updateWallet(id: string, data: any) { return this.prisma.walletConfig.update({ where: { id }, data }); }
-  removeWallet(id: string) { return this.prisma.walletConfig.delete({ where: { id } }); }
+  async removeWallet(id: string) {
+    await this.prisma.walletBalance.deleteMany({ where: { wallet_id: id } });
+    await this.prisma.walletTransaction.deleteMany({ where: { wallet_id: id } });
+    return this.prisma.walletConfig.delete({ where: { id } });
+  }
   async walletTransactions(query: any) {
     const perPage = parseInt(query.per_page) || 20;
     const where: any = {};
@@ -109,6 +121,97 @@ export class AdminService {
     ]);
     return { data, total, page: 1, per_page: perPage, total_pages: Math.ceil(total / perPage) };
   }
+
+  // ── Admin Wallet Portfolio ──
+  async walletPortfolio() {
+    const wallets = await this.prisma.walletConfig.findMany();
+    const balances = await this.prisma.walletBalance.findMany();
+    const tickers = await this.market.getTickers();
+    const priceMap = new Map(tickers.map((t: any) => [t.symbol, t]));
+
+    let totalUsd = 0;
+    let totalPnl = 0;
+    const assets: any[] = [];
+
+    for (const bal of balances) {
+      const ticker = priceMap.get(bal.symbol);
+      const price = ticker?.price_usd ?? bal.price_usd;
+      const change = ticker?.change_24h ?? bal.change_24h;
+      const balUsd = parseFloat(bal.balance) * price;
+      totalUsd += balUsd;
+      totalPnl += balUsd * (change / 100);
+      assets.push({
+        chain: bal.chain, symbol: bal.symbol, name: bal.name,
+        balance: bal.balance, balance_usd: balUsd, price_usd: price,
+        change_24h: change, contract_address: bal.contract_address,
+      });
+    }
+
+    if (!assets.length) {
+      totalUsd = wallets.reduce((s, w) => s + w.balance_usd, 0);
+    }
+
+    const hot = wallets.filter(w => w.type === 'hot');
+    const cold = wallets.filter(w => w.type === 'cold');
+    return {
+      total_balance_usd: totalUsd, total_pnl_24h: totalPnl,
+      total_pnl_pct: totalUsd > 0 ? (totalPnl / totalUsd) * 100 : 0,
+      total_hot_wallets: hot.length, total_cold_wallets: cold.length,
+      wallets, assets,
+    };
+  }
+
+  async walletAssets() {
+    const balances = await this.prisma.walletBalance.findMany();
+    const tickers = await this.market.getTickers();
+    const priceMap = new Map(tickers.map((t: any) => [t.symbol, t]));
+    return balances.map(bal => {
+      const ticker = priceMap.get(bal.symbol);
+      return {
+        chain: bal.chain, symbol: bal.symbol, name: bal.name,
+        balance: bal.balance,
+        balance_usd: parseFloat(bal.balance) * (ticker?.price_usd ?? bal.price_usd),
+        price_usd: ticker?.price_usd ?? bal.price_usd,
+        change_24h: ticker?.change_24h ?? bal.change_24h,
+      };
+    });
+  }
+
+  async walletSend(walletId: string, data: any) {
+    const wallet = await this.prisma.walletConfig.findUnique({ where: { id: walletId } });
+    if (!wallet) throw new NotFoundException('Wallet not found');
+
+    const signed = await this.signer.signTransaction(walletId, {
+      to: data.to_address, amount: data.amount, chain: wallet.chain, memo: data.memo,
+    });
+
+    const tx = await this.prisma.walletTransaction.create({
+      data: {
+        wallet_id: walletId, chain: wallet.chain, asset: wallet.chain.toUpperCase(),
+        direction: 'send', amount: data.amount,
+        fee: (await this.signer.estimateFee(wallet.chain, data.to_address, data.amount)).estimated_fee,
+        to_address: data.to_address, from_address: wallet.address, memo: data.memo,
+        status: wallet.type === 'cold' ? 'pending_signature' : 'pending',
+        tx_hash: signed.tx_hash,
+      },
+    });
+
+    const balance = parseFloat(wallet.balance) - parseFloat(data.amount);
+    await this.prisma.walletConfig.update({
+      where: { id: walletId },
+      data: { balance: Math.max(0, balance).toFixed(8), last_activity: new Date() },
+    });
+
+    return { tx_id: tx.id, tx_hash: signed.tx_hash, status: tx.status };
+  }
+
+  walletEstimateFee(walletId: string, data: any) {
+    return this.signer.estimateFee(data.chain || 'eth', data.to_address, data.amount);
+  }
+
+  walletSwapQuote(data: any) { return this.swap.getQuote(data); }
+  walletSwapExecute(data: any) { return this.swap.executeSwap(data); }
+  walletMarket() { return this.market.getTickers(); }
 
   // ── Roles ──
   listRoles() { return this.prisma.adminRole.findMany({ orderBy: { created_at: 'desc' } }); }
