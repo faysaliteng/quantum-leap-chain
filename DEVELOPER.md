@@ -85,8 +85,8 @@ cryptoniumpay/
 ├── vitest.config.ts                    # Vitest test runner config
 ├── components.json                     # shadcn/ui config (New York style, HSL)
 ├── README.md                           # Project overview + quick start
-├── DEPLOYMENT.md                       # Full deployment guide (812 lines)
-├── DEVELOPER.md                        # THIS FILE — atomic dev reference
+├── DEPLOYMENT.md                       # Full deployment guide (1500+ lines)
+├── DEPLOYMENT-SUCCESS.md               # Verified deployment log with atomic commands
 │
 ├── public/
 │   ├── favicon.ico                     # Legacy favicon
@@ -787,8 +787,9 @@ Current test coverage: Example test only. Production backend must have comprehen
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `DEPLOYMENT.md` | 812 | Step-by-step deployment (Cloudflare + VM + Docker) |
-| `README.md` | 202 | Project overview + quick start |
+| `DEPLOYMENT.md` | 1500+ | Step-by-step deployment (Cloudflare + VM + Docker) |
+| `DEPLOYMENT-SUCCESS.md` | 800+ | Verified deployment log with all atomic commands |
+| `README.md` | 330+ | Project overview + quick start |
 | `DEVELOPER.md` | THIS | Full technical reference |
 | `public/_redirects` | 1 | SPA routing for Cloudflare/Netlify |
 | `public/_headers` | 6 | Security headers |
@@ -818,16 +819,24 @@ The backend is **fully built and deployed** as a NestJS application with:
 | Component | Technology | Status |
 |-----------|-----------|--------|
 | REST API server (55+ endpoints) | NestJS + Prisma | ✅ Production |
-| PostgreSQL schema (36 models) | PostgreSQL 16 | ✅ Deployed |
+| PostgreSQL schema (42 models, 733 lines) | PostgreSQL 16 | ✅ Deployed |
 | JWT authentication + 3-step MFA | argon2id + TOTP | ✅ Working |
-| Blockchain watchers | BullMQ workers | ✅ Running |
+| Blockchain watchers (13 chains) | BullMQ workers | ✅ Running |
+| Balance sync (60s polling) | BalanceSyncWorker | ✅ Running |
+| Internal swap engine | SwapService | ✅ Built |
+| Market data (CoinGecko) | MarketService | ✅ Live |
+| Wallet custody (hot/cold) | SignerService + KeyManager | ✅ Built |
 | Webhook dispatcher | BullMQ + HMAC-SHA256 | ✅ Built |
 | Redis caching + rate limiting | Redis 7 | ✅ Deployed |
 | RBAC (20 permissions) | NestJS guards | ✅ Enforced |
 | Enterprise CMS | Prisma CRUD | ✅ Working |
 | Data export (server-side) | BullMQ + CSV/JSON | ✅ Working |
 
-**Deployment:** Backend runs on VPS via Docker Compose (6 containers). Frontend on Cloudflare Pages. Cloudflare Workers gateway bridges them with HMAC-signed requests. See `DEPLOYMENT-SUCCESS.md` for the complete verified deployment guide.
+**Prisma CLI:** Always use `npx prisma@5` — Prisma 7 is incompatible with this project's schema format.
+
+**Database workflow:** Uses `prisma db push` (NOT `prisma migrate deploy`). No migration files exist.
+
+**Deployment:** Backend runs on VPS (DigitalOcean, 2GB RAM) via Docker Compose (6 containers). Frontend on Cloudflare Pages. Cloudflare Workers gateway bridges them with HMAC-signed requests. See `DEPLOYMENT-SUCCESS.md` for the complete verified deployment guide.
 
 ---
 

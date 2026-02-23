@@ -1,12 +1,13 @@
 # Cryptoniumpay — Complete Deployment Guide (Atomic Detail)
 
-> **Last Updated:** February 23, 2026 (verified working)  
+> **Last Updated:** February 23, 2026 (verified working — full redeploy completed)  
 > **VPS Provider:** DigitalOcean  
 > **Droplet Spec:** 1 vCPU, 2GB RAM, Ubuntu 24.04  
 > **VPS IP:** 139.59.56.210  
 > **Frontend URL:** https://cryptoniumpay.pages.dev  
 > **API Gateway URL:** https://cryptoniumpay-api-gateway.mailg.workers.dev/api  
-> **Backend Origin:** http://139-59-56-210.sslip.io (port 80 via Nginx → port 3000 API)
+> **Backend Origin:** http://139-59-56-210.sslip.io (port 80 via Nginx → port 3000 API)  
+> **Prisma CLI:** Pinned to v5 (`npx prisma@5`) — Prisma 7 removed `url` from schema.prisma
 
 ---
 
@@ -185,7 +186,7 @@ Project structure on VPS:
 │   ├── .env.example       ← Template
 │   ├── Dockerfile         ← Multi-stage: node:20-alpine builder → runner
 │   ├── prisma/
-│   │   ├── schema.prisma  ← 36 models, 624 lines
+│   │   ├── schema.prisma  ← 42 models, 733 lines (includes wallet, swap, market, signer tables)
 │   │   └── seed.ts        ← Creates admin + merchant users + chain configs
 │   └── src/               ← NestJS modules
 ├── infra/
@@ -340,20 +341,44 @@ docker compose -f docker-compose.prod.yml ps
 
 ## 9. Run Database Migration & Seed
 
-### 9a. Run Prisma Migrations
+### ⚠️ CRITICAL: Prisma Version
 
+**You MUST use Prisma v5** for all CLI commands. Prisma 7 removed the `url` property from `schema.prisma` and will fail with error `P1012`. Always use `npx prisma@5` instead of `npx prisma`.
+
+### 9a. Apply Schema to Database (Prisma db push)
+
+**Method 1 — Via Docker `run` (recommended, works even if API is crash-looping):**
 ```bash
 cd /opt/cryptoniumpay/infra
-docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
 ```
 
-This creates all 36 tables from `schema.prisma` (merchants, users, charges, invoices, wallets, etc.).
+**Method 2 — Via Docker `exec` (only works if API container is running):**
+```bash
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml exec api npx prisma@5 db push
+```
+
+**⚠️ Why NOT `prisma migrate deploy`?** This project uses `prisma db push` (schema-push workflow) instead of migration files. There are no `.sql` migration files in `prisma/migrations/`. The `db push` command compares your `schema.prisma` to the live database and applies differences directly.
+
+**⚠️ `EACCES: permission denied` warning** after `db push` is harmless — it's just the Prisma client generator trying to write inside a read-only container layer. Ignore it.
+
+This creates all 42 tables from `schema.prisma`:
+- Core: merchants, users, charges, charge_payments, deposit_addresses
+- Wallets: wallet_configs, wallet_transactions, wallet_balances, wallet_deposit_addresses
+- Market: market_tickers, order_book_entries, swap_orders
+- Security: encrypted_keys, security_policies, roles, permissions, role_assignments
+- CMS: cms_pages, cms_blog_posts, cms_announcements, cms_faq_entries, cms_contacts, cms_social_links
+- Infra: chain_configs, rpc_endpoints, asset_configs, watcher_checkpoints, audit_log_entries, api_keys, webhook_endpoints, webhook_deliveries, settlement_configs, sweeps, address_pool_entries, export_jobs, notifications
 
 ### 9b. Seed the Database
 
 ```bash
-docker compose -f docker-compose.prod.yml exec api npx prisma db seed
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml exec api npx tsx prisma/seed.ts
 ```
+
+**⚠️ Note:** Use `npx tsx prisma/seed.ts` (NOT `npx prisma db seed`). The `package.json` does not have a `prisma.seed` config entry.
 
 **What the seed creates:**
 
@@ -591,7 +616,7 @@ redis ──healthy─────┘
 | `/opt/cryptoniumpay/infra/.env` | Just `POSTGRES_PASSWORD` for docker-compose |
 | `/opt/cryptoniumpay/infra/docker-compose.prod.yml` | Production orchestration |
 | `/opt/cryptoniumpay/infra/nginx/nginx.conf` | Nginx reverse proxy + rate limiting |
-| `/opt/cryptoniumpay/backend/prisma/schema.prisma` | Database schema (36 models) |
+| `/opt/cryptoniumpay/backend/prisma/schema.prisma` | Database schema (42 models, 733 lines) |
 | `/opt/cryptoniumpay/backend/prisma/seed.ts` | Database seeder |
 
 ---
@@ -663,18 +688,34 @@ df -h
 ```bash
 cd /opt/cryptoniumpay
 git pull origin main
-cd infra
-docker compose -f docker-compose.prod.yml up -d --build
-# Wait for build (~2-3 min on subsequent builds)
 
-# If schema changed, run migrations:
-docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
+# If schema.prisma changed, push new tables BEFORE rebuilding:
+cd infra
+docker compose -f docker-compose.prod.yml up -d db   # ensure DB is running
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
+
+# Rebuild and restart
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
+
+# Verify health (note the /api prefix)
+sleep 15
+curl http://localhost:3000/api/v1/health
+# ✅ Expected: {"status":"ok","version":"1.0.0","uptime":...}
 ```
 
-### Frontend update (on local machine):
+### Frontend update (on local machine — Windows PowerShell):
+```powershell
+cd F:\quantum-leap-chain-main\quantum-leap-chain-main
+$env:VITE_API_BASE_URL="https://cryptoniumpay-api-gateway.mailg.workers.dev/api"
+npm run build
+npx wrangler pages deploy dist --project-name=cryptoniumpay
+```
+
+### Frontend update (on local machine — macOS/Linux):
 ```bash
 cd /path/to/quantum-leap-chain
-git pull origin main
+export VITE_API_BASE_URL="https://cryptoniumpay-api-gateway.mailg.workers.dev/api"
 npm run build
 npx wrangler pages deploy dist --project-name=cryptoniumpay
 ```
@@ -747,7 +788,29 @@ docker volume prune        # ⚠️ Removes unused volumes (careful!)
 cd /opt/cryptoniumpay/infra
 docker compose -f docker-compose.prod.yml down -v   # ⚠️ DELETES ALL DATA
 docker compose -f docker-compose.prod.yml up -d --build
-# Re-run migrations + seed:
-docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
-docker compose -f docker-compose.prod.yml exec api npx prisma db seed
+# Wait for containers to be healthy, then push schema + seed:
+sleep 30
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
+docker compose -f docker-compose.prod.yml exec api npx tsx prisma/seed.ts
+docker compose -f docker-compose.prod.yml restart api worker
 ```
+
+### Prisma version mismatch errors
+If you see error `P1012` mentioning "url is no longer supported", you accidentally ran Prisma 7. Fix:
+```bash
+# Always pin to v5:
+npx prisma@5 db push
+# NOT: npx prisma db push  ← this installs latest (v7) which breaks
+```
+
+### API container crash-looping (can't exec into it)
+If `docker compose exec api ...` fails with "container is restarting":
+```bash
+# Use `run` instead of `exec` — creates a fresh temporary container:
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
+# Then restart:
+docker compose -f docker-compose.prod.yml restart api worker
+```
+
+### Database port not accessible from host
+The PostgreSQL port (5432) is NOT exposed to the host — it's internal to Docker. You CANNOT run `prisma db push` from the VPS host directly. Always use Docker `run` or `exec` to run Prisma commands inside the Docker network where `db:5432` resolves.

@@ -201,8 +201,9 @@ cryptoniumpay/
 | Document | Description |
 |----------|-------------|
 | [**DEVELOPER.md**](./DEVELOPER.md) | Frontend reference: routes, components, types |
-| [**docs/BACKEND-SPEC.md**](./docs/BACKEND-SPEC.md) | NestJS backend specification (18 Prisma models) |
-| [**docs/API.md**](./docs/API.md) | REST API reference (50+ endpoints) |
+| [**DEPLOYMENT-SUCCESS.md**](./DEPLOYMENT-SUCCESS.md) | Verified deployment log with all commands |
+| [**docs/BACKEND-SPEC.md**](./docs/BACKEND-SPEC.md) | NestJS backend specification (42 Prisma models) |
+| [**docs/API.md**](./docs/API.md) | REST API reference (55+ endpoints) |
 | [**docs/SECURITY.md**](./docs/SECURITY.md) | STRIDE threat model, auth flows, wallet security |
 | [**docs/RUNBOOK.md**](./docs/RUNBOOK.md) | Ops: secret rotation, scaling, incidents, CI failures |
 | [**DEPLOYMENT.md**](./DEPLOYMENT.md) | Deployment guide (Cloudflare + VM) |
