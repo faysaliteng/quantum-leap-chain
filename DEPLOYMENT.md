@@ -4,7 +4,7 @@
 > Written for absolute beginners. Every command is copy-pasteable.
 
 **Last updated:** 2026-02-23  
-**Covers:** Cloudflare (Pages + Workers) and VM (Docker Compose)  
+**Covers:** 6 deployment modes — from Cloudflare to air-gapped bunker  
 **Prisma CLI:** Always use `npx prisma@5` — Prisma 7 is incompatible with this project's schema format
 
 ---
@@ -14,15 +14,34 @@
 1. [Prerequisites](#1-prerequisites)
 2. [Option A: Cloudflare Pages + Workers Gateway](#2-option-a-cloudflare-pages--workers-gateway)
 3. [Option B: VM with Docker Compose (Full Stack)](#3-option-b-vm-with-docker-compose-full-stack)
-4. [DNS & SSL Setup](#4-dns--ssl-setup)
-5. [Environment Variables Reference](#5-environment-variables-reference)
-6. [Post-Deployment Verification](#6-post-deployment-verification)
-7. [Monitoring & Maintenance](#7-monitoring--maintenance)
-8. [Backup & Restore](#8-backup--restore)
-9. [Scaling Guide](#9-scaling-guide)
-10. [Troubleshooting](#10-troubleshooting)
-11. [Security Hardening](#11-security-hardening)
-12. [Systemd Service Files](#12-systemd-service-files)
+4. [Option C: Cloudflare Workers Backend (Serverless)](#4-option-c-cloudflare-workers-backend-serverless)
+5. [Option D: Kubernetes (K3s) Production](#5-option-d-kubernetes-k3s-production)
+6. [Option E: Multi-Host Docker Swarm (HA)](#6-option-e-multi-host-docker-swarm-ha)
+7. [Option F: Offline / Air-Gapped Deployment](#7-option-f-offline--air-gapped-deployment)
+8. [DNS & SSL Setup](#8-dns--ssl-setup)
+9. [Environment Variables Reference](#9-environment-variables-reference)
+10. [Post-Deployment Verification](#10-post-deployment-verification)
+11. [Resilience System](#11-resilience-system)
+12. [One-Command Auto Deploy](#12-one-command-auto-deploy)
+13. [Monitoring & Maintenance](#13-monitoring--maintenance)
+14. [Backup & Restore](#14-backup--restore)
+15. [Scaling Guide](#15-scaling-guide)
+16. [Troubleshooting](#16-troubleshooting)
+17. [Security Hardening](#17-security-hardening)
+18. [Systemd Service Files](#18-systemd-service-files)
+
+---
+
+## Hosting Mode Comparison
+
+| Mode | Backend | Database | Cost | Complexity | Offline? | HA? |
+|------|---------|----------|------|-----------|---------|-----|
+| **A: CF Pages + VPS** | NestJS on VPS | PostgreSQL | ~$5/mo | Medium | ❌ | ❌ |
+| **B: Docker Compose** | NestJS in Docker | PostgreSQL | Free (home) | Easy | ❌ | ❌ |
+| **C: CF Workers** | Hono on Edge | D1 (SQLite) | Free | Easy | ❌ | ✅ |
+| **D: Kubernetes** | NestJS in K3s | PostgreSQL | Free (home) | Hard | ❌ | ✅ |
+| **E: Docker Swarm** | NestJS multi-node | PostgreSQL | 2+ machines | Hard | ❌ | ✅ |
+| **F: Air-Gapped** | NestJS in Docker | PostgreSQL | Free | Medium | ✅ | ❌ |
 
 ---
 
@@ -1505,5 +1524,110 @@ Update these values before deployment.
 
 ---
 
+## Option C: Cloudflare Workers Backend (Serverless — No VPS Needed)
+
+Deploys a **lightweight standalone backend** entirely on Cloudflare Workers + D1 (SQLite). No VPS, no Docker.
+
+**Core endpoints:** auth, charges, API keys, webhooks, checkout, health.
+
+### Step 1: Install Wrangler & Login
+
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+### Step 2: Create D1 Database
+
+```bash
+cd cloudflare/worker-backend
+wrangler d1 create cryptoniumpay-db
+```
+
+Copy the `database_id` from output → paste into `wrangler.toml`.
+
+### Step 3: Create KV Namespace
+
+```bash
+wrangler kv namespace create CACHE
+```
+
+Copy the `id` → paste into `wrangler.toml`.
+
+### Step 4: Set Secrets
+
+```bash
+wrangler secret put JWT_SECRET
+wrangler secret put SIGNER_SECRET
+wrangler secret put WEBHOOK_HMAC_SECRET
+```
+
+### Step 5: Initialize Database
+
+```bash
+wrangler d1 execute cryptoniumpay-db --file=schema.sql
+```
+
+### Step 6: Deploy
+
+```bash
+wrangler deploy
+```
+
+### Step 7: Point Frontend
+
+Set `VITE_API_BASE_URL=https://cryptoniumpay-backend.YOUR.workers.dev/api` in Cloudflare Pages → rebuild.
+
+---
+
+## Option E: Multi-Host Docker Swarm (HA)
+
+```bash
+# Main node
+docker swarm init --advertise-addr YOUR_IP
+
+# Other nodes
+docker swarm join --token SWMTKN-xxx YOUR_IP:2377
+
+# Deploy
+docker stack deploy -c infra/docker-compose.swarm.yml cryptoniumpay
+```
+
+---
+
+## Option F: Offline / Air-Gapped
+
+```bash
+# On connected machine — create bundle
+bash infra/scripts/offline-mode.sh bundle
+
+# Transfer offline-bundle/ via USB to air-gapped machine
+
+# On air-gapped machine
+for f in images/*.tar; do docker load < "$f"; done
+docker compose -f infra/docker-compose.prod.yml up -d
+```
+
+---
+
+## Resilience System
+
+```bash
+bash infra/scripts/resilience.sh health     # Self-heal crashed services
+bash infra/scripts/resilience.sh backup     # Database backup
+bash infra/scripts/resilience.sh restore    # Restore from backup
+bash infra/scripts/resilience.sh shutdown   # Graceful shutdown + data export
+bash infra/scripts/resilience.sh status     # Full system report
+bash infra/scripts/resilience.sh monitor    # Continuous monitoring daemon
+```
+
+## One-Command Auto Deploy
+
+```bash
+bash infra/scripts/auto-deploy.sh
+```
+
+---
+
 *Cryptoniumpay v2.0 — Enterprise Deployment Guide*
-*No room for error. Deploy with confidence.*
+*6 hosting modes. Zero external dependencies. Apocalypse-proof.*
