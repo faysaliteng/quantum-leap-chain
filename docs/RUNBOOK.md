@@ -2,8 +2,8 @@
 
 > Operational procedures for managing the Cryptoniumpay platform in production.
 
-**Version:** 1.0.0
-**Last updated:** 2026-02-22
+**Version:** 1.1.0
+**Last updated:** 2026-02-23
 
 ---
 
@@ -30,16 +30,19 @@
 # 1. Generate new secret
 openssl rand -hex 32
 
-# 2. Update .env on the server
-nano /opt/cryptoniumpay/.env
+# 2. Update backend/.env on the VPS
+nano /opt/cryptoniumpay/backend/.env
 # Change JWT_SECRET=<new_value>
 
-# 3. Restart API + worker
-docker compose restart api worker
+# 3. Rebuild and restart API + worker
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml build --no-cache api worker
+docker compose -f docker-compose.prod.yml up -d
 
-# 4. Verify
-curl -s https://api.yourdomain.com/v1/health | jq .
-# Expected: { "status": "ok", ... }
+# 4. Verify (wait 15s for startup)
+sleep 15
+curl http://localhost:3000/api/v1/health
+# Expected: {"status":"ok",...}
 ```
 
 ### Rotate SIGNER_SECRET
@@ -48,30 +51,38 @@ curl -s https://api.yourdomain.com/v1/health | jq .
 # 1. Generate new secret
 openssl rand -hex 32
 
-# 2. Update .env
-nano /opt/cryptoniumpay/.env
+# 2. Update backend/.env
+nano /opt/cryptoniumpay/backend/.env
 # Change SIGNER_SECRET=<new_value>
 
-# 3. Restart signer + worker (both must share the secret)
-docker compose restart signer worker
+# 3. Rebuild and restart
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml build --no-cache api worker
+docker compose -f docker-compose.prod.yml up -d
 
-# 4. Verify signer health
-docker compose exec worker curl -s http://signer:8080/health
-# Expected: { "status": "ok" }
+# 4. Verify
+sleep 15
+docker logs infra-api-1 --tail 5
+# Expected: "Nest application successfully started"
 ```
 
 ### Rotate Database Password
 
 ```bash
-# 1. Connect to Postgres and change password
-docker compose exec postgres psql -U cryptoniumpay -c "ALTER USER cryptoniumpay PASSWORD 'NEW_PASSWORD_HERE';"
+# 1. Connect to Postgres via Docker
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml exec db psql -U cryptoniumpay -c "ALTER USER cryptoniumpay PASSWORD 'NEW_PASSWORD_HERE';"
 
-# 2. Update .env
-nano /opt/cryptoniumpay/.env
+# 2. Update backend/.env
+nano /opt/cryptoniumpay/backend/.env
 # Update DATABASE_URL with new password
 
-# 3. Restart API + worker
-docker compose restart api worker
+# 3. Update infra/.env
+echo "POSTGRES_PASSWORD=NEW_PASSWORD_HERE" > /opt/cryptoniumpay/infra/.env
+
+# 4. Rebuild and restart
+docker compose -f docker-compose.prod.yml build --no-cache api worker
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ---
@@ -81,21 +92,19 @@ docker compose restart api worker
 ### Run Migrations
 
 ```bash
-# Via Docker
-docker compose exec api npx prisma migrate deploy
+# Via Docker (⚠️ Always use prisma@5, NOT prisma — Prisma 7 breaks schema)
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
 
-# Verify
-docker compose exec api npx prisma migrate status
+# If container is running, you can also use exec:
+docker compose -f docker-compose.prod.yml exec api npx prisma@5 db push
 ```
 
-### Rollback Last Migration
+### Database Shell
 
 ```bash
-# Check current status
-docker compose exec api npx prisma migrate status
-
-# Manually apply down migration
-docker compose exec postgres psql -U cryptoniumpay -f /path/to/down.sql
+cd /opt/cryptoniumpay/infra
+docker compose -f docker-compose.prod.yml exec db psql -U cryptoniumpay -d cryptoniumpay
 ```
 
 ### Create New Migration

@@ -396,6 +396,114 @@ curl "https://api.yourdomain.com/v1/admin/audit-log?action=merchant.disable&page
 
 ---
 
+## Wallets
+
+### List Wallets
+
+```bash
+curl https://api.yourdomain.com/v1/wallets \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Generate Wallet
+
+```bash
+curl -X POST https://api.yourdomain.com/v1/wallets/generate \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"label": "BTC Payments", "chain": "btc"}'
+```
+
+**Response (201):**
+```json
+{
+  "id": "clxwallet123",
+  "label": "BTC Payments",
+  "chain": "btc",
+  "address": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+  "private_key": "Kx...",
+  "mnemonic": "word1 word2 ... word12",
+  "type": "hot",
+  "status": "active"
+}
+```
+
+> ⚠️ `private_key` and `mnemonic` are returned ONLY at creation. Store them securely.
+
+### Send Transaction
+
+```bash
+curl -X POST https://api.yourdomain.com/v1/wallets/clxwallet123/send \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"to_address": "bc1q...", "amount": "0.001", "memo": "Payment"}'
+```
+
+### Estimate Fee
+
+```bash
+curl -X POST https://api.yourdomain.com/v1/wallets/clxwallet123/estimate-fee \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"to_address": "bc1q...", "amount": "0.001"}'
+```
+
+### Get Portfolio
+
+```bash
+curl https://api.yourdomain.com/v1/wallets/portfolio \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Get Deposit Info
+
+```bash
+curl https://api.yourdomain.com/v1/wallets/deposit/btc \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Wallet Transaction History
+
+```bash
+curl "https://api.yourdomain.com/v1/wallets/transactions?direction=receive&page=1&per_page=25" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+## Invoices
+
+### Create Invoice
+
+```bash
+curl -X POST https://api.yourdomain.com/v1/invoices \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_name": "Acme Corp",
+    "customer_email": "billing@acme.com",
+    "amount": "500.00",
+    "currency": "USD",
+    "due_date": "2026-03-15"
+  }'
+```
+
+### List Invoices
+
+```bash
+curl "https://api.yourdomain.com/v1/invoices?status=sent&page=1" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Send Invoice
+
+```bash
+curl -X POST https://api.yourdomain.com/v1/invoices/clxinvoice123/send \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
 ## Health (Public)
 
 ```bash
