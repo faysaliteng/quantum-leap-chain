@@ -3,8 +3,9 @@
 > Atomic, step-by-step deployment instructions. No room for error.
 > Written for absolute beginners. Every command is copy-pasteable.
 
-**Last updated:** 2026-02-23
-**Covers:** Cloudflare (Pages + Workers) and VM (Docker Compose)
+**Last updated:** 2026-02-23  
+**Covers:** Cloudflare (Pages + Workers) and VM (Docker Compose)  
+**Prisma CLI:** Always use `npx prisma@5` — Prisma 7 is incompatible with this project's schema format
 
 ---
 
@@ -786,34 +787,53 @@ cryptoniumpay-redis    Up (healthy)
 cryptoniumpay-certbot  Up
 ```
 
-### Step 14: Run Database Migrations
+### Step 14: Apply Database Schema
 
+**⚠️ CRITICAL: Use Prisma v5.** Prisma 7 removed the `url` property from `schema.prisma` and will fail. Always use `npx prisma@5`.
+
+**Method 1 — Via Docker `run` (recommended):**
 ```bash
-docker compose exec api npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
+```
+
+**Method 2 — Via Docker `exec` (only if API container is running):**
+```bash
+docker compose -f docker-compose.prod.yml exec api npx prisma@5 db push
 ```
 
 **Expected output:**
 ```
-X migrations applied successfully.
+🚀  Your database is now in sync with your Prisma schema. Done in XXXms
 ```
 
-### Step 15: Seed Demo Data (Development Only)
+**⚠️ `EACCES: permission denied` warning** after `db push` is harmless — ignore it.
+
+**⚠️ Why NOT `prisma migrate deploy`?** This project uses `prisma db push` (schema-push workflow). There are no migration files.
+
+### Step 15: Seed the Database
 
 ```bash
-docker compose exec api npx prisma db seed
+docker compose -f docker-compose.prod.yml exec api npx tsx prisma/seed.ts
 ```
 
-### Step 16: Create Admin User
-
-```bash
-docker compose exec api node dist/create-admin.js \
-  --email admin@yourdomain.com \
-  --password "YourSecureAdminPassword123!"
-```
+**⚠️ Use `npx tsx prisma/seed.ts`** (NOT `npx prisma db seed`). The `package.json` does not have a `prisma.seed` config.
 
 **Expected output:**
 ```
-Admin user created: admin@yourdomain.com
+✅ Admin user created: primox2014@gmail.com
+✅ Merchant user created: user@example.com
+✅ Chain configs seeded
+✅ Super Admin role assigned
+✅ Security policies seeded
+✅ CMS pages seeded
+🎉 Seed complete!
+```
+
+### Step 16: Restart Containers (pick up schema changes)
+
+```bash
+docker compose -f docker-compose.prod.yml restart api worker
+sleep 15
 ```
 
 ### Step 17: Verify Deployment
@@ -1056,15 +1076,17 @@ cd /opt/cryptoniumpay
 # Pull latest code
 git pull origin main
 
-# Rebuild and restart
-docker compose up -d --build
+# If schema.prisma changed, push new tables first:
+cd infra
+docker compose -f docker-compose.prod.yml run --rm --no-deps api npx prisma@5 db push --accept-data-loss
 
-# Run migrations if needed
-docker compose exec api npx prisma migrate deploy
+# Rebuild and restart
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
 
 # Verify
-docker compose ps
-curl -s https://yourdomain.com/api/v1/health
+sleep 15
+curl http://localhost:3000/api/v1/health
 ```
 
 ---
