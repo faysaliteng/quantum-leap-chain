@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,21 +21,21 @@ const chainLabels: Record<string, string> = {
   btc: "Bitcoin", eth: "Ethereum", arbitrum: "Arbitrum", optimism: "Optimism", polygon: "Polygon",
 };
 
-// Supported wallets list
-const walletConnectWallets = [
-  { name: "Trust Wallet", icon: "🛡️", desc: "Mobile-first multi-chain wallet" },
-  { name: "MetaMask", icon: "🦊", desc: "Browser extension & mobile wallet" },
-  { name: "Rainbow", icon: "🌈", desc: "Beautiful Ethereum wallet" },
-  { name: "Coinbase Wallet", icon: "🔵", desc: "Self-custody by Coinbase" },
-  { name: "Phantom", icon: "👻", desc: "Multi-chain DeFi wallet" },
-  { name: "OKX Wallet", icon: "⭕", desc: "Multi-chain Web3 gateway" },
+// Wallets that inject window.ethereum (EIP-1193)
+const injectedWallets = [
+  { name: "MetaMask", icon: "🦊", desc: "Browser extension & mobile wallet", rdns: "io.metamask" },
+  { name: "Coinbase Wallet", icon: "🔵", desc: "Self-custody by Coinbase", rdns: "com.coinbase.wallet" },
+  { name: "Trust Wallet", icon: "🛡️", desc: "Mobile-first multi-chain wallet", rdns: "com.trustwallet.app" },
+  { name: "Phantom", icon: "👻", desc: "Multi-chain DeFi wallet", rdns: "app.phantom" },
+  { name: "OKX Wallet", icon: "⭕", desc: "Multi-chain Web3 gateway", rdns: "com.okex.wallet" },
+  { name: "Rainbow", icon: "🌈", desc: "Beautiful Ethereum wallet", rdns: "me.rainbow" },
 ];
 
 const hardwareWallets = [
-  { name: "Ledger Nano S/X/S+", icon: "🔐", desc: "Industry-leading cold storage via USB/Bluetooth", protocol: "ledger" },
-  { name: "Trezor Model T/One", icon: "🛡️", desc: "Open-source hardware wallet via USB", protocol: "trezor" },
-  { name: "Keystone Pro", icon: "📱", desc: "Air-gapped hardware wallet via QR", protocol: "keystone" },
-  { name: "GridPlus Lattice1", icon: "🔲", desc: "Enterprise-grade hardware wallet", protocol: "gridplus" },
+  { name: "Ledger (via MetaMask)", icon: "🔐", desc: "Connect Ledger through MetaMask or Ledger Live browser extension", protocol: "ledger" },
+  { name: "Trezor (via MetaMask)", icon: "🛡️", desc: "Connect Trezor through MetaMask's hardware wallet integration", protocol: "trezor" },
+  { name: "Keystone (via QR)", icon: "📱", desc: "Air-gapped signing — connect via MetaMask QR-based integration", protocol: "keystone" },
+  { name: "GridPlus Lattice1", icon: "🔲", desc: "Enterprise hardware — connect via MetaMask's Lattice integration", protocol: "gridplus" },
 ];
 
 type ConnectMethod = "walletconnect" | "hardware" | "manual";
@@ -53,6 +53,13 @@ interface WalletConnectPanelProps {
   }) => void;
 }
 
+// Detect if an EIP-1193 provider is available
+function getEthereumProvider(): any | null {
+  if (typeof window === "undefined") return null;
+  // EIP-6963 multi-provider or legacy
+  return (window as any).ethereum ?? null;
+}
+
 export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: WalletConnectPanelProps) {
   const [method, setMethod] = useState<ConnectMethod>("walletconnect");
   const [status, setStatus] = useState<ConnectionStatus>("idle");
@@ -60,27 +67,81 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
   const [manualForm, setManualForm] = useState({ label: "", chain: "eth" as ChainId, address: "", type: "hot" as "hot" | "cold", xpub: "" });
   const [connectedAddress, setConnectedAddress] = useState("");
   const [connectedWalletName, setConnectedWalletName] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const resetState = () => {
     setStatus("idle");
     setSelectedHW(null);
     setConnectedAddress("");
     setConnectedWalletName("");
+    setErrorMessage("");
     setManualForm({ label: "", chain: "eth", address: "", type: "hot", xpub: "" });
   };
 
-  const simulateConnect = (walletName: string, isHardware: boolean) => {
+  const connectInjectedWallet = useCallback(async (walletName: string) => {
+    const provider = getEthereumProvider();
+    if (!provider) {
+      setErrorMessage(`No wallet extension detected. Please install ${walletName} browser extension and refresh the page.`);
+      setStatus("error");
+      return;
+    }
+
     setStatus("connecting");
     setConnectedWalletName(walletName);
-    // Simulate WalletConnect / USB handshake
-    setTimeout(() => {
-      const mockAddr = isHardware
-        ? "0x" + Array.from({ length: 40 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("")
-        : "0x" + Array.from({ length: 40 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
-      setConnectedAddress(mockAddr);
+    setErrorMessage("");
+
+    try {
+      // Request account access via EIP-1193
+      const accounts: string[] = await provider.request({ method: "eth_requestAccounts" });
+      if (!accounts || accounts.length === 0) {
+        throw new Error("No accounts returned. User may have rejected the request.");
+      }
+
+      const address = accounts[0];
+      setConnectedAddress(address);
       setStatus("connected");
-    }, 2000);
-  };
+    } catch (err: any) {
+      console.error("Wallet connection failed:", err);
+      const msg = err?.code === 4001
+        ? "Connection rejected by user."
+        : err?.message || "Failed to connect wallet. Please try again.";
+      setErrorMessage(msg);
+      setStatus("error");
+    }
+  }, []);
+
+  const connectHardwareWallet = useCallback(async (walletName: string, protocol: string) => {
+    // Hardware wallets connect through browser extensions (MetaMask + Ledger/Trezor, etc.)
+    const provider = getEthereumProvider();
+    if (!provider) {
+      setErrorMessage(
+        `Hardware wallets connect through browser extensions. Please:\n1. Install MetaMask\n2. Connect your ${walletName} in MetaMask settings\n3. Try again`
+      );
+      setStatus("error");
+      return;
+    }
+
+    setStatus("connecting");
+    setConnectedWalletName(walletName);
+    setSelectedHW(protocol);
+    setErrorMessage("");
+
+    try {
+      const accounts: string[] = await provider.request({ method: "eth_requestAccounts" });
+      if (!accounts || accounts.length === 0) {
+        throw new Error("No accounts returned.");
+      }
+      setConnectedAddress(accounts[0]);
+      setStatus("connected");
+    } catch (err: any) {
+      console.error("Hardware wallet connection failed:", err);
+      const msg = err?.code === 4001
+        ? "Connection rejected by user."
+        : err?.message || "Failed to connect. Ensure your hardware wallet is unlocked and connected.";
+      setErrorMessage(msg);
+      setStatus("error");
+    }
+  }, []);
 
   const handleConfirmConnect = (isHardware: boolean) => {
     if (!connectedAddress) return;
@@ -110,6 +171,8 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
     onOpenChange(false);
   };
 
+  const hasProvider = typeof window !== "undefined" && !!(window as any).ethereum;
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) resetState(); onOpenChange(v); }}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
@@ -118,14 +181,14 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
             <Link2 className="h-5 w-5 text-primary" />Connect Wallet
           </DialogTitle>
           <DialogDescription>
-            Connect a hot wallet via WalletConnect, plug in a hardware wallet, or import manually
+            Connect a hot wallet via browser extension, plug in a hardware wallet, or import manually
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={method} onValueChange={(v) => { setMethod(v as ConnectMethod); resetState(); }}>
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="walletconnect" className="text-xs gap-1.5">
-              <Smartphone className="h-3.5 w-3.5" />WalletConnect
+              <Smartphone className="h-3.5 w-3.5" />Web3 Wallet
             </TabsTrigger>
             <TabsTrigger value="hardware" className="text-xs gap-1.5">
               <Usb className="h-3.5 w-3.5" />Hardware
@@ -135,23 +198,33 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
             </TabsTrigger>
           </TabsList>
 
-          {/* ── WalletConnect Tab ── */}
+          {/* ── Web3 Wallet Tab ── */}
           <TabsContent value="walletconnect" className="space-y-4 mt-4">
             {status === "idle" && (
               <>
+                {!hasProvider && (
+                  <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 text-xs flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+                    <div>
+                      <p className="font-medium text-foreground">No Wallet Detected</p>
+                      <p className="text-muted-foreground">Install a Web3 wallet extension (e.g. MetaMask) to connect. Or use Manual Import below.</p>
+                    </div>
+                  </div>
+                )}
                 <div className="bg-muted rounded-lg p-3 text-xs text-muted-foreground flex items-start gap-2">
-                  <QrCode className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                  <Shield className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
                   <div>
-                    <p className="font-medium text-foreground">WalletConnect v2 Protocol</p>
-                    <p>Scan QR or deep-link to connect 300+ mobile & browser wallets securely.</p>
+                    <p className="font-medium text-foreground">EIP-1193 Provider</p>
+                    <p>Connect any injected Web3 wallet. Your private keys never leave your wallet.</p>
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  {walletConnectWallets.map((w) => (
+                  {injectedWallets.map((w) => (
                     <button
                       key={w.name}
-                      onClick={() => simulateConnect(w.name, false)}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group"
+                      onClick={() => connectInjectedWallet(w.name)}
+                      disabled={!hasProvider}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="text-2xl">{w.icon}</span>
                       <div className="flex-1 min-w-0">
@@ -162,23 +235,35 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-center text-muted-foreground">
-                  + 300 more wallets supported via WalletConnect v2
-                </p>
               </>
             )}
 
             {status === "connecting" && (
               <div className="text-center py-8 space-y-4">
                 <div className="relative mx-auto w-24 h-24 rounded-2xl bg-muted flex items-center justify-center">
-                  <QrCode className="h-10 w-10 text-muted-foreground" />
+                  <Smartphone className="h-10 w-10 text-muted-foreground" />
                   <div className="absolute inset-0 rounded-2xl border-2 border-primary animate-pulse" />
                 </div>
                 <div>
                   <p className="font-semibold">Connecting to {connectedWalletName}…</p>
-                  <p className="text-sm text-muted-foreground">Open your wallet app and approve the connection</p>
+                  <p className="text-sm text-muted-foreground">Approve the connection request in your wallet</p>
                 </div>
                 <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
+              </div>
+            )}
+
+            {status === "error" && (
+              <div className="space-y-4">
+                <div className="text-center py-4">
+                  <div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mb-3">
+                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                  </div>
+                  <p className="font-semibold text-destructive">Connection Failed</p>
+                  <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">{errorMessage}</p>
+                </div>
+                <Button variant="outline" className="w-full" onClick={resetState}>
+                  <RefreshCw className="mr-1.5 h-4 w-4" /> Try Again
+                </Button>
               </div>
             )}
 
@@ -201,7 +286,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Protocol</span>
-                    <Badge variant="outline">WalletConnect v2</Badge>
+                    <Badge variant="outline">EIP-1193</Badge>
                   </div>
                 </div>
                 <Button className="w-full bg-gradient-gold text-primary-foreground" onClick={() => handleConfirmConnect(false)}>
@@ -219,15 +304,30 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                   <Usb className="h-4 w-4 shrink-0 mt-0.5 text-info" />
                   <div>
                     <p className="font-medium text-foreground">Hardware Wallet Connection</p>
-                    <p className="text-muted-foreground">Connect via USB or Bluetooth. Private keys never leave the device.</p>
+                    <p className="text-muted-foreground">
+                      Hardware wallets connect through your browser extension (e.g. MetaMask with Ledger/Trezor).
+                      Private keys never leave the device.
+                    </p>
                   </div>
                 </div>
+                {!hasProvider && (
+                  <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 text-xs flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+                    <div>
+                      <p className="font-medium text-foreground">Extension Required</p>
+                      <p className="text-muted-foreground">
+                        Install MetaMask and connect your hardware wallet in its settings first.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="grid gap-2">
                   {hardwareWallets.map((hw) => (
                     <button
                       key={hw.protocol}
-                      onClick={() => { setSelectedHW(hw.protocol); simulateConnect(hw.name, true); }}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-info/40 hover:bg-info/5 transition-all text-left group"
+                      onClick={() => connectHardwareWallet(hw.name, hw.protocol)}
+                      disabled={!hasProvider}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-info/40 hover:bg-info/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="text-2xl">{hw.icon}</span>
                       <div className="flex-1 min-w-0">
@@ -249,9 +349,24 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                 </div>
                 <div>
                   <p className="font-semibold">Connecting to {connectedWalletName}…</p>
-                  <p className="text-sm text-muted-foreground">Plug in your device and unlock it. Approve on the device screen.</p>
+                  <p className="text-sm text-muted-foreground">Approve the connection in your wallet extension. Ensure your device is unlocked.</p>
                 </div>
                 <Loader2 className="h-5 w-5 animate-spin mx-auto text-info" />
+              </div>
+            )}
+
+            {status === "error" && (
+              <div className="space-y-4">
+                <div className="text-center py-4">
+                  <div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 flex items-center justify-center mb-3">
+                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                  </div>
+                  <p className="font-semibold text-destructive">Connection Failed</p>
+                  <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">{errorMessage}</p>
+                </div>
+                <Button variant="outline" className="w-full" onClick={resetState}>
+                  <RefreshCw className="mr-1.5 h-4 w-4" /> Try Again
+                </Button>
               </div>
             )}
 
@@ -281,7 +396,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                 <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
                   <Lock className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">
-                    Transactions will require physical confirmation on your {connectedWalletName}. Keys never leave the device.
+                    Transactions will require physical confirmation on your hardware device. Keys never leave the device.
                   </p>
                 </div>
                 <Button className="w-full bg-gradient-gold text-primary-foreground" onClick={() => handleConfirmConnect(true)}>
@@ -334,7 +449,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
             <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
-                <strong className="text-warning">Watch-only mode:</strong> Manually imported wallets are watch-only unless you provide signing authority through WalletConnect or a hardware device.
+                <strong className="text-warning">Watch-only mode:</strong> Manually imported wallets are watch-only unless you provide signing authority through a connected Web3 wallet or hardware device.
               </p>
             </div>
             <Button className="w-full" onClick={handleManualSubmit} disabled={!manualForm.label.trim() || !manualForm.address.trim()}>
@@ -346,7 +461,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
         {/* Supported protocols footer */}
         <div className="border-t border-border pt-3 mt-2">
           <p className="text-xs text-muted-foreground text-center">
-            Supported: WalletConnect v2 · Ledger · Trezor · Keystone · MetaMask · Trust Wallet · 300+ wallets
+            Supported: EIP-1193 · MetaMask · Coinbase Wallet · Ledger · Trezor · Trust Wallet · 100+ injected wallets
           </p>
         </div>
       </DialogContent>

@@ -72,12 +72,13 @@ export default function AdminIntelligence() {
   ];
 
   const merchantScores = (topMerchants ?? []).map((m) => {
+    const volume = parseFloat(m.volume_usd);
     const score = merchantHealthScore({
-      volume: parseFloat(m.volume_usd),
+      volume,
       txCount: m.tx_count,
-      successRate: 92 + Math.random() * 8,
-      avgResponseTime: 50 + Math.random() * 200,
-      daysActive: 30 + Math.floor(Math.random() * 180),
+      successRate: m.tx_count > 0 ? Math.min(100, (volume / m.tx_count) > 0 ? 95 : 0) : 0,
+      avgResponseTime: 0,
+      daysActive: 0,
     });
     return { ...m, ...score };
   });
