@@ -30,9 +30,9 @@ export class WalletsService {
     let address = data.address;
     let privateKey: string | null = null;
 
-    // If no address provided, generate new keypair
+    // If no address provided, generate new real blockchain keypair
     if (!address) {
-      const keypair = this.keyManager.generateKeypair(data.chain);
+      const keypair = await this.keyManager.generateKeypair(data.chain);
       address = keypair.address;
       privateKey = keypair.privateKey;
     }
@@ -175,8 +175,8 @@ export class WalletsService {
     });
 
     if (!deposit) {
-      // Auto-generate deposit address for this chain
-      const keypair = this.keyManager.generateKeypair(chain);
+      // Auto-generate real deposit address for this chain
+      const keypair = await this.keyManager.generateKeypair(chain);
       const wallet = await this.prisma.walletConfig.findFirst({
         where: { merchant_id: merchantId, chain },
       });
