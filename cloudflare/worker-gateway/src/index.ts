@@ -46,6 +46,17 @@ async function signRequest(secret: string, method: string, path: string): Promis
   return `t=${timestamp},v1=${hex}`;
 }
 
+// Headers safe to forward from client to backend
+const FORWARDED_HEADERS = [
+  'content-type',
+  'authorization',
+  'accept',
+  'accept-language',
+  'idempotency-key',
+  'x-request-id',
+  'user-agent',
+];
+
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, Idempotency-Key, X-Request-ID',
@@ -104,12 +115,12 @@ export default {
     // Build backend URL
     const backendUrl = `${env.BACKEND_ORIGIN}${url.pathname}${url.search}`;
 
-    // Forward request to VPS backend
-    const headers = new Headers(request.headers);
-
-    // Override Host header to backend origin (prevents Cloudflare Error 1003)
-    const backendHost = new URL(env.BACKEND_ORIGIN).host;
-    headers.set('Host', backendHost);
+    // Build clean headers — only forward safe headers, strip CF-* and other internal headers
+    const headers = new Headers();
+    for (const name of FORWARDED_HEADERS) {
+      const value = request.headers.get(name);
+      if (value) headers.set(name, value);
+    }
 
     // Add forwarding headers
     headers.set('X-Forwarded-For', clientIp);
@@ -123,14 +134,12 @@ export default {
       headers.set('X-Edge-Signature', sig);
     }
 
-    const backendRequest = new Request(backendUrl, {
-      method: request.method,
-      headers,
-      body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
-    });
-
     try {
-      const response = await fetch(backendRequest);
+      const response = await fetch(backendUrl, {
+        method: request.method,
+        headers,
+        body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+      });
 
       // Build response with CORS + security headers
       const newHeaders = new Headers(response.headers);
