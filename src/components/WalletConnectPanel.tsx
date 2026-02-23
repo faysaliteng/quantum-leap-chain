@@ -13,12 +13,19 @@ import { toast } from "sonner";
 import {
   Wallet, Usb, QrCode, Smartphone, Shield, ShieldCheck, Lock,
   ExternalLink, AlertTriangle, Check, Loader2, Link2, Unplug,
-  ArrowRight, RefreshCw, MonitorSmartphone,
+  ArrowRight, RefreshCw, MonitorSmartphone, Plus, Eye, EyeOff, Copy, Download,
 } from "lucide-react";
+import { wallets } from "@/lib/api-client";
 import type { ChainId } from "@/lib/types";
 
 const chainLabels: Record<string, string> = {
   btc: "Bitcoin", eth: "Ethereum", arbitrum: "Arbitrum", optimism: "Optimism", polygon: "Polygon",
+  sol: "Solana", trx: "Tron", ltc: "Litecoin", doge: "Dogecoin", bsc: "BNB Chain",
+};
+
+const chainIcons: Record<string, string> = {
+  btc: "₿", eth: "Ξ", arbitrum: "🔵", optimism: "🔴", polygon: "🟣",
+  sol: "◎", trx: "♦", ltc: "Ł", doge: "🐕", bsc: "🔶",
 };
 
 // Wallets that inject window.ethereum (EIP-1193)
@@ -38,7 +45,7 @@ const hardwareWallets = [
   { name: "GridPlus Lattice1", icon: "🔲", desc: "Enterprise hardware — connect via MetaMask's Lattice integration", protocol: "gridplus" },
 ];
 
-type ConnectMethod = "walletconnect" | "hardware" | "manual";
+type ConnectMethod = "create" | "walletconnect" | "hardware" | "manual";
 type ConnectionStatus = "idle" | "connecting" | "connected" | "error";
 
 interface WalletConnectPanelProps {
@@ -53,15 +60,232 @@ interface WalletConnectPanelProps {
   }) => void;
 }
 
-// Detect if an EIP-1193 provider is available
 function getEthereumProvider(): any | null {
   if (typeof window === "undefined") return null;
-  // EIP-6963 multi-provider or legacy
   return (window as any).ethereum ?? null;
 }
 
+/* ── Create Wallet Sub-component ── */
+function CreateWalletTab({ onWalletConnected, onClose }: {
+  onWalletConnected: WalletConnectPanelProps["onWalletConnected"];
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState<"select" | "generating" | "reveal">("select");
+  const [chain, setChain] = useState("eth");
+  const [label, setLabel] = useState("");
+  const [result, setResult] = useState<{
+    address: string; private_key: string; mnemonic: string | null;
+  } | null>(null);
+  const [showKey, setShowKey] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleGenerate = async () => {
+    if (!label.trim()) return;
+    setStep("generating");
+    setError("");
+    try {
+      const res = await wallets.generate({ label: label.trim(), chain });
+      setResult({ address: res.address, private_key: res.private_key, mnemonic: res.mnemonic });
+      setStep("reveal");
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to generate wallet");
+      setStep("select");
+    }
+  };
+
+  const copyToClipboard = (text: string, what: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${what} copied to clipboard`);
+  };
+
+  const handleConfirm = () => {
+    if (!result) return;
+    onWalletConnected({
+      label,
+      chain: chain as ChainId,
+      address: result.address,
+      type: "hot",
+      connection_method: "generated",
+    });
+    toast.success("Wallet created successfully!");
+    onClose();
+  };
+
+  if (step === "select") {
+    return (
+      <div className="space-y-4">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-xs flex items-start gap-2">
+          <Plus className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+          <div>
+            <p className="font-medium text-foreground">Generate New Wallet</p>
+            <p className="text-muted-foreground">
+              A real blockchain address will be created. You'll receive your private key and recovery phrase — save them securely. They are shown <strong>once</strong>.
+            </p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-xs text-destructive">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label>Wallet Name</Label>
+          <Input
+            placeholder="e.g. My ETH Wallet"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Blockchain</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(chainLabels).map(([key, name]) => (
+              <button
+                key={key}
+                onClick={() => setChain(key)}
+                className={`flex items-center gap-2 p-2.5 rounded-lg border text-left text-sm transition-all ${
+                  chain === key
+                    ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                    : "border-border hover:border-primary/30 hover:bg-muted"
+                }`}
+              >
+                <span className="text-lg">{chainIcons[key] || "🔗"}</span>
+                <span className="font-medium">{name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Button
+          className="w-full bg-gradient-gold text-primary-foreground"
+          onClick={handleGenerate}
+          disabled={!label.trim()}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          Create {chainLabels[chain]} Wallet
+        </Button>
+      </div>
+    );
+  }
+
+  if (step === "generating") {
+    return (
+      <div className="text-center py-10 space-y-4">
+        <div className="relative mx-auto w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center">
+          <span className="text-4xl">{chainIcons[chain] || "🔗"}</span>
+          <div className="absolute inset-0 rounded-2xl border-2 border-primary animate-pulse" />
+        </div>
+        <div>
+          <p className="font-semibold">Generating {chainLabels[chain]} Wallet…</p>
+          <p className="text-sm text-muted-foreground">Creating keypair with native {chain.toUpperCase()} cryptography</p>
+        </div>
+        <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
+      </div>
+    );
+  }
+
+  // step === "reveal"
+  return (
+    <div className="space-y-4">
+      <div className="text-center py-3">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mb-3">
+          <Check className="h-8 w-8 text-success" />
+        </div>
+        <p className="font-semibold text-success">Wallet Created!</p>
+        <p className="text-xs text-muted-foreground mt-1">{chainLabels[chain]} · {label}</p>
+      </div>
+
+      {/* Address */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Wallet Address</Label>
+        <div className="flex items-center gap-2 bg-muted rounded-lg p-2.5">
+          <code className="font-mono text-xs flex-1 break-all">{result?.address}</code>
+          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => copyToClipboard(result!.address, "Address")}>
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Private Key */}
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Private Key</Label>
+        <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-2.5 space-y-2">
+          <div className="flex items-center gap-2">
+            {showKey ? (
+              <code className="font-mono text-xs flex-1 break-all text-destructive">{result?.private_key}</code>
+            ) : (
+              <span className="flex-1 text-xs text-muted-foreground italic">Hidden — click eye to reveal</span>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setShowKey(!showKey)}>
+              {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            </Button>
+            {showKey && (
+              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => copyToClipboard(result!.private_key, "Private key")}>
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mnemonic */}
+      {result?.mnemonic && (
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Recovery Phrase (Mnemonic)</Label>
+          <div className="bg-warning/5 border border-warning/20 rounded-lg p-3">
+            <div className="grid grid-cols-3 gap-1.5">
+              {result.mnemonic.split(" ").map((word, i) => (
+                <div key={i} className="flex items-center gap-1 bg-background rounded px-2 py-1">
+                  <span className="text-[10px] text-muted-foreground w-4">{i + 1}.</span>
+                  <span className="font-mono text-xs">{word}</span>
+                </div>
+              ))}
+            </div>
+            <Button variant="ghost" size="sm" className="w-full mt-2 text-xs" onClick={() => copyToClipboard(result!.mnemonic!, "Recovery phrase")}>
+              <Copy className="mr-1 h-3 w-3" /> Copy Recovery Phrase
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Warning */}
+      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
+        <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+        <div className="text-xs">
+          <p className="font-semibold text-destructive">Save your keys NOW!</p>
+          <p className="text-muted-foreground">
+            This is the <strong>only time</strong> your private key and recovery phrase will be shown.
+            Store them in a secure location. If you lose them, your funds cannot be recovered.
+          </p>
+        </div>
+      </div>
+
+      {/* Confirm checkbox */}
+      <label className="flex items-start gap-2 cursor-pointer">
+        <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} className="mt-1 accent-primary" />
+        <span className="text-xs text-muted-foreground">
+          I have securely saved my private key and recovery phrase. I understand they will not be shown again.
+        </span>
+      </label>
+
+      <Button
+        className="w-full bg-gradient-gold text-primary-foreground"
+        onClick={handleConfirm}
+        disabled={!saved}
+      >
+        <ShieldCheck className="mr-1.5 h-4 w-4" /> I've Saved My Keys — Continue
+      </Button>
+    </div>
+  );
+}
+
+/* ── Main Panel ── */
 export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: WalletConnectPanelProps) {
-  const [method, setMethod] = useState<ConnectMethod>("walletconnect");
+  const [method, setMethod] = useState<ConnectMethod>("create");
   const [status, setStatus] = useState<ConnectionStatus>("idle");
   const [selectedHW, setSelectedHW] = useState<string | null>(null);
   const [manualForm, setManualForm] = useState({ label: "", chain: "eth" as ChainId, address: "", type: "hot" as "hot" | "cold", xpub: "" });
@@ -85,59 +309,41 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
       setStatus("error");
       return;
     }
-
     setStatus("connecting");
     setConnectedWalletName(walletName);
     setErrorMessage("");
-
     try {
-      // Request account access via EIP-1193
       const accounts: string[] = await provider.request({ method: "eth_requestAccounts" });
-      if (!accounts || accounts.length === 0) {
-        throw new Error("No accounts returned. User may have rejected the request.");
-      }
-
-      const address = accounts[0];
-      setConnectedAddress(address);
+      if (!accounts || accounts.length === 0) throw new Error("No accounts returned. User may have rejected the request.");
+      setConnectedAddress(accounts[0]);
       setStatus("connected");
     } catch (err: any) {
       console.error("Wallet connection failed:", err);
-      const msg = err?.code === 4001
-        ? "Connection rejected by user."
-        : err?.message || "Failed to connect wallet. Please try again.";
+      const msg = err?.code === 4001 ? "Connection rejected by user." : err?.message || "Failed to connect wallet. Please try again.";
       setErrorMessage(msg);
       setStatus("error");
     }
   }, []);
 
   const connectHardwareWallet = useCallback(async (walletName: string, protocol: string) => {
-    // Hardware wallets connect through browser extensions (MetaMask + Ledger/Trezor, etc.)
     const provider = getEthereumProvider();
     if (!provider) {
-      setErrorMessage(
-        `Hardware wallets connect through browser extensions. Please:\n1. Install MetaMask\n2. Connect your ${walletName} in MetaMask settings\n3. Try again`
-      );
+      setErrorMessage(`Hardware wallets connect through browser extensions. Please:\n1. Install MetaMask\n2. Connect your ${walletName} in MetaMask settings\n3. Try again`);
       setStatus("error");
       return;
     }
-
     setStatus("connecting");
     setConnectedWalletName(walletName);
     setSelectedHW(protocol);
     setErrorMessage("");
-
     try {
       const accounts: string[] = await provider.request({ method: "eth_requestAccounts" });
-      if (!accounts || accounts.length === 0) {
-        throw new Error("No accounts returned.");
-      }
+      if (!accounts || accounts.length === 0) throw new Error("No accounts returned.");
       setConnectedAddress(accounts[0]);
       setStatus("connected");
     } catch (err: any) {
       console.error("Hardware wallet connection failed:", err);
-      const msg = err?.code === 4001
-        ? "Connection rejected by user."
-        : err?.message || "Failed to connect. Ensure your hardware wallet is unlocked and connected.";
+      const msg = err?.code === 4001 ? "Connection rejected by user." : err?.message || "Failed to connect. Ensure your hardware wallet is unlocked and connected.";
       setErrorMessage(msg);
       setStatus("error");
     }
@@ -178,25 +384,36 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5 text-primary" />Connect Wallet
+            <Link2 className="h-5 w-5 text-primary" />Wallet Manager
           </DialogTitle>
           <DialogDescription>
-            Connect a hot wallet via browser extension, plug in a hardware wallet, or import manually
+            Create a new wallet, connect via browser extension, hardware device, or import manually
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={method} onValueChange={(v) => { setMethod(v as ConnectMethod); resetState(); }}>
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="create" className="text-xs gap-1.5">
+              <Plus className="h-3.5 w-3.5" />Create
+            </TabsTrigger>
             <TabsTrigger value="walletconnect" className="text-xs gap-1.5">
-              <Smartphone className="h-3.5 w-3.5" />Web3 Wallet
+              <Smartphone className="h-3.5 w-3.5" />Web3
             </TabsTrigger>
             <TabsTrigger value="hardware" className="text-xs gap-1.5">
               <Usb className="h-3.5 w-3.5" />Hardware
             </TabsTrigger>
             <TabsTrigger value="manual" className="text-xs gap-1.5">
-              <Wallet className="h-3.5 w-3.5" />Manual
+              <Wallet className="h-3.5 w-3.5" />Import
             </TabsTrigger>
           </TabsList>
+
+          {/* ── Create New Wallet Tab ── */}
+          <TabsContent value="create" className="space-y-4 mt-4">
+            <CreateWalletTab
+              onWalletConnected={onWalletConnected}
+              onClose={() => { resetState(); onOpenChange(false); }}
+            />
+          </TabsContent>
 
           {/* ── Web3 Wallet Tab ── */}
           <TabsContent value="walletconnect" className="space-y-4 mt-4">
@@ -220,12 +437,8 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                 </div>
                 <div className="grid gap-2">
                   {injectedWallets.map((w) => (
-                    <button
-                      key={w.name}
-                      onClick={() => connectInjectedWallet(w.name)}
-                      disabled={!hasProvider}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <button key={w.name} onClick={() => connectInjectedWallet(w.name)} disabled={!hasProvider}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="text-2xl">{w.icon}</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm">{w.name}</p>
@@ -315,20 +528,14 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
                     <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
                     <div>
                       <p className="font-medium text-foreground">Extension Required</p>
-                      <p className="text-muted-foreground">
-                        Install MetaMask and connect your hardware wallet in its settings first.
-                      </p>
+                      <p className="text-muted-foreground">Install MetaMask and connect your hardware wallet in its settings first.</p>
                     </div>
                   </div>
                 )}
                 <div className="grid gap-2">
                   {hardwareWallets.map((hw) => (
-                    <button
-                      key={hw.protocol}
-                      onClick={() => connectHardwareWallet(hw.name, hw.protocol)}
-                      disabled={!hasProvider}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-info/40 hover:bg-info/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <button key={hw.protocol} onClick={() => connectHardwareWallet(hw.name, hw.protocol)} disabled={!hasProvider}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-info/40 hover:bg-info/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="text-2xl">{hw.icon}</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm">{hw.name}</p>
@@ -458,7 +665,6 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
           </TabsContent>
         </Tabs>
 
-        {/* Supported protocols footer */}
         <div className="border-t border-border pt-3 mt-2">
           <p className="text-xs text-muted-foreground text-center">
             Supported: EIP-1193 · MetaMask · Coinbase Wallet · Ledger · Trezor · Trust Wallet · 100+ injected wallets

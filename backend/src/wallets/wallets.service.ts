@@ -25,6 +25,50 @@ export class WalletsService {
     });
   }
 
+  // ── Generate new wallet (returns private key + mnemonic to user ONCE) ──
+  async generate(merchantId: string, data: { label: string; chain: string }) {
+    const keypair = await this.keyManager.generateKeypair(data.chain);
+
+    const wallet = await this.prisma.walletConfig.create({
+      data: {
+        merchant_id: merchantId,
+        label: data.label,
+        chain: data.chain,
+        address: keypair.address,
+        type: 'hot',
+        status: 'active',
+      },
+    });
+
+    // Store encrypted private key server-side
+    await this.keyManager.storeKey(wallet.id, keypair.privateKey);
+
+    // Create deposit address
+    await this.prisma.walletDepositAddress.upsert({
+      where: { merchant_id_chain: { merchant_id: merchantId, chain: data.chain } },
+      create: {
+        wallet_id: wallet.id,
+        merchant_id: merchantId,
+        chain: data.chain,
+        address: keypair.address,
+        min_deposit: this.getMinDeposit(data.chain),
+        confirmations_required: this.getConfirmations(data.chain),
+        estimated_time: this.getEstimatedTime(data.chain),
+      },
+      update: {},
+    });
+
+    this.logger.log(`Wallet generated: ${wallet.id} chain=${data.chain} for merchant ${merchantId}`);
+
+    // Return secrets ONCE — frontend must show and warn user to save
+    return {
+      wallet,
+      address: keypair.address,
+      private_key: keypair.privateKey,
+      mnemonic: keypair.mnemonic || null,
+    };
+  }
+
   // ── Add wallet (import or generate) ──
   async add(merchantId: string, data: any) {
     let address = data.address;
