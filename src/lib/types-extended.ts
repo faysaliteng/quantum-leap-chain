@@ -70,9 +70,10 @@ export interface SecurityPolicies {
 
 // ── Wallet Transaction types ──
 
-export type WalletTxDirection = "send" | "receive" | "withdraw";
+export type WalletTxDirection = "send" | "receive" | "withdraw" | "swap";
 export type WalletTxStatus =
   | "drafted"
+  | "pending"
   | "pending_signature"
   | "signed"
   | "broadcasted"
