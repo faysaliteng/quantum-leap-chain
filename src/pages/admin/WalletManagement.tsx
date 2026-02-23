@@ -169,7 +169,13 @@ export default function AdminWalletManagement() {
     return matchType && matchSearch;
   });
 
-  const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold" }) => {
+  const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold"; connection_method: string }) => {
+    if (wallet.connection_method === "generated") {
+      qc.invalidateQueries({ queryKey: ["admin-wallets"] });
+      qc.invalidateQueries({ queryKey: ["admin-wallets-stats"] });
+      qc.invalidateQueries({ queryKey: ["admin-wallets-portfolio"] });
+      return;
+    }
     addMut.mutate({ label: wallet.label, chain: wallet.chain, address: wallet.address, type: wallet.type } as any);
   };
 

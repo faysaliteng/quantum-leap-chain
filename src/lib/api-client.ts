@@ -207,6 +207,8 @@ export const admin = {
   wallets: {
     stats: () => http.get<WalletStats>("/v1/admin/wallets/stats").then((r) => r.data),
     add: (data: Partial<WalletConfig>) => http.post<WalletConfig>("/v1/admin/wallets", data).then((r) => r.data),
+    generate: (data: { label: string; chain: string; merchant_id?: string }) =>
+      http.post<{ wallet: WalletConfig; address: string; private_key: string; mnemonic: string | null }>("/v1/admin/wallets/generate", data).then((r) => r.data),
     update: (id: string, data: Partial<WalletConfig>) => http.put(`/v1/admin/wallets/${id}`, data),
     remove: (id: string) => http.delete(`/v1/admin/wallets/${id}`),
     send: (id: string, data: { to_address: string; amount: string; memo?: string }) =>

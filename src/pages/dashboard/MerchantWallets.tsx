@@ -179,7 +179,14 @@ export default function MerchantWallets() {
     return matchSearch && matchChain;
   });
 
-  const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold" }) => {
+  const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold"; connection_method: string }) => {
+    if (wallet.connection_method === "generated") {
+      // Wallet already created server-side by /v1/wallets/generate
+      qc.invalidateQueries({ queryKey: ["merchant-wallets-portfolio"] });
+      qc.invalidateQueries({ queryKey: ["merchant-wallets-assets"] });
+      qc.invalidateQueries({ queryKey: ["merchant-wallet-tx"] });
+      return;
+    }
     addMut.mutate({ label: wallet.label, chain: wallet.chain, address: wallet.address, type: wallet.type });
   };
 
