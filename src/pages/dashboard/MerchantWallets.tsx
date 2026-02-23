@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { ChainId, WalletConfig, WalletAsset, SwapQuote } from "@/lib/types";
+import CryptoIcon from "@/components/CryptoIcon";
 
 // ── Chain metadata ──
 const CHAINS: Record<string, { label: string; icon: string; color: string }> = {
@@ -295,9 +296,7 @@ export default function MerchantWallets() {
                       <tr key={`${asset.chain}-${asset.symbol}`} className="border-b border-border/20 hover:bg-muted/20 transition-colors group">
                         <td className="p-3 pl-4">
                           <div className="flex items-center gap-3">
-                            <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border/50 text-lg font-bold ${chain?.color ?? ""}`}>
-                              {chain?.icon ?? "?"}
-                            </div>
+                            <CryptoIcon chain={asset.chain} size={40} />
                             <div>
                               <p className="font-semibold text-sm">{asset.name}</p>
                               <div className="flex items-center gap-1.5">
@@ -365,9 +364,7 @@ export default function MerchantWallets() {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3">
-                          <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-lg font-bold border border-border/50 ${w.type === "hot" ? "bg-warning/5" : "bg-info/5"} ${chain?.color ?? ""}`}>
-                            {chain?.icon ?? "?"}
-                          </div>
+                          <CryptoIcon chain={w.chain} size={44} />
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-sm">{w.label}</span>
@@ -418,7 +415,7 @@ export default function MerchantWallets() {
                       {wList.filter((w) => w.status === "active").map((w) => (
                         <SelectItem key={w.id} value={w.id}>
                           <div className="flex items-center gap-2">
-                            <span className={CHAINS[w.chain]?.color}>{CHAINS[w.chain]?.icon}</span>
+                            <CryptoIcon chain={w.chain} size={18} />
                             <span>{w.label}</span>
                             <span className="text-muted-foreground text-xs ml-auto">{w.balance}</span>
                           </div>
@@ -682,7 +679,7 @@ export default function MerchantWallets() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm ${CHAINS[tx.chain]?.color}`}>{CHAINS[tx.chain]?.icon}</span>
+                          <CryptoIcon chain={tx.chain} size={20} />
                           <span className="text-sm font-medium">{tx.asset}</span>
                         </div>
                       </td>

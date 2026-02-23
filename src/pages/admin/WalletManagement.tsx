@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { WalletConfig, ChainId } from "@/lib/types";
+import CryptoIcon from "@/components/CryptoIcon";
 
 const CHAINS: Record<string, { label: string; icon: string; color: string }> = {
   btc: { label: "Bitcoin", icon: "₿", color: "text-orange-500" },
@@ -248,9 +249,7 @@ export default function AdminWalletManagement() {
                       <tr key={`${asset.chain}-${asset.symbol}`} className="border-b border-border/20 hover:bg-muted/20 transition-colors group">
                         <td className="p-3 pl-4">
                           <div className="flex items-center gap-3">
-                            <div className={`flex h-9 w-9 items-center justify-center rounded-full bg-card border border-border/50 text-base font-bold ${chain?.color ?? ""}`}>
-                              {chain?.icon ?? "?"}
-                            </div>
+                            <CryptoIcon chain={asset.chain} size={36} />
                             <div>
                               <p className="font-semibold text-sm">{asset.name}</p>
                               <span className="text-xs text-muted-foreground">{asset.symbol} · {chain?.label}</span>
@@ -292,7 +291,7 @@ export default function AdminWalletManagement() {
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className={`text-lg ${CHAINS[ticker.symbol.toLowerCase()]?.color ?? "text-primary"}`}>{CHAINS[ticker.symbol.toLowerCase()]?.icon ?? "●"}</span>
+                          <CryptoIcon chain={ticker.symbol.toLowerCase()} size={24} />
                           <div>
                             <p className="text-xs font-semibold">{ticker.symbol}</p>
                             <p className="text-[10px] text-muted-foreground">{ticker.name}</p>
@@ -340,9 +339,7 @@ export default function AdminWalletManagement() {
                   <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-start gap-3">
-                        <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-lg font-bold border border-border/50 ${w.type === "hot" ? "bg-warning/5" : "bg-info/5"} ${chain?.color ?? ""}`}>
-                          {chain?.icon ?? "?"}
-                        </div>
+                        <CryptoIcon chain={w.chain} size={44} />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-sm">{w.label}</span>
@@ -577,8 +574,8 @@ export default function AdminWalletManagement() {
                   <CopyButton value={receiveWallet.address} />
                 </div>
               </div>
-              <Badge variant="outline" className="w-full justify-center py-1.5">
-                {CHAINS[receiveWallet.chain]?.icon} {CHAINS[receiveWallet.chain]?.label} Network Only
+              <Badge variant="outline" className="w-full justify-center py-1.5 gap-1.5">
+                <CryptoIcon chain={receiveWallet.chain} size={16} /> {CHAINS[receiveWallet.chain]?.label} Network Only
               </Badge>
             </div>
           )}
