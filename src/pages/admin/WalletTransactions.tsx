@@ -21,10 +21,12 @@ const directionConfig: Record<WalletTxDirection, { icon: React.ReactNode; label:
   send: { icon: <ArrowUpRight className="h-4 w-4" />, label: "Send", color: "text-destructive" },
   receive: { icon: <ArrowDownLeft className="h-4 w-4" />, label: "Receive", color: "text-success" },
   withdraw: { icon: <ArrowRightLeft className="h-4 w-4" />, label: "Withdraw", color: "text-warning" },
+  swap: { icon: <ArrowRightLeft className="h-4 w-4" />, label: "Swap", color: "text-primary" },
 };
 
 const statusConfig: Record<WalletTxStatus, { icon: React.ReactNode; color: string }> = {
   drafted: { icon: <FileSignature className="h-3.5 w-3.5" />, color: "bg-muted text-muted-foreground" },
+  pending: { icon: <Clock className="h-3.5 w-3.5" />, color: "bg-warning/10 text-warning" },
   pending_signature: { icon: <Clock className="h-3.5 w-3.5" />, color: "bg-warning/10 text-warning" },
   signed: { icon: <CheckCircle className="h-3.5 w-3.5" />, color: "bg-info/10 text-info" },
   broadcasted: { icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />, color: "bg-info/10 text-info" },

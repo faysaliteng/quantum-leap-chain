@@ -78,6 +78,7 @@ export default function AdminWalletManagement() {
   const [fromAsset, setFromAsset] = useState("ETH");
   const [toAsset, setToAsset] = useState("USDT");
   const [convertAmount, setConvertAmount] = useState("");
+  const [swapQuote, setSwapQuote] = useState<import("@/lib/types").SwapQuote | null>(null);
 
   // ── Queries ──
   const { data: stats, isLoading } = useQuery({
@@ -138,6 +139,17 @@ export default function AdminWalletManagement() {
     },
     onError: () => toast.error("Swap failed"),
   });
+
+  // Swap quote for admin convert
+  useEffect(() => {
+    if (!convertAmount || !fromAsset || !toAsset || fromAsset === toAsset) { setSwapQuote(null); return; }
+    const t = setTimeout(() => {
+      admin.wallets.swapQuote({ from_asset: fromAsset, to_asset: toAsset, amount: convertAmount })
+        .then(setSwapQuote)
+        .catch(() => setSwapQuote(null));
+    }, 500);
+    return () => clearTimeout(t);
+  }, [fromAsset, toAsset, convertAmount]);
 
   // Fee estimation
   useEffect(() => {
@@ -414,17 +426,25 @@ export default function AdminWalletManagement() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xl font-mono font-bold text-muted-foreground">—</p>
+                      <p className="text-xl font-mono font-bold text-muted-foreground">{swapQuote?.to_amount ?? "—"}</p>
                     </div>
                   </div>
                 </div>
+
+                {swapQuote && (
+                  <div className="bg-muted/30 rounded-lg p-3 space-y-1.5 text-xs border border-border/30">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Rate</span><span className="font-mono">1 {fromAsset} = {swapQuote.rate} {toAsset}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Fee</span><span className="font-mono">{swapQuote.fee} ({swapQuote.fee_usd})</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Slippage</span><span className="font-mono">{swapQuote.slippage}%</span></div>
+                  </div>
+                )}
 
                 <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground"><strong className="text-destructive">Admin action:</strong> This swap affects platform treasury. Audit log will be created.</p>
                 </div>
 
-                <Button className="w-full h-11 bg-gradient-gold text-primary-foreground font-semibold" disabled={!convertAmount || swapMut.isPending || fromAsset === toAsset} onClick={() => swapMut.mutate()}>
+                <Button className="w-full h-11 bg-gradient-gold text-primary-foreground font-semibold" disabled={!swapQuote || !convertAmount || swapMut.isPending || fromAsset === toAsset} onClick={() => swapMut.mutate()}>
                   <ArrowDownUp className="mr-1.5 h-4 w-4" />{swapMut.isPending ? "Processing..." : `Convert ${fromAsset} → ${toAsset}`}
                 </Button>
               </CardContent>
