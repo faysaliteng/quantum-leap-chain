@@ -2,7 +2,7 @@
 
 > The lowest-fee crypto payment gateway. Accept BTC, ETH, and stablecoins with 0.5% flat fee. No KYC, no monthly fees, instant setup.
 
-[![CI](https://github.com/your-org/cryptoniumpay/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/cryptoniumpay/actions/workflows/ci.yml)
+[![CI](https://github.com/faysaliteng/quantum-leap-chain/actions/workflows/ci.yml/badge.svg)](https://github.com/faysaliteng/quantum-leap-chain/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://typescriptlang.org)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev)
 
@@ -22,7 +22,7 @@
 ## 🚀 For Merchants
 
 - **Instant Setup** — Create account, get API key, start accepting payments. No company verification.
-- **52+ Routes** — Landing, auth, dashboard, admin, CMS, checkout, docs, pricing, blog, contact, notifications, security, exports
+- **61 Routes** — Landing, auth, dashboard, admin, CMS, checkout, docs, pricing, blog, contact, notifications, security, exports, intelligence
 - **50+ API Endpoints** — Fully typed Axios client across 20+ namespaces
 - **Charge Management** — Create, list, search, filter by status/date, export (CSV/JSON, client + server-side)
 - **Invoice Management** — Create, send, track, PDF download with full lifecycle
@@ -121,7 +121,7 @@
 | **State** | TanStack React Query |
 | **Charts** | Recharts (Area, Bar, Pie/Donut) |
 | **QR Codes** | qrcode.react |
-| **Routing** | React Router v6 (52 routes) |
+| **Routing** | React Router v6 (61 routes) |
 | **Validation** | Zod |
 | **HTTP Client** | Axios (typed, 50+ endpoints) |
 | **Animations** | Framer Motion |
@@ -209,7 +209,7 @@ cryptoniumpay/
 
 ---
 
-## 🗺️ Route Map (56 Routes)
+## 🗺️ Route Map (61 Routes)
 
 ### Public Routes (14)
 | Route | Page |
@@ -238,7 +238,7 @@ cryptoniumpay/
 | `/docs/schema` | Database schema |
 | `/docs/singularitycoin` | SingularityCoin protocol |
 
-### Merchant Dashboard (16, Protected)
+### Merchant Dashboard (18, Protected)
 | Route | Page |
 |-------|------|
 | `/dashboard` | Home with 6 KPIs, charts, wallet overview, quick actions |
@@ -253,13 +253,14 @@ cryptoniumpay/
 | `/dashboard/wallets/transactions` | Wallet transaction history with filters + server export |
 | `/dashboard/notifications` | Notification center + preferences |
 | `/dashboard/exports` | Export center — job list, status, downloads |
+| `/dashboard/intelligence` | Predictive analytics dashboard |
 | `/dashboard/settings/settlement` | Settlement config |
 | `/dashboard/settings/api-keys` | API key management |
 | `/dashboard/settings/webhooks` | Webhook management + delivery export |
 | `/dashboard/settings/addresses` | Address pool |
 | `/dashboard/settings/security` | Security settings (2FA, sessions, password) |
 
-### Admin Panel (22, Protected, role=admin)
+### Admin Panel (23, Protected, role=admin)
 | Route | Page |
 |-------|------|
 | `/admin` | System overview with live ticker, 6 KPIs, charts |
@@ -275,6 +276,8 @@ cryptoniumpay/
 | `/admin/roles` | Role & permission management + team invites |
 | `/admin/notifications` | Admin notification center |
 | `/admin/exports` | Admin export center — job list, status, downloads |
+| `/admin/intelligence` | Admin predictive analytics |
+| `/admin/api-settings` | API configuration settings |
 | `/admin/cms` | CMS dashboard |
 | `/admin/cms/pages` | Page manager |
 | `/admin/cms/blog` | Blog post manager |
@@ -306,7 +309,7 @@ npx playwright test     # E2E smoke tests
 
 | Metric | Count |
 |--------|-------|
-| Routes | 56 |
+| Routes | 61 |
 | Source files | 100+ |
 | Custom components | 35+ |
 | shadcn/ui primitives | 45 |

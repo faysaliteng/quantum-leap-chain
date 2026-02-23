@@ -3,7 +3,7 @@
 > Atomic, step-by-step deployment instructions. No room for error.
 > Written for absolute beginners. Every command is copy-pasteable.
 
-**Last updated:** 2026-02-22
+**Last updated:** 2026-02-23
 **Covers:** Cloudflare (Pages + Workers) and VM (Docker Compose)
 
 ---
@@ -72,8 +72,8 @@ docker compose version
 ### 1.3 Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/cryptoniumpay.git
-cd cryptoniumpay
+git clone https://github.com/faysaliteng/quantum-leap-chain.git
+cd quantum-leap-chain
 ```
 
 ### 1.4 Install Frontend Dependencies
@@ -126,8 +126,9 @@ Successfully logged in.
 ### Step 2: Build Frontend for Production
 
 ```bash
-# Set your API URL (this will be the Worker URL or your backend URL)
-export VITE_API_BASE_URL=https://api.yourdomain.com
+# Set your API URL (Worker URL with /api suffix — NOT /api/v1)
+# The frontend appends /v1/... to this base URL automatically
+export VITE_API_BASE_URL=https://api.yourdomain.com/api
 
 # Build
 npm run build

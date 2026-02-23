@@ -2,7 +2,7 @@
 
 > Complete technical inventory of every file, route, component, type, hook, and design token in the Cryptoniumpay frontend codebase. This document is the single source of truth for developers onboarding to the project.
 
-**Last updated:** 2026-02-22  
+**Last updated:** 2026-02-23  
 **Frontend version:** 2.0.0  
 **Stack:** React 18 · TypeScript · Vite · Tailwind CSS · shadcn/ui
 
@@ -30,7 +30,7 @@
 18. [Testing](#18-testing)
 19. [Deployment Files](#19-deployment-files)
 20. [SingularityCoin Protocol](#20-singularitycoin-protocol)
-21. [What Is NOT Built Yet (Backend)](#21-what-is-not-built-yet-backend)
+21. [Backend Integration](#21-backend-integration)
 
 ---
 
@@ -258,37 +258,66 @@ cryptoniumpay/
 | `/` | `LandingPage` | ❌ | — | Public homepage with hero, features, live prices, socials |
 | `/login` | `Login` | ❌ | — | Email/password login |
 | `/signup` | `Signup` | ❌ | — | Registration with Zod validation |
+| `/verify-email` | `VerifyEmail` | ❌ | — | Email OTP verification step |
+| `/verify-2fa` | `Verify2FA` | ❌ | — | TOTP 2FA verification step |
+| `/forgot-password` | `ForgotPassword` | ❌ | — | Forgot password (anti-enumeration) |
+| `/reset-password` | `ResetPassword` | ❌ | — | Reset password with strength meter |
 | `/pay/:chargeId` | `CheckoutPage` | ❌ | — | Public hosted checkout page |
+| `/terms` | `TermsOfService` | ❌ | — | Terms of Service |
+| `/privacy` | `PrivacyPolicy` | ❌ | — | Privacy Policy |
+| `/pricing` | `Pricing` | ❌ | — | Fee comparison + calculator |
+| `/contact` | `Contact` | ❌ | — | Contact form + office info |
+| `/blog` | `Blog` | ❌ | — | Blog article listings |
+| `/faq` | `FAQ` | ❌ | — | Expandable FAQ sections |
 | `/docs/architecture` | `ArchitectureDocs` | ❌ | — | Architecture documentation |
 | `/docs/security` | `SecurityDocs` | ❌ | — | Security documentation |
 | `/docs/schema` | `SchemaDocs` | ❌ | — | Database schema documentation |
 | `/docs/api` | `ApiDocs` | ❌ | — | API reference documentation |
 | `/docs/singularitycoin` | `SingularityCoinDocs` | ❌ | — | L1 blockchain protocol spec |
-| `/dashboard` | `DashboardHome` | ✅ | any | 6 KPIs, wallet overview, volume chart |
-| `/dashboard/charges` | `ChargesList` | ✅ | any | Search + filters + date range + CSV export |
-| `/dashboard/charges/new` | `CreateCharge` | ✅ | any | Create new charge form |
-| `/dashboard/charges/:id` | `ChargeDetail` | ✅ | any | Single charge detail + transactions |
-| `/dashboard/reports` | `Reports` | ✅ | any | KPI cards + charts + CSV/JSON export |
-| `/dashboard/settings/settlement` | `SettlementSettings` | ✅ | any | Settlement address config |
-| `/dashboard/settings/api-keys` | `ApiKeysSettings` | ✅ | any | API key management |
-| `/dashboard/settings/webhooks` | `WebhookSettings` | ✅ | any | Webhook endpoint management |
-| `/dashboard/settings/addresses` | `AddressPool` | ✅ | any | Address pool management |
+| `/dashboard` | `DashboardHome` | ✅ | merchant | 6 KPIs, wallet overview, volume chart |
+| `/dashboard/charges` | `ChargesList` | ✅ | merchant | Search + filters + date range + CSV export |
+| `/dashboard/charges/new` | `CreateCharge` | ✅ | merchant | Create new charge form |
+| `/dashboard/charges/:id` | `ChargeDetail` | ✅ | merchant | Single charge detail + transactions |
+| `/dashboard/reports` | `Reports` | ✅ | merchant | KPI cards + charts + CSV/JSON export |
+| `/dashboard/wallets` | `MerchantWallets` | ✅ | merchant | Wallet management (WalletConnect + hardware) |
+| `/dashboard/wallets/transactions` | `WalletTransactionHistory` | ✅ | merchant | Wallet tx history with filters |
+| `/dashboard/invoices` | `InvoicesList` | ✅ | merchant | Invoice list with status filters |
+| `/dashboard/invoices/new` | `CreateInvoice` | ✅ | merchant | Create invoice form |
+| `/dashboard/invoices/:id` | `InvoiceDetail` | ✅ | merchant | Invoice detail view |
+| `/dashboard/notifications` | `NotificationsPage` | ✅ | merchant | Notification center + preferences |
+| `/dashboard/exports` | `ExportCenter` | ✅ | merchant | Export job list + downloads |
+| `/dashboard/intelligence` | `MerchantIntelligence` | ✅ | merchant | Predictive analytics dashboard |
+| `/dashboard/settings/settlement` | `SettlementSettings` | ✅ | merchant | Settlement address config |
+| `/dashboard/settings/api-keys` | `ApiKeysSettings` | ✅ | merchant | API key management |
+| `/dashboard/settings/webhooks` | `WebhookSettings` | ✅ | merchant | Webhook endpoint management |
+| `/dashboard/settings/addresses` | `AddressPool` | ✅ | merchant | Address pool management |
+| `/dashboard/settings/security` | `SecuritySettings` | ✅ | merchant | 2FA, sessions, password |
 | `/admin` | `AdminHome` | ✅ | admin | Crypto ticker, 6 KPIs, volume chart |
 | `/admin/revenue` | `RevenueDashboard` | ✅ | admin | Revenue multi-chart layout |
 | `/admin/fees` | `FeeManagement` | ✅ | admin | Global fees + per-merchant overrides |
 | `/admin/merchants` | `MerchantManagement` | ✅ | admin | Merchant list + toggle |
 | `/admin/chains` | `ChainConfig` | ✅ | admin | Chain/asset configuration |
+| `/admin/wallets` | `AdminWalletManagement` | ✅ | admin | Platform wallet management |
+| `/admin/wallets/transactions` | `AdminWalletTransactions` | ✅ | admin | Wallet transaction audit |
 | `/admin/monitoring` | `SystemMonitoring` | ✅ | admin | Real-time system health |
 | `/admin/audit-log` | `AuditLog` | ✅ | admin | Audit log viewer |
+| `/admin/security-policies` | `AdminSecurityPolicies` | ✅ | admin | Password/session/access policies |
+| `/admin/roles` | `AdminRoleManagement` | ✅ | admin | RBAC roles + team invites |
+| `/admin/notifications` | `NotificationsPage` | ✅ | admin | Admin notification center |
+| `/admin/exports` | `AdminExportCenter` | ✅ | admin | Admin export center |
+| `/admin/intelligence` | `AdminIntelligence` | ✅ | admin | Admin predictive analytics |
+| `/admin/api-settings` | `AdminApiSettings` | ✅ | admin | API configuration settings |
 | `/admin/cms` | `CMSDashboard` | ✅ | admin | CMS content overview |
 | `/admin/cms/pages` | `PageManager` | ✅ | admin | Page SEO metadata manager |
 | `/admin/cms/blog` | `BlogManager` | ✅ | admin | Blog post CRUD |
 | `/admin/cms/announcements` | `AnnouncementManager` | ✅ | admin | Announcement banners |
 | `/admin/cms/faq` | `FAQManager` | ✅ | admin | FAQ entry manager |
+| `/admin/cms/contacts` | `ContactSubmissions` | ✅ | admin | Contact form submissions inbox |
+| `/admin/cms/social` | `SocialLinksManager` | ✅ | admin | Social media links manager |
 | `/admin/cms/settings` | `CMSSettings` | ✅ | admin | CMS global settings |
 | `*` | `NotFound` | ❌ | — | 404 catch-all |
 
-**Total routes: 33**
+**Total routes: 61**
 
 ### Route Protection Logic
 
@@ -530,7 +559,7 @@ accordion, alert, alert-dialog, aspect-ratio, avatar, badge, breadcrumb, button,
 
 **File:** `src/lib/api-client.ts`
 
-**Base URL:** `import.meta.env.VITE_API_BASE_URL` (falls back to `""`)
+**Base URL:** `import.meta.env.VITE_API_BASE_URL` (falls back to `"/api"`)
 
 **Auth:** Axios request interceptor reads `sp_token` from localStorage → `Authorization: Bearer <token>`
 
@@ -782,23 +811,23 @@ This is a **specification document** — the Rust implementation is a separate r
 
 ---
 
-## 21. What Is NOT Built Yet (Backend)
+## 21. Backend Integration
 
-The frontend is **100% complete** and production-ready. The following backend components must be built separately:
+The backend is **fully built and deployed** as a NestJS application with:
 
 | Component | Technology | Status |
 |-----------|-----------|--------|
-| REST API server | Node.js / Rust / Go | ❌ Not built |
-| PostgreSQL schema (18 tables) | PostgreSQL 16 | ❌ Documented in `/docs/schema` |
-| JWT authentication | Backend | ❌ Not built |
-| Blockchain watchers | Background workers | ❌ Not built |
-| Webhook dispatcher | Background workers | ❌ Not built |
-| Isolated signer service | Separate container | ❌ Not built |
-| Redis caching + rate limiting | Redis 7 | ❌ Not built |
-| Admin 2FA (TOTP) | Backend | ❌ Not built |
-| Database migrations | Knex / Prisma / raw SQL | ❌ Not built |
+| REST API server (55+ endpoints) | NestJS + Prisma | ✅ Production |
+| PostgreSQL schema (36 models) | PostgreSQL 16 | ✅ Deployed |
+| JWT authentication + 3-step MFA | argon2id + TOTP | ✅ Working |
+| Blockchain watchers | BullMQ workers | ✅ Running |
+| Webhook dispatcher | BullMQ + HMAC-SHA256 | ✅ Built |
+| Redis caching + rate limiting | Redis 7 | ✅ Deployed |
+| RBAC (20 permissions) | NestJS guards | ✅ Enforced |
+| Enterprise CMS | Prisma CRUD | ✅ Working |
+| Data export (server-side) | BullMQ + CSV/JSON | ✅ Working |
 
-The frontend connects to whatever API implements the endpoints documented in [Section 10](#10-api-client). The backend is fully specified in `DEPLOYMENT.md`, `/docs/architecture`, `/docs/schema`, `/docs/api`, and `/docs/security`.
+**Deployment:** Backend runs on VPS via Docker Compose (6 containers). Frontend on Cloudflare Pages. Cloudflare Workers gateway bridges them with HMAC-signed requests. See `DEPLOYMENT-SUCCESS.md` for the complete verified deployment guide.
 
 ---
 

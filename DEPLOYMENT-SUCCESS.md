@@ -1,6 +1,6 @@
 # Cryptoniumpay — Complete Deployment Guide (Atomic Detail)
 
-> **Last Updated:** February 23, 2026  
+> **Last Updated:** February 23, 2026 (verified working)  
 > **VPS Provider:** DigitalOcean  
 > **Droplet Spec:** 1 vCPU, 2GB RAM, Ubuntu 24.04  
 > **VPS IP:** 139.59.56.210  
@@ -471,7 +471,7 @@ curl https://cryptoniumpay-api-gateway.mailg.workers.dev/api/v1/health
    - **Root directory:** `/` (leave empty)
 4. Environment variable:
    - **Name:** `VITE_API_BASE_URL`
-   - **Value:** `https://cryptoniumpay-api-gateway.mailg.workers.dev/api/v1`
+   - **Value:** `https://cryptoniumpay-api-gateway.mailg.workers.dev/api`
 5. Click **Save and Deploy**
 
 ### Option B: Via Wrangler CLI
@@ -480,8 +480,8 @@ curl https://cryptoniumpay-api-gateway.mailg.workers.dev/api/v1/health
 # On your LOCAL machine
 cd /path/to/quantum-leap-chain
 
-# Set the API URL for the build
-export VITE_API_BASE_URL=https://cryptoniumpay-api-gateway.mailg.workers.dev/api/v1
+# Set the API URL for the build (MUST end with /api — NOT /api/v1)
+export VITE_API_BASE_URL=https://cryptoniumpay-api-gateway.mailg.workers.dev/api
 
 npm run build
 npx wrangler pages deploy dist --project-name=cryptoniumpay
