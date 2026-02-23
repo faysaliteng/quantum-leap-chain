@@ -109,25 +109,33 @@ export class AdminService {
   addWallet(data: any) { return this.prisma.walletConfig.create({ data }); }
 
   async generateWallet(data: { label: string; chain: string; merchant_id?: string }) {
-    const keypair = await this.keyManager.generateKeypair(data.chain);
-    const wallet = await this.prisma.walletConfig.create({
-      data: {
-        merchant_id: data.merchant_id || 'system',
-        label: data.label,
-        chain: data.chain,
+    try {
+      this.logger.log(`generateWallet called: chain=${data.chain}, label=${data.label}`);
+      const keypair = await this.keyManager.generateKeypair(data.chain);
+      this.logger.log(`Keypair generated: address=${keypair.address}`);
+      const wallet = await this.prisma.walletConfig.create({
+        data: {
+          merchant_id: data.merchant_id || 'system',
+          label: data.label,
+          chain: data.chain,
+          address: keypair.address,
+          type: 'hot',
+          status: 'active',
+        },
+      });
+      this.logger.log(`Wallet record created: id=${wallet.id}`);
+      await this.keyManager.storeKey(wallet.id, keypair.privateKey);
+      this.logger.log(`Key stored for wallet ${wallet.id}`);
+      return {
+        wallet,
         address: keypair.address,
-        type: 'hot',
-        status: 'active',
-      },
-    });
-    await this.keyManager.storeKey(wallet.id, keypair.privateKey);
-    this.logger.log(`Admin generated wallet: ${wallet.id} chain=${data.chain}`);
-    return {
-      wallet,
-      address: keypair.address,
-      private_key: keypair.privateKey,
-      mnemonic: keypair.mnemonic || null,
-    };
+        private_key: keypair.privateKey,
+        mnemonic: keypair.mnemonic || null,
+      };
+    } catch (err) {
+      this.logger.error(`generateWallet FAILED: ${err.message || err}`, err.stack);
+      throw err;
+    }
   }
   updateWallet(id: string, data: any) { return this.prisma.walletConfig.update({ where: { id }, data }); }
   async removeWallet(id: string) {
