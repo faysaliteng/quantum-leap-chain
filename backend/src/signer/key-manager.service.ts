@@ -111,62 +111,110 @@ export class KeyManagerService {
   }
 
   /** Generate a real BTC/LTC/DOGE keypair using bitcoinjs-lib */
-  private async generateUTXOKeypair(chain: string): Promise<{ address: string; privateKey: string }> {
-    const bitcoin = await import('bitcoinjs-lib');
-    const ecc = await import('tiny-secp256k1');
-    const { ECPairFactory } = await import('ecpair');
+  private async generateUTXOKeypair(chain: string): Promise<{ address: string; privateKey: string; mnemonic?: string }> {
+    try {
+      const bitcoin = await import('bitcoinjs-lib');
+      const ecc = await import('tiny-secp256k1');
+      const { ECPairFactory } = await import('ecpair');
 
-    const ECPair = ECPairFactory(ecc);
+      // tiny-secp256k1 v2 may export a default or need initialization
+      const eccLib = (ecc as any).default || ecc;
+      const ECPair = ECPairFactory(eccLib);
 
-    // Select network
-    let network: any;
-    if (chain === 'btc') {
-      network = bitcoin.networks.bitcoin;
-    } else if (chain === 'ltc') {
-      // Litecoin network params
-      network = {
-        messagePrefix: '\x19Litecoin Signed Message:\n',
-        bech32: 'ltc',
-        bip32: { public: 0x019da462, private: 0x019d9cfe },
-        pubKeyHash: 0x30,
-        scriptHash: 0x32,
-        wif: 0xb0,
-      };
-    } else {
-      // Dogecoin network params
-      network = {
-        messagePrefix: '\x19Dogecoin Signed Message:\n',
-        bech32: 'doge',
-        bip32: { public: 0x02facafd, private: 0x02fac398 },
-        pubKeyHash: 0x1e,
-        scriptHash: 0x16,
-        wif: 0x9e,
-      };
+      let network: any;
+      if (chain === 'btc') {
+        network = bitcoin.networks.bitcoin;
+      } else if (chain === 'ltc') {
+        network = {
+          messagePrefix: '\x19Litecoin Signed Message:\n',
+          bech32: 'ltc',
+          bip32: { public: 0x019da462, private: 0x019d9cfe },
+          pubKeyHash: 0x30,
+          scriptHash: 0x32,
+          wif: 0xb0,
+        };
+      } else {
+        network = {
+          messagePrefix: '\x19Dogecoin Signed Message:\n',
+          bech32: 'doge',
+          bip32: { public: 0x02facafd, private: 0x02fac398 },
+          pubKeyHash: 0x1e,
+          scriptHash: 0x16,
+          wif: 0x9e,
+        };
+      }
+
+      const keyPair = ECPair.makeRandom({ network });
+      const privateKey = keyPair.toWIF();
+
+      let address: string;
+      if (chain === 'btc') {
+        const { address: p2wpkhAddr } = bitcoin.payments.p2wpkh({
+          pubkey: Buffer.from(keyPair.publicKey),
+          network,
+        });
+        address = p2wpkhAddr!;
+      } else {
+        const { address: p2pkhAddr } = bitcoin.payments.p2pkh({
+          pubkey: Buffer.from(keyPair.publicKey),
+          network,
+        });
+        address = p2pkhAddr!;
+      }
+
+      this.logger.log(`${chain.toUpperCase()} wallet generated: ${address}`);
+      return { address, privateKey };
+    } catch (err) {
+      this.logger.warn(`Native UTXO generation failed for ${chain}, using BIP39 fallback: ${err}`);
+      return this.generateUTXOFallback(chain);
+    }
+  }
+
+  /** BIP39 mnemonic fallback for UTXO chains when native libs fail */
+  private async generateUTXOFallback(chain: string): Promise<{ address: string; privateKey: string; mnemonic: string }> {
+    const bip39 = await import('bip39');
+    const mnemonic = bip39.generateMnemonic();
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+
+    // Use ethers HDNode to derive a key from the seed
+    const { ethers } = await import('ethers');
+    const hdNode = ethers.HDNodeWallet.fromSeed(seed);
+
+    // Derive using BIP44 paths
+    const coinTypes: Record<string, string> = { btc: "0'", ltc: "2'", doge: "3'" };
+    const path = `m/44'/${coinTypes[chain] || "0'"}/0'/0/0`;
+    const derived = hdNode.derivePath(path);
+
+    // For the address, create a deterministic chain-specific format
+    const rawKey = derived.privateKey;
+    const pubKeyHash = crypto.createHash('ripemd160')
+      .update(crypto.createHash('sha256').update(Buffer.from(derived.publicKey.slice(2), 'hex')).digest())
+      .digest();
+
+    // Version bytes
+    const versionByte: Record<string, number> = { btc: 0x00, ltc: 0x30, doge: 0x1e };
+    const version = Buffer.from([versionByte[chain] || 0x00]);
+    const payload = Buffer.concat([version, pubKeyHash]);
+    const checksum = crypto.createHash('sha256').update(crypto.createHash('sha256').update(payload).digest()).digest().slice(0, 4);
+    const addressBytes = Buffer.concat([payload, checksum]);
+
+    // Base58 encode
+    const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    let num = BigInt('0x' + addressBytes.toString('hex'));
+    let encoded = '';
+    while (num > 0n) {
+      const remainder = num % 58n;
+      num = num / 58n;
+      encoded = ALPHABET[Number(remainder)] + encoded;
+    }
+    // Add leading '1's for each leading zero byte
+    for (const byte of addressBytes) {
+      if (byte === 0) encoded = '1' + encoded;
+      else break;
     }
 
-    const keyPair = ECPair.makeRandom({ network });
-    const privateKey = keyPair.toWIF();
-
-    // Generate address
-    let address: string;
-    if (chain === 'btc') {
-      // Native SegWit (bech32) for BTC
-      const { address: p2wpkhAddr } = bitcoin.payments.p2wpkh({
-        pubkey: Buffer.from(keyPair.publicKey),
-        network,
-      });
-      address = p2wpkhAddr!;
-    } else {
-      // P2PKH for LTC/DOGE
-      const { address: p2pkhAddr } = bitcoin.payments.p2pkh({
-        pubkey: Buffer.from(keyPair.publicKey),
-        network,
-      });
-      address = p2pkhAddr!;
-    }
-
-    this.logger.log(`${chain.toUpperCase()} wallet generated: ${address}`);
-    return { address, privateKey };
+    this.logger.log(`${chain.toUpperCase()} wallet generated (fallback): ${encoded}`);
+    return { address: encoded, privateKey: rawKey, mnemonic };
   }
 
   /** Generate a real Solana keypair */
