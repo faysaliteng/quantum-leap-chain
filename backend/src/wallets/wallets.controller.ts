@@ -17,6 +17,11 @@ export class WalletsController {
     return this.walletsService.add(user.merchant_id, body);
   }
 
+  @Post('generate')
+  generate(@CurrentUser() user: any, @Body() body: { label: string; chain: string }) {
+    return this.walletsService.generate(user.merchant_id, body);
+  }
+
   @Delete(':id')
   remove(@CurrentUser() user: any, @Param('id') id: string) {
     return this.walletsService.remove(user.merchant_id, id);

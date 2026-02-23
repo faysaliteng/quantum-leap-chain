@@ -122,6 +122,8 @@ export const wallets = {
   list: () => http.get<WalletConfig[]>("/v1/wallets").then((r) => r.data),
   add: (data: { label: string; chain: string; address: string; type: string }) =>
     http.post<WalletConfig>("/v1/wallets", data).then((r) => r.data),
+  generate: (data: { label: string; chain: string }) =>
+    http.post<{ wallet: WalletConfig; address: string; private_key: string; mnemonic: string | null }>("/v1/wallets/generate", data).then((r) => r.data),
   remove: (id: string) => http.delete(`/v1/wallets/${id}`),
   send: (id: string, data: { to_address: string; amount: string; memo?: string }) =>
     http.post(`/v1/wallets/${id}/send`, data).then((r) => r.data),
