@@ -382,18 +382,20 @@ export interface WalletAsset {
 export interface WalletTransaction {
   id: string;
   wallet_id: string;
-  tx_hash: string;
-  direction: "in" | "out" | "swap";
+  tx_hash?: string;
+  direction: "send" | "receive" | "withdraw" | "swap";
   amount: string;
-  asset: AssetSymbol;
+  asset: string;
   chain: ChainId;
   to_address?: string;
   from_address?: string;
   fee?: string;
-  status: "pending" | "confirmed" | "failed";
-  confirmed: boolean;
-  timestamp: string;
+  memo?: string;
+  status: "drafted" | "pending" | "pending_signature" | "confirmed" | "failed";
   explorer_url?: string;
+  created_by?: string;
+  approved_by?: string;
+  created_at: string;
 }
 
 export interface WalletStats {
