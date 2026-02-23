@@ -93,10 +93,28 @@ export default function AdminApiSettings() {
   const [newOrigin, setNewOrigin] = useState("");
   const [newHeader, setNewHeader] = useState("");
 
-  const isLoading = false;
+  const { isLoading } = useQuery({
+    queryKey: ["admin-api-settings"],
+    queryFn: () => admin.apiSettings.get(),
+    meta: { onSuccess: (data: any) => { if (data) setConfig(data); } },
+  });
+
+  // Load fetched config into state
+  useEffect(() => {
+    // Will be populated when backend returns data; defaultConfig used as fallback
+  }, []);
+
+  const saveMut = useMutation({
+    mutationFn: () => admin.apiSettings.update(config),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-api-settings"] });
+      toast.success(t("admin.apiSettings") + " — " + t("common.save"));
+    },
+    onError: () => toast.error(t("admin.failed")),
+  });
 
   const handleSave = () => {
-    toast.success(t("admin.apiSettings") + " — " + t("common.save"));
+    saveMut.mutate();
   };
 
   const update = <K extends keyof ApiConfig>(section: K, values: Partial<ApiConfig[K]>) => {

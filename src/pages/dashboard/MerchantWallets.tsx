@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useI18n } from "@/lib/i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -78,6 +78,28 @@ export default function MerchantWallets() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["merchant-wallets"] }); toast.success("Wallet removed"); },
   });
 
+  const [estimatedFee, setEstimatedFee] = useState(0);
+  const [feeLoading, setFeeLoading] = useState(false);
+
+  useEffect(() => {
+    if (!sendWallet || !sendTo || !sendAmount) { setEstimatedFee(0); return; }
+    setFeeLoading(true);
+    wallets.estimateFee(sendWallet.id, { to_address: sendTo, amount: sendAmount })
+      .then((res) => setEstimatedFee(parseFloat(res.estimated_fee)))
+      .catch(() => setEstimatedFee(0))
+      .finally(() => setFeeLoading(false));
+  }, [sendWallet?.id, sendTo, sendAmount]);
+
+  const sendMut = useMutation({
+    mutationFn: () => wallets.send(sendWallet!.id, { to_address: sendTo, amount: sendAmount, memo: sendMemo || undefined }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["merchant-wallets"] });
+      toast.success(sendWallet!.type === "cold" ? "Awaiting hardware device confirmation…" : "Transaction submitted");
+      setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
+    },
+    onError: () => toast.error("Transaction failed"),
+  });
+
   if (isLoading) return <PageSkeleton />;
 
   const wList = myWallets ?? [];
@@ -88,8 +110,6 @@ export default function MerchantWallets() {
   const handleWalletConnected = (wallet: { label: string; chain: ChainId; address: string; type: "hot" | "cold" }) => {
     addMut.mutate({ label: wallet.label, chain: wallet.chain, address: wallet.address, type: wallet.type });
   };
-
-  const estimatedFee = sendWallet?.chain === "btc" ? 0.00005 : 0.001;
 
   return (
     <div className="space-y-6" data-testid="page:dashboard-wallets">
@@ -335,10 +355,8 @@ export default function MerchantWallets() {
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={() => setSendConfirm(false)}>Back</Button>
                     <Button className="flex-1 bg-gradient-gold text-primary-foreground font-semibold"
-                      onClick={() => {
-                        toast.success(sendWallet.type === "cold" ? "Awaiting hardware device confirmation…" : "Transaction submitted");
-                        setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo("");
-                      }}>
+                      disabled={sendMut.isPending}
+                      onClick={() => sendMut.mutate()}>
                       <ShieldCheck className="mr-1.5 h-4 w-4" />
                       {sendWallet.type === "cold" ? "Sign on Device" : t("wallets.confirmSend")}
                     </Button>
