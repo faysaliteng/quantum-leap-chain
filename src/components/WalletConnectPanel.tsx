@@ -19,13 +19,15 @@ import { wallets, admin } from "@/lib/api-client";
 import type { ChainId } from "@/lib/types";
 
 const chainLabels: Record<string, string> = {
-  btc: "Bitcoin", eth: "Ethereum", arbitrum: "Arbitrum", optimism: "Optimism", polygon: "Polygon",
-  sol: "Solana", trx: "Tron", ltc: "Litecoin", doge: "Dogecoin", bsc: "BNB Chain",
+  btc: "Bitcoin", eth: "Ethereum", bsc: "BNB Chain", polygon: "Polygon",
+  arbitrum: "Arbitrum", optimism: "Optimism", solana: "Solana", tron: "Tron",
+  ltc: "Litecoin", doge: "Dogecoin", avax: "Avalanche", fantom: "Fantom", base: "Base",
 };
 
 const chainIcons: Record<string, string> = {
-  btc: "₿", eth: "Ξ", arbitrum: "🔵", optimism: "🔴", polygon: "🟣",
-  sol: "◎", trx: "♦", ltc: "Ł", doge: "🐕", bsc: "🔶",
+  btc: "₿", eth: "Ξ", bsc: "🔶", polygon: "🟣",
+  arbitrum: "🔵", optimism: "🔴", solana: "◎", tron: "♦",
+  ltc: "Ł", doge: "🐕", avax: "🔺", fantom: "👻", base: "🔵",
 };
 
 // Wallets that inject window.ethereum (EIP-1193)
