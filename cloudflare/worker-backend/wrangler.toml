@@ -1,0 +1,28 @@
+# Cryptoniumpay — Lightweight Cloudflare Workers Backend
+# Standalone backend using D1 (SQLite) — runs entirely on Cloudflare edge
+# Use as fallback when VPS is unavailable, or as primary for small deployments
+
+name = "cryptoniumpay-backend"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# D1 Database (SQLite at the edge)
+[[d1_databases]]
+binding = "DB"
+database_name = "cryptoniumpay-db"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace after: wrangler d1 create cryptoniumpay-db
+
+# KV Namespace for sessions, rate limits, cache
+[[kv_namespaces]]
+binding = "KV"
+id = "YOUR_KV_ID"  # Replace after: wrangler kv namespace create CACHE
+
+# Secrets (set via: wrangler secret put <NAME>)
+# - JWT_SECRET
+# - SIGNER_SECRET
+# - WEBHOOK_HMAC_SECRET
+
+[vars]
+ENVIRONMENT = "production"
+RATE_LIMIT_RPM = "100"
+ALLOWED_ORIGINS = "https://cryptoniumpay.pages.dev"
