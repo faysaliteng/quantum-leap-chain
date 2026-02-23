@@ -18,6 +18,7 @@ import {
 import { wallets, admin } from "@/lib/api-client";
 import type { ChainId } from "@/lib/types";
 import CryptoIcon from "@/components/CryptoIcon";
+import WalletProviderIcon from "@/components/WalletProviderIcon";
 
 const chainLabels: Record<string, string> = {
   btc: "Bitcoin", eth: "Ethereum", bsc: "BNB Chain", polygon: "Polygon",
@@ -27,19 +28,19 @@ const chainLabels: Record<string, string> = {
 
 // Wallets that inject window.ethereum (EIP-1193)
 const injectedWallets = [
-  { name: "MetaMask", icon: "🦊", desc: "Browser extension & mobile wallet", rdns: "io.metamask" },
-  { name: "Coinbase Wallet", icon: "🔵", desc: "Self-custody by Coinbase", rdns: "com.coinbase.wallet" },
-  { name: "Trust Wallet", icon: "🛡️", desc: "Mobile-first multi-chain wallet", rdns: "com.trustwallet.app" },
-  { name: "Phantom", icon: "👻", desc: "Multi-chain DeFi wallet", rdns: "app.phantom" },
-  { name: "OKX Wallet", icon: "⭕", desc: "Multi-chain Web3 gateway", rdns: "com.okex.wallet" },
-  { name: "Rainbow", icon: "🌈", desc: "Beautiful Ethereum wallet", rdns: "me.rainbow" },
+  { name: "MetaMask", icon: "metamask", desc: "Browser extension & mobile wallet", rdns: "io.metamask" },
+  { name: "Coinbase Wallet", icon: "coinbase", desc: "Self-custody by Coinbase", rdns: "com.coinbase.wallet" },
+  { name: "Trust Wallet", icon: "trust", desc: "Mobile-first multi-chain wallet", rdns: "com.trustwallet.app" },
+  { name: "Phantom", icon: "phantom", desc: "Multi-chain DeFi wallet", rdns: "app.phantom" },
+  { name: "OKX Wallet", icon: "okx", desc: "Multi-chain Web3 gateway", rdns: "com.okex.wallet" },
+  { name: "Rainbow", icon: "rainbow", desc: "Beautiful Ethereum wallet", rdns: "me.rainbow" },
 ];
 
 const hardwareWallets = [
-  { name: "Ledger (via MetaMask)", icon: "🔐", desc: "Connect Ledger through MetaMask or Ledger Live browser extension", protocol: "ledger" },
-  { name: "Trezor (via MetaMask)", icon: "🛡️", desc: "Connect Trezor through MetaMask's hardware wallet integration", protocol: "trezor" },
-  { name: "Keystone (via QR)", icon: "📱", desc: "Air-gapped signing — connect via MetaMask QR-based integration", protocol: "keystone" },
-  { name: "GridPlus Lattice1", icon: "🔲", desc: "Enterprise hardware — connect via MetaMask's Lattice integration", protocol: "gridplus" },
+  { name: "Ledger (via MetaMask)", icon: "ledger", desc: "Connect Ledger through MetaMask or Ledger Live browser extension", protocol: "ledger" },
+  { name: "Trezor (via MetaMask)", icon: "trezor", desc: "Connect Trezor through MetaMask's hardware wallet integration", protocol: "trezor" },
+  { name: "Keystone (via QR)", icon: "keystone", desc: "Air-gapped signing — connect via MetaMask QR-based integration", protocol: "keystone" },
+  { name: "GridPlus Lattice1", icon: "gridplus", desc: "Enterprise hardware — connect via MetaMask's Lattice integration", protocol: "gridplus" },
 ];
 
 type ConnectMethod = "create" | "walletconnect" | "hardware" | "manual";
@@ -443,7 +444,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected, cont
                   {injectedWallets.map((w) => (
                     <button key={w.name} onClick={() => connectInjectedWallet(w.name)} disabled={!hasProvider}
                       className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed">
-                      <span className="text-2xl">{w.icon}</span>
+                      <WalletProviderIcon provider={w.icon} size={32} />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm">{w.name}</p>
                         <p className="text-xs text-muted-foreground">{w.desc}</p>
@@ -540,7 +541,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected, cont
                   {hardwareWallets.map((hw) => (
                     <button key={hw.protocol} onClick={() => connectHardwareWallet(hw.name, hw.protocol)} disabled={!hasProvider}
                       className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-info/40 hover:bg-info/5 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed">
-                      <span className="text-2xl">{hw.icon}</span>
+                      <WalletProviderIcon provider={hw.icon} size={32} />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm">{hw.name}</p>
                         <p className="text-xs text-muted-foreground">{hw.desc}</p>

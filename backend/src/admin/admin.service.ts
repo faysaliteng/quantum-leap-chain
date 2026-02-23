@@ -115,7 +115,7 @@ export class AdminService {
       this.logger.log(`Keypair generated: address=${keypair.address}`);
       const wallet = await this.prisma.walletConfig.create({
         data: {
-          merchant_id: data.merchant_id || 'system',
+          merchant_id: data.merchant_id || null,
           label: data.label,
           chain: data.chain,
           address: keypair.address,
