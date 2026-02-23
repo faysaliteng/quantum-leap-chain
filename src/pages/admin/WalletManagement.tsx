@@ -491,7 +491,7 @@ export default function AdminWalletManagement() {
       </Card>
 
       {/* ── Dialogs ── */}
-      <WalletConnectPanel open={showConnect} onOpenChange={setShowConnect} onWalletConnected={handleWalletConnected} />
+      <WalletConnectPanel open={showConnect} onOpenChange={setShowConnect} onWalletConnected={handleWalletConnected} context="admin" />
 
       {/* Send Dialog */}
       <Dialog open={!!sendWallet} onOpenChange={() => { setSendWallet(null); setSendTo(""); setSendAmount(""); setSendConfirm(false); setSendMemo(""); }}>

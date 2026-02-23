@@ -15,7 +15,7 @@ import {
   ExternalLink, AlertTriangle, Check, Loader2, Link2, Unplug,
   ArrowRight, RefreshCw, MonitorSmartphone, Plus, Eye, EyeOff, Copy, Download,
 } from "lucide-react";
-import { wallets } from "@/lib/api-client";
+import { wallets, admin } from "@/lib/api-client";
 import type { ChainId } from "@/lib/types";
 
 const chainLabels: Record<string, string> = {
@@ -47,10 +47,12 @@ const hardwareWallets = [
 
 type ConnectMethod = "create" | "walletconnect" | "hardware" | "manual";
 type ConnectionStatus = "idle" | "connecting" | "connected" | "error";
+type PanelContext = "merchant" | "admin";
 
 interface WalletConnectPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  context?: PanelContext;
   onWalletConnected: (wallet: {
     label: string;
     chain: ChainId;
@@ -66,9 +68,10 @@ function getEthereumProvider(): any | null {
 }
 
 /* ── Create Wallet Sub-component ── */
-function CreateWalletTab({ onWalletConnected, onClose }: {
+function CreateWalletTab({ onWalletConnected, onClose, context = "merchant" }: {
   onWalletConnected: WalletConnectPanelProps["onWalletConnected"];
   onClose: () => void;
+  context?: PanelContext;
 }) {
   const [step, setStep] = useState<"select" | "generating" | "reveal">("select");
   const [chain, setChain] = useState("eth");
@@ -85,7 +88,8 @@ function CreateWalletTab({ onWalletConnected, onClose }: {
     setStep("generating");
     setError("");
     try {
-      const res = await wallets.generate({ label: label.trim(), chain });
+      const generateFn = context === "admin" ? admin.wallets.generate : wallets.generate;
+      const res = await generateFn({ label: label.trim(), chain });
       setResult({ address: res.address, private_key: res.private_key, mnemonic: res.mnemonic });
       setStep("reveal");
     } catch (err: any) {
@@ -284,7 +288,7 @@ function CreateWalletTab({ onWalletConnected, onClose }: {
 }
 
 /* ── Main Panel ── */
-export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: WalletConnectPanelProps) {
+export function WalletConnectPanel({ open, onOpenChange, onWalletConnected, context = "merchant" }: WalletConnectPanelProps) {
   const [method, setMethod] = useState<ConnectMethod>("create");
   const [status, setStatus] = useState<ConnectionStatus>("idle");
   const [selectedHW, setSelectedHW] = useState<string | null>(null);
@@ -412,6 +416,7 @@ export function WalletConnectPanel({ open, onOpenChange, onWalletConnected }: Wa
             <CreateWalletTab
               onWalletConnected={onWalletConnected}
               onClose={() => { resetState(); onOpenChange(false); }}
+              context={context}
             />
           </TabsContent>
 
