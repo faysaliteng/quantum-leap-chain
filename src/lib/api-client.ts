@@ -142,9 +142,10 @@ export const invoices = {
   downloadPdf: (id: string) => http.get(`/v1/invoices/${id}/pdf`, { responseType: "blob" }).then((r) => r.data),
 };
 
-// ── Public FAQ (no auth) ──
+// ── Public (no auth) ──
 export const publicApi = {
   faq: () => axios.get<FAQEntry[]>(`${BASE_URL}/v1/public/faq`).then((r) => r.data),
+  blog: () => axios.get<BlogPost[]>(`${BASE_URL}/v1/public/blog`).then((r) => r.data),
 };
 
 // ── Dashboard ──
