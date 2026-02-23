@@ -58,9 +58,17 @@ async function main() {
   const chains = [
     { chain: 'btc', name: 'Bitcoin', confirmation_threshold: 3 },
     { chain: 'eth', name: 'Ethereum', confirmation_threshold: 12 },
-    { chain: 'polygon', name: 'Polygon', confirmation_threshold: 30 },
+    { chain: 'bsc', name: 'BNB Chain', confirmation_threshold: 15 },
+    { chain: 'polygon', name: 'Polygon', confirmation_threshold: 64 },
+    { chain: 'solana', name: 'Solana', confirmation_threshold: 32 },
+    { chain: 'tron', name: 'TRON', confirmation_threshold: 20 },
     { chain: 'arbitrum', name: 'Arbitrum', confirmation_threshold: 12 },
     { chain: 'optimism', name: 'Optimism', confirmation_threshold: 12 },
+    { chain: 'ltc', name: 'Litecoin', confirmation_threshold: 6 },
+    { chain: 'doge', name: 'Dogecoin', confirmation_threshold: 6 },
+    { chain: 'avax', name: 'Avalanche', confirmation_threshold: 12 },
+    { chain: 'fantom', name: 'Fantom', confirmation_threshold: 12 },
+    { chain: 'base', name: 'Base', confirmation_threshold: 12 },
   ];
 
   for (const c of chains) {
@@ -70,7 +78,7 @@ async function main() {
       create: c,
     });
   }
-  console.log('✅ Chain configs seeded');
+  console.log('✅ Chain configs seeded (13 chains)');
 
   // ── 4. Super Admin Role ──
   const superAdminRole = await prisma.adminRole.upsert({
@@ -80,7 +88,7 @@ async function main() {
       name: 'Super Admin',
       description: 'Full access to all admin features',
       permissions: [
-        'wallets.view', 'wallets.withdraw', 'wallets.approve',
+        'wallets.view', 'wallets.manage', 'wallets.withdraw', 'wallets.approve',
         'fees.view', 'fees.edit', 'chains.view', 'chains.edit',
         'cms.view', 'cms.edit', 'merchants.view', 'merchants.manage',
         'audit.view', 'revenue.view', 'monitoring.view',
