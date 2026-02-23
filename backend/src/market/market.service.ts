@@ -10,21 +10,14 @@ import { RedisService } from '../common/redis/redis.service';
 export class MarketService {
   private readonly logger = new Logger('MarketService');
   private readonly CACHE_KEY = 'market:tickers';
-  private readonly CACHE_TTL = 30; // seconds
-
-  // CoinGecko IDs mapped to our internal symbols
-  private readonly COIN_MAP: Record<string, string> = {
-    bitcoin: 'BTC', ethereum: 'ETH', 'binancecoin': 'BNB',
-    tether: 'USDT', 'usd-coin': 'USDC', solana: 'SOL',
-    tron: 'TRX', 'matic-network': 'MATIC', dogecoin: 'DOGE',
-    litecoin: 'LTC', 'avalanche-2': 'AVAX', fantom: 'FTM',
-  };
+  private readonly CACHE_TTL = 300; // 5 minutes
+  private retryDelay = 60_000; // start at 60s, backs off on 429
+  private readonly MAX_RETRY_DELAY = 600_000; // 10 min max
 
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
   ) {
-    // Start background price updater
     this.startPriceUpdater();
   }
 
@@ -58,7 +51,17 @@ export class MarketService {
       const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&sparkline=false&price_change_percentage=24h`;
 
       const response = await fetch(url);
+
+      if (response.status === 429) {
+        this.retryDelay = Math.min(this.retryDelay * 2, this.MAX_RETRY_DELAY);
+        this.logger.warn(`CoinGecko rate limited (429). Next retry in ${this.retryDelay / 1000}s`);
+        return this.prisma.marketTicker.findMany({ orderBy: { market_cap: 'desc' } });
+      }
+
       if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
+
+      // Success — reset backoff
+      this.retryDelay = 60_000;
 
       const data = await response.json();
       const tickers = data.map((coin: any) => ({
@@ -70,12 +73,10 @@ export class MarketService {
         market_cap: coin.market_cap || 0,
       }));
 
-      // Cache in Redis
       try {
         await this.redis.client.setex(this.CACHE_KEY, this.CACHE_TTL, JSON.stringify(tickers));
       } catch {}
 
-      // Persist to DB for fallback
       for (const ticker of tickers) {
         await this.prisma.marketTicker.upsert({
           where: { symbol: ticker.symbol },
@@ -98,17 +99,16 @@ export class MarketService {
     }
   }
 
-  /** Background price updater (every 60 seconds) */
+  /** Background price updater with adaptive backoff */
   private startPriceUpdater() {
-    setInterval(async () => {
+    const poll = async () => {
       try {
         await this.fetchAndCachePrices();
       } catch (err) {
         this.logger.error('Price update failed', err);
       }
-    }, 60_000);
-
-    // Fetch immediately on startup
-    setTimeout(() => this.fetchAndCachePrices(), 5000);
+      setTimeout(poll, this.retryDelay);
+    };
+    setTimeout(poll, 10_000);
   }
 }
