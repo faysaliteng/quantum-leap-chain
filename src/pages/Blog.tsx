@@ -1,44 +1,26 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Calendar, Clock, ArrowRight, Tag } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Tag, Loader2 } from "lucide-react";
 import { SEOHead } from "@/components/SEOHead";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { SocialLinks } from "@/components/SocialLinks";
 import { useI18n } from "@/lib/i18n";
+import { publicApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { BlogPost } from "@/lib/types";
 
 const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 const stagger = { visible: { transition: { staggerChildren: 0.07 } } };
 
-type Category = "All" | "Guides" | "Industry" | "Product" | "Engineering";
+type Category = "All" | string;
 
-const categories: Category[] = ["All", "Guides", "Industry", "Product", "Engineering"];
-
-const articles: {
-  title: string;
-  excerpt: string;
-  category: Exclude<Category, "All">;
-  date: string;
-  readTime: string;
-  featured?: boolean;
-}[] = [
-  { title: "Why 0.5% Is All You Should Ever Pay for Crypto Payment Processing", excerpt: "Most processors charge 1% or more. We break down the real cost of crypto payments and why the industry standard is unnecessarily high.", category: "Industry", date: "Feb 18, 2026", readTime: "6 min", featured: true },
-  { title: "Integrating Cryptoniumpay in Under 10 Minutes: A Step-by-Step Guide", excerpt: "From API key generation to your first test charge — a practical walkthrough for developers who want to accept crypto payments fast.", category: "Guides", date: "Feb 14, 2026", readTime: "8 min", featured: true },
-  { title: "Stablecoin Settlement: How USDC and USDT Are Changing Merchant Payouts", excerpt: "Volatile markets don't have to mean volatile revenue. Learn how stablecoin settlement protects your bottom line.", category: "Industry", date: "Feb 10, 2026", readTime: "5 min" },
-  { title: "Webhook Best Practices for Reliable Payment Notifications", excerpt: "Missed webhooks can mean missed orders. Here's how to build a bulletproof webhook handler for Cryptoniumpay events.", category: "Engineering", date: "Feb 6, 2026", readTime: "7 min" },
-  { title: "New: Volume-Based Pricing Tiers Now Live", excerpt: "Process more, pay less. We're introducing automatic fee reductions starting at $10K monthly volume — no negotiation required.", category: "Product", date: "Feb 2, 2026", readTime: "3 min" },
-  { title: "Accepting Bitcoin Payments in 2026: What Merchants Need to Know", excerpt: "BTC remains the most requested crypto payment method. We cover network fees, confirmation times, and Lightning support.", category: "Industry", date: "Jan 28, 2026", readTime: "6 min" },
-  { title: "Building a Checkout Page with the Cryptoniumpay SDK", excerpt: "A hands-on tutorial for creating a branded, mobile-friendly checkout experience using our hosted payment page and API.", category: "Guides", date: "Jan 22, 2026", readTime: "9 min" },
-  { title: "How We Designed Our Zero-KYC Onboarding Flow", excerpt: "Privacy-first doesn't mean security-last. A look inside our risk model that lets merchants start accepting crypto instantly.", category: "Engineering", date: "Jan 16, 2026", readTime: "5 min" },
-  { title: "Multi-Chain Support: Ethereum, Polygon, Arbitrum, and Beyond", excerpt: "Supporting 7+ chains means your customers always have options. Here's how our multi-chain architecture works under the hood.", category: "Product", date: "Jan 10, 2026", readTime: "4 min" },
-];
-
-const categoryColors: Record<Exclude<Category, "All">, string> = {
+const categoryColors: Record<string, string> = {
   Guides: "bg-info/10 text-info",
   Industry: "bg-primary/10 text-primary",
   Product: "bg-success/10 text-success",
@@ -50,9 +32,19 @@ export default function Blog() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [active, setActive] = useState<Category>("All");
 
-  const filtered = active === "All" ? articles : articles.filter((a) => a.category === active);
-  const featured = articles.filter((a) => a.featured);
-  const rest = filtered.filter((a) => !(active === "All" && a.featured));
+  const { data: articles = [], isLoading } = useQuery({
+    queryKey: ["public-blog"],
+    queryFn: publicApi.blog,
+    staleTime: 60_000,
+  });
+
+  // Derive categories from real data
+  const categories: Category[] = ["All", ...Array.from(new Set(articles.map((a: BlogPost) => a.tags?.[0] || "Uncategorized")))];
+
+  const getCategory = (a: BlogPost) => a.tags?.[0] || "Uncategorized";
+  const filtered = active === "All" ? articles : articles.filter((a) => getCategory(a) === active);
+  const featured = articles.filter((a: BlogPost) => a.status === "published").slice(0, 2);
+  const rest = filtered.filter((a) => !(active === "All" && featured.includes(a)));
 
   return (
     <div className="min-h-screen bg-background text-foreground" data-testid="page:blog">
@@ -113,8 +105,13 @@ export default function Blog() {
           </motion.p>
         </motion.section>
 
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        )}
+
         {/* Featured (only on "All") */}
-        {active === "All" && (
+        {!isLoading && active === "All" && featured.length > 0 && (
           <section className="container mx-auto px-4 pb-12">
             <div className="grid md:grid-cols-2 gap-6">
               {featured.map((a) => (
@@ -123,15 +120,15 @@ export default function Blog() {
                     <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full">
                       <div>
                         <div className="flex items-center gap-2 mb-3">
-                          <Badge className={categoryColors[a.category] + " border-0 text-xs"}>{a.category}</Badge>
+                          <Badge className={(categoryColors[getCategory(a)] || "bg-muted text-muted-foreground") + " border-0 text-xs"}>{getCategory(a)}</Badge>
                           <Badge variant="outline" className="border-primary/20 text-primary text-[10px]">{t("blog.featured")}</Badge>
                         </div>
                         <h2 className="text-xl md:text-2xl font-bold font-display mb-3 group-hover:text-primary transition-colors">{a.title}</h2>
                         <p className="text-muted-foreground text-sm leading-relaxed">{a.excerpt}</p>
                       </div>
                       <div className="flex items-center gap-4 mt-6 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {a.date}</span>
-                        <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {a.readTime} {t("blog.read")}</span>
+                        <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {a.published_at ? new Date(a.published_at).toLocaleDateString() : ""}</span>
+                        <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {Math.max(1, Math.ceil((a.body?.length || 500) / 1000))} min {t("blog.read")}</span>
                         <span className="ml-auto flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                           {t("blog.readMore")} <ArrowRight className="h-3.5 w-3.5" />
                         </span>
@@ -173,14 +170,14 @@ export default function Blog() {
                   <CardContent className="p-5 md:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge className={categoryColors[a.category] + " border-0 text-xs"}>{a.category}</Badge>
+                        <Badge className={(categoryColors[getCategory(a)] || "bg-muted text-muted-foreground") + " border-0 text-xs"}>{getCategory(a)}</Badge>
                       </div>
                       <h3 className="font-bold font-display text-lg mb-1 group-hover:text-primary transition-colors truncate">{a.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">{a.excerpt}</p>
                     </div>
                     <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 text-xs text-muted-foreground shrink-0">
-                      <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {a.date}</span>
-                      <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {a.readTime}</span>
+                      <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {a.published_at ? new Date(a.published_at).toLocaleDateString() : ""}</span>
+                      <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {Math.max(1, Math.ceil((a.body?.length || 500) / 1000))} min</span>
                     </div>
                   </CardContent>
                 </Card>

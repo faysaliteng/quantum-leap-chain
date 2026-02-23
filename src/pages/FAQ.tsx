@@ -1,34 +1,20 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { SEOHead } from "@/components/SEOHead";
 import { SocialLinks } from "@/components/SocialLinks";
 import { CryptoniumpayLogo } from "@/components/CryptoniumpayLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
+import { publicApi } from "@/lib/api-client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ArrowLeft, Search, HelpCircle, MessageSquare } from "lucide-react";
+import { ArrowLeft, Search, HelpCircle, MessageSquare, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-// Placeholder FAQ data (in production, fetched from CMS via publicApi.faq())
-const faqData = [
-  { id: "1", question: "What is Cryptoniumpay?", answer: "Cryptoniumpay is a self-hosted, non-custodial crypto payment gateway that lets businesses accept BTC, ETH, and stablecoins with a flat 0.5% fee. We never hold your funds — payments go directly to your wallet.", category: "General", sort_order: 1, visible: true, created_at: "" },
-  { id: "2", question: "How do I get started?", answer: "Create a free account, generate an API key from your dashboard, and integrate using our REST API or hosted checkout links. The entire process takes under 2 minutes with no company verification required.", category: "Getting Started", sort_order: 2, visible: true, created_at: "" },
-  { id: "3", question: "What cryptocurrencies do you support?", answer: "We support Bitcoin (BTC), Ethereum (ETH), USDC, USDT on Ethereum, Arbitrum, Optimism, and Polygon. More chains are being added regularly.", category: "General", sort_order: 3, visible: true, created_at: "" },
-  { id: "4", question: "What are the fees?", answer: "We charge a flat 0.5% per transaction — the lowest in the industry. There are no monthly fees, no setup fees, and no minimum volume requirements. Volume discounts are available for high-volume merchants.", category: "Pricing", sort_order: 4, visible: true, created_at: "" },
-  { id: "5", question: "Is KYC required?", answer: "No. Cryptoniumpay does not require KYC, KYB, or any company verification to start accepting payments. You can be live in minutes.", category: "Getting Started", sort_order: 5, visible: true, created_at: "" },
-  { id: "6", question: "How does the non-custodial model work?", answer: "Cryptoniumpay never holds your crypto. We generate unique deposit addresses for each payment, and once confirmed on-chain, funds are automatically swept to your configured settlement wallet. Private keys are managed by an isolated signer service.", category: "Security", sort_order: 6, visible: true, created_at: "" },
-  { id: "7", question: "How are webhooks secured?", answer: "All webhooks are signed with HMAC-SHA256 using your webhook secret. Each delivery includes x-cryptoniumpay-signature, x-cryptoniumpay-timestamp, and x-cryptoniumpay-event headers for replay protection and verification.", category: "Security", sort_order: 7, visible: true, created_at: "" },
-  { id: "8", question: "Can I self-host Cryptoniumpay?", answer: "Yes. Cryptoniumpay is designed for self-hosting. We provide atomic-level deployment instructions for both Cloudflare (Pages + Workers) and VM (Docker Compose) environments. See our DEPLOYMENT.md for complete instructions.", category: "Technical", sort_order: 8, visible: true, created_at: "" },
-  { id: "9", question: "What happens if a payment is underpaid?", answer: "If a customer sends less than the required amount, the charge status changes to UNDERPAID. You can configure your webhook to handle this automatically — either requesting additional payment or issuing a refund.", category: "Payments", sort_order: 9, visible: true, created_at: "" },
-  { id: "10", question: "How fast is payment detection?", answer: "Payments are detected within 1-3 seconds of the on-chain transaction being broadcast. Full confirmation depends on the chain's block time and your configured confirmation threshold (e.g., 1 block for ETH, 3 for BTC).", category: "Payments", sort_order: 10, visible: true, created_at: "" },
-  { id: "11", question: "Do you support invoicing?", answer: "Yes. Merchants can create, send, and track invoices directly from the dashboard. Each invoice generates a unique payment link that customers can pay with any supported cryptocurrency.", category: "Features", sort_order: 11, visible: true, created_at: "" },
-  { id: "12", question: "What reporting is available?", answer: "The merchant dashboard includes transaction reports with date-range filtering, CSV/JSON export, volume-by-day charts, and revenue-by-asset breakdown. All data is available via the API as well.", category: "Features", sort_order: 12, visible: true, created_at: "" },
-];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -40,10 +26,16 @@ export default function FAQ() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
+  const { data: faqData = [], isLoading } = useQuery({
+    queryKey: ["public-faq"],
+    queryFn: publicApi.faq,
+    staleTime: 60_000,
+  });
+
   const categories = useMemo(() => {
     const cats = Array.from(new Set(faqData.map((f) => f.category)));
     return ["All", ...cats];
-  }, []);
+  }, [faqData]);
 
   const filtered = useMemo(() => {
     return faqData.filter((f) => {
@@ -51,7 +43,7 @@ export default function FAQ() {
       const matchSearch = !search || f.question.toLowerCase().includes(search.toLowerCase()) || f.answer.toLowerCase().includes(search.toLowerCase());
       return matchCategory && matchSearch && f.visible;
     });
-  }, [search, activeCategory]);
+  }, [search, activeCategory, faqData]);
 
   return (
     <div className="min-h-screen bg-background" data-testid="page:faq">
@@ -119,7 +111,9 @@ export default function FAQ() {
 
       {/* FAQ Accordion */}
       <section className="container pb-20 max-w-3xl">
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        ) : filtered.length > 0 ? (
           <Accordion type="multiple" className="space-y-3">
             {filtered.map((faq, i) => (
               <motion.div

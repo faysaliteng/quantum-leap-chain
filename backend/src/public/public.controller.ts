@@ -14,4 +14,13 @@ export class PublicController {
       orderBy: { sort_order: 'asc' },
     });
   }
+
+  @Public()
+  @Get('blog')
+  blog() {
+    return this.prisma.cMSBlogPost.findMany({
+      where: { status: 'published' },
+      orderBy: { published_at: 'desc' },
+    });
+  }
 }
