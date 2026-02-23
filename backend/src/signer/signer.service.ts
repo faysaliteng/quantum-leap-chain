@@ -169,8 +169,9 @@ export class SignerService {
     privateKey: string,
     txData: { to: string; amount: string },
   ): Promise<{ tx_hash: string; signed_tx: string }> {
-    const TronWeb = (await import('tronweb')).default;
-    const tronWeb = new TronWeb({
+    const tronModule = await import('tronweb');
+    const TronWeb = tronModule.default?.default ?? tronModule.default ?? tronModule;
+    const tronWeb = new (TronWeb as any)({
       fullHost: this.rpcUrls.tron,
       privateKey,
     });
