@@ -127,6 +127,23 @@ export const wallets = {
     http.post(`/v1/wallets/${id}/send`, data).then((r) => r.data),
   estimateFee: (id: string, data: { to_address: string; amount: string }) =>
     http.post<{ estimated_fee: string; chain: string }>(`/v1/wallets/${id}/estimate-fee`, data).then((r) => r.data),
+  // Portfolio & assets
+  portfolio: () => http.get<import("./types").WalletStats>("/v1/wallets/portfolio").then((r) => r.data),
+  assets: () => http.get<import("./types").WalletAsset[]>("/v1/wallets/assets").then((r) => r.data),
+  depositInfo: (chain: string) => http.get<import("./types").DepositInfo>(`/v1/wallets/deposit/${chain}`).then((r) => r.data),
+  // Swap / Convert
+  swapQuote: (data: { from_asset: string; to_asset: string; amount: string }) =>
+    http.post<import("./types").SwapQuote>("/v1/wallets/swap/quote", data).then((r) => r.data),
+  swapExecute: (data: { from_asset: string; to_asset: string; amount: string; quote_id?: string }) =>
+    http.post<import("./types").SwapOrder>("/v1/wallets/swap/execute", data).then((r) => r.data),
+  swapHistory: (params?: { page?: number; per_page?: number }) =>
+    http.get<import("./types").PaginatedResponse<import("./types").SwapOrder>>("/v1/wallets/swap/history", { params }).then((r) => r.data),
+  // Market data
+  market: () => http.get<import("./types").MarketTicker[]>("/v1/wallets/market").then((r) => r.data),
+  orderBook: (pair: string) => http.get<import("./types").OrderBook>(`/v1/wallets/orderbook/${pair}`).then((r) => r.data),
+  // Transactions
+  transactions: (params?: { direction?: string; status?: string; page?: number; per_page?: number }) =>
+    http.get<import("./types").PaginatedResponse<import("./types").WalletTransaction>>("/v1/wallets/transactions", { params }).then((r) => r.data),
 };
 
 // ── Invoices ──
@@ -194,6 +211,13 @@ export const admin = {
       http.post(`/v1/admin/wallets/${id}/send`, data).then((r) => r.data),
     estimateFee: (id: string, data: { to_address: string; amount: string }) =>
       http.post<{ estimated_fee: string; chain: string }>(`/v1/admin/wallets/${id}/estimate-fee`, data).then((r) => r.data),
+    portfolio: () => http.get<WalletStats>("/v1/admin/wallets/portfolio").then((r) => r.data),
+    assets: () => http.get<import("./types").WalletAsset[]>("/v1/admin/wallets/assets").then((r) => r.data),
+    swapQuote: (data: { from_asset: string; to_asset: string; amount: string }) =>
+      http.post<import("./types").SwapQuote>("/v1/admin/wallets/swap/quote", data).then((r) => r.data),
+    swapExecute: (data: { from_asset: string; to_asset: string; amount: string }) =>
+      http.post<import("./types").SwapOrder>("/v1/admin/wallets/swap/execute", data).then((r) => r.data),
+    market: () => http.get<import("./types").MarketTicker[]>("/v1/admin/wallets/market").then((r) => r.data),
   },
 
   // ── API Settings ──

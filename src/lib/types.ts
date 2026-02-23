@@ -15,11 +15,19 @@ export type PricingType = "fixed_price" | "no_price";
 export type ChainId =
   | "btc"
   | "eth"
+  | "bsc"
+  | "polygon"
   | "arbitrum"
   | "optimism"
-  | "polygon";
+  | "solana"
+  | "tron"
+  | "ltc"
+  | "doge"
+  | "avax"
+  | "fantom"
+  | "base";
 
-export type AssetSymbol = "BTC" | "ETH" | "USDC" | "USDT" | "MATIC";
+export type AssetSymbol = "BTC" | "ETH" | "BNB" | "USDC" | "USDT" | "MATIC" | "SOL" | "TRX" | "LTC" | "DOGE" | "AVAX" | "FTM";
 
 export type SweepMode = "immediate" | "batched";
 
@@ -359,16 +367,33 @@ export interface WalletConfig {
   created_at: string;
 }
 
+export interface WalletAsset {
+  symbol: AssetSymbol;
+  name: string;
+  chain: ChainId;
+  balance: string;
+  balance_usd: number;
+  price_usd: number;
+  change_24h: number;
+  icon?: string;
+  contract_address?: string;
+}
+
 export interface WalletTransaction {
   id: string;
   wallet_id: string;
   tx_hash: string;
-  direction: "in" | "out";
+  direction: "in" | "out" | "swap";
   amount: string;
   asset: AssetSymbol;
   chain: ChainId;
+  to_address?: string;
+  from_address?: string;
+  fee?: string;
+  status: "pending" | "confirmed" | "failed";
   confirmed: boolean;
   timestamp: string;
+  explorer_url?: string;
 }
 
 export interface WalletStats {
@@ -377,7 +402,69 @@ export interface WalletStats {
   total_balance_usd: number;
   hot_balance_usd: number;
   cold_balance_usd: number;
+  total_pnl_24h: number;
+  total_pnl_pct: number;
   wallets: WalletConfig[];
+  assets: WalletAsset[];
+}
+
+export interface SwapQuote {
+  from_asset: AssetSymbol;
+  to_asset: AssetSymbol;
+  from_amount: string;
+  to_amount: string;
+  rate: string;
+  fee: string;
+  fee_usd: string;
+  expires_at: string;
+  slippage: number;
+}
+
+export interface SwapOrder {
+  id: string;
+  from_asset: AssetSymbol;
+  to_asset: AssetSymbol;
+  from_amount: string;
+  to_amount: string;
+  rate: string;
+  fee: string;
+  status: "pending" | "completed" | "failed" | "cancelled";
+  tx_hash?: string;
+  created_at: string;
+}
+
+export interface OrderBookEntry {
+  price: string;
+  amount: string;
+  total: string;
+}
+
+export interface OrderBook {
+  pair: string;
+  bids: OrderBookEntry[];
+  asks: OrderBookEntry[];
+  last_price: string;
+  change_24h: number;
+  volume_24h: string;
+}
+
+export interface MarketTicker {
+  symbol: AssetSymbol;
+  name: string;
+  price_usd: number;
+  change_24h: number;
+  volume_24h: number;
+  market_cap: number;
+  sparkline?: number[];
+}
+
+export interface DepositInfo {
+  chain: ChainId;
+  address: string;
+  memo?: string;
+  min_deposit: string;
+  confirmations_required: number;
+  estimated_time: string;
 }
 
 // ── Invoices ──
