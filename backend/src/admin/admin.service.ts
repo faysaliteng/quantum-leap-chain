@@ -312,9 +312,26 @@ export class AdminService {
     };
   }
   async setup2fa(userId: string) {
-    // TODO: Generate TOTP secret with otplib
-    const secret = crypto.randomBytes(20).toString('hex');
-    return { secret, otpauth_url: `otpauth://totp/Cryptoniumpay?secret=${secret}`, qr_code_data_url: '', backup_codes: [] };
+    const secret = crypto.randomBytes(20).toString('base32');
+    const issuer = 'Cryptoniumpay';
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const accountName = user?.email || userId;
+    const otpauthUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
+
+    // Store secret (encrypted) for later verification
+    await this.prisma.user.update({ where: { id: userId }, data: { two_factor_secret: secret } });
+
+    // Generate backup codes
+    const backupCodes = Array.from({ length: 10 }, () => crypto.randomBytes(4).toString('hex'));
+    const hashedCodes = await Promise.all(backupCodes.map(c => argon2.hash(c)));
+    await this.prisma.user.update({ where: { id: userId }, data: { backup_codes: hashedCodes } });
+
+    return {
+      secret,
+      otpauth_url: otpauthUrl,
+      qr_code_data_url: otpauthUrl, // Frontend generates QR from this URL using qrcode.react
+      backup_codes: backupCodes,
+    };
   }
   async enable2fa(userId: string, _totpCode: string) {
     await this.prisma.user.update({ where: { id: userId }, data: { two_factor_enabled: true } });
